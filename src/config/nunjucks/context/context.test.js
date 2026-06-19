@@ -64,11 +64,6 @@ describe('context and cache', () => {
               current: true,
               text: 'Home',
               href: '/'
-            },
-            {
-              current: false,
-              text: 'About',
-              href: '/about'
             }
           ],
           serviceName: 'digital-waste-tracking-admin-ui',
@@ -153,11 +148,6 @@ describe('context and cache', () => {
               current: true,
               text: 'Home',
               href: '/'
-            },
-            {
-              current: false,
-              text: 'About',
-              href: '/about'
             }
           ],
           serviceName: 'digital-waste-tracking-admin-ui',
