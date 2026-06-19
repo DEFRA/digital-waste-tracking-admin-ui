@@ -1,7 +1,7 @@
 export function buildNavigation(request) {
   return [
     {
-      text: 'Home',
+      text: 'DWT Admin Portal',
       href: '/',
       current: request?.path === '/'
     }
