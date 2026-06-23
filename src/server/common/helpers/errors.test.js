@@ -23,7 +23,9 @@ describe('#errors', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Page not found | digital-waste-tracking-admin-ui')
+      expect.stringContaining(
+        'Page not found | digital-waste-tracking-admin-ui'
+      )
     )
     expect(statusCode).toBe(statusCodes.notFound)
   })
