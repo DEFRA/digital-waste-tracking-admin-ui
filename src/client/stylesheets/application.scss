@@ -6,17 +6,7 @@
 @use 'components';
 @use 'partials';
 
-.govuk-header {
-  background: #0b0c0c;
-
-  a {
-    font-weight: bold;
-    font-size: 24px;
-    word-spacing: initial;
-  }
-}
-
-.govuk-header__container {
+.govuk-generic-header__container {
   border-bottom: 10px solid #1d70b8;
   position: relative;
   margin-bottom: -10px;

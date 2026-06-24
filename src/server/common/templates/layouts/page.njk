@@ -3,6 +3,8 @@
 {# Import GOVUK components globally #}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/generic-header/macro.njk" import govukGenericHeader %}
+
 
 {# Import custom components globally #}
 {% from "heading/macro.njk" import appHeading %}
@@ -22,15 +24,10 @@
 {% endblock %}
 
 {% block header %}
-  <div class="govuk-header">
-    <div class="govuk-header__container govuk-width-container">
-      <div class="govuk-header__logo">
-        <a href="https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs" class="govuk-header__homepage-link">
-          Department for Environment, Food and Rural Affairs
-        </a>
-      </div>
-    </div>
-  </div>
+  {{ govukGenericHeader({
+    url: "#",
+    logoText: "Department for Environment, Food and Rural Affairs"
+  }) }}
 
   {{ govukServiceNavigation({
     navigation: navigation
