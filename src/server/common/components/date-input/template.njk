@@ -1,0 +1,44 @@
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+
+{% set dayClasses = "govuk-input--width-2" %}
+{% set monthClasses = "govuk-input--width-2" %}
+{% set yearClasses = "govuk-input--width-4" %}
+{% set errorMessage = undefined %}
+
+{% if params.fieldErrors[params.id + '-Year'] %}
+  {% set yearClasses = yearClasses + " govuk-input--error" %}
+  {% set errorMessage = { text: params.fieldErrors[params.id + '-Year'] } %}
+{% endif %}
+{% if params.fieldErrors[params.id + '-Month'] %}
+  {% set monthClasses = monthClasses + " govuk-input--error" %}
+  {% set errorMessage = { text: params.fieldErrors[params.id + '-Month'] } %}
+{% endif %}
+{% if params.fieldErrors[params.id + '-Day'] %}
+  {% set dayClasses = dayClasses + " govuk-input--error" %}
+  {% set errorMessage = { text: params.fieldErrors[params.id + '-Day'] } %}
+{% endif %}
+{% if params.fieldErrors[params.id] %}
+  {% set dayClasses = dayClasses + " govuk-input--error" %}
+  {% set monthClasses = monthClasses + " govuk-input--error" %}
+  {% set yearClasses = yearClasses + " govuk-input--error" %}
+  {% set errorMessage = { text: params.fieldErrors[params.id] } %}
+{% endif %}
+
+{{ govukDateInput({
+  id: params.id,
+  namePrefix: params.id,
+  fieldset: {
+    legend: {
+      text: params.legend
+    }
+  },
+  hint: {
+    text: params.hint
+  },
+  items: [
+    { name: "Day", classes: dayClasses, value: params.dayValue },
+    { name: "Month", classes: monthClasses, value: params.monthValue },
+    { name: "Year", classes: yearClasses, value: params.yearValue }
+  ],
+  errorMessage: errorMessage
+}) }}
