@@ -13,6 +13,11 @@ describe('#buildNavigation', () => {
         current: false,
         text: 'DWT Admin Portal',
         href: '/'
+      },
+      {
+        current: false,
+        href: '/reporting/waste-organisations',
+        text: 'Reporting'
       }
     ])
   })
@@ -23,6 +28,11 @@ describe('#buildNavigation', () => {
         current: true,
         text: 'DWT Admin Portal',
         href: '/'
+      },
+      {
+        current: false,
+        href: '/reporting/waste-organisations',
+        text: 'Reporting'
       }
     ])
   })
