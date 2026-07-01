@@ -1,0 +1,100 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+
+  {{ appHeading({
+    text: heading
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div data-testid="app-page-body">
+        <p class="govuk-body">
+          Search waste organisations by DefraID registration date.
+        </p>
+          <form method="get" action="/reporting/waste-organisations">
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              {{ appDateInput({
+                id: "date-from",
+                legend: "From date",
+                hint: "For example, 24 6 2026",
+                dayValue: dateFromDay,
+                monthValue: dateFromMonth,
+                yearValue: dateFromYear,
+                errors: errors
+              }) }}
+            </div>
+            <div class="govuk-grid-column-one-half">
+              {{ appDateInput({
+                id: "date-to",
+                legend: "To date",
+                hint: "For example, 24 7 2027",
+                dayValue: dateToDay,
+                monthValue: dateToMonth,
+                yearValue: dateToYear,
+                errors: errors
+              }) }}
+            </div>
+          </div>
+          {{ govukButton({
+            text: "Show organisations"
+          }) }}
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if dateFrom and dateTo %}
+    <h2 class="govuk-heading-m" data-testid="search-timeframe">
+      Waste organisations registered from {{ dateFrom | formatDate("dd MMMM yyyy") }} to {{ dateTo | formatDate("dd MMMM yyyy") }}
+    </h2>
+    <p class="govuk-body" data-testid="search-results-count">
+      Organisations registered (in period): {{ wasteOrganisations.length }}
+    </p>
+  {% endif %}
+
+  {% if wasteOrganisations | length > 0 %}
+    {% set wasteOrganisationRows = [] %}
+    {% for wasteOrganisation in wasteOrganisations %}
+      {% set wasteOrganisationRows = (wasteOrganisationRows.push([
+        { text: wasteOrganisation.organisationId },
+        { text: wasteOrganisation.dateRegistered  | formatDate("dd LLL yyyy") },
+        { text: wasteOrganisation.activeApiCodeCount }]), wasteOrganisationRows)
+      %}
+    {% endfor %}
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        {{ govukTable({
+          head: [
+            {
+              text: "Organisation ID"
+            },
+            {
+              text: "Registered"
+            },
+            {
+              text: "Active API Codes"
+            }
+          ],
+          rows: wasteOrganisationRows,
+          attributes: {
+            "data-testid": "waste-organisations-list"
+          }
+        }) }}
+        {{ govukButton({
+          text: "Download CSV",
+          classes: "govuk-button--secondary",
+          attributes: {
+            "data-testid": "download-csv-button"
+          }
+        }) }}
+      </div>
+    </div>
+  {% endif %}
+
+{% endblock %}
