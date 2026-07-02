@@ -3,14 +3,17 @@
 {# Import GOVUK components globally #}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/generic-header/macro.njk" import govukGenericHeader %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {# Import custom components globally #}
 {% from "heading/macro.njk" import appHeading %}
+{% from "date-input/macro.njk" import appDateInput %}
 
 {% set mainClasses = "app-main-wrapper" %}
 
 {% block headIcons %}
-  <link rel="icon" sizes="48x48" href="{{ getAssetPath("node_modules/govuk-frontend/dist/govuk/assets/images/favicon.ico") }}">
+  <link rel="icon" sizes="48x48" href="{{ getAssetPath("src/client/images/favicon.ico") }}">
   <link rel="icon" sizes="any" href="{{ getAssetPath("node_modules/govuk-frontend/dist/govuk/assets/images/favicon.svg") }}" type="image/svg+xml" >
   <link rel="mask-icon" href="{{ getAssetPath("node_modules/govuk-frontend/dist/govuk/assets/images/govuk-icon-mask.svg") }}" color="{{ themeColor }}">
   <link rel="apple-touch-icon" href="{{ getAssetPath("node_modules/govuk-frontend/dist/govuk/assets/images/govuk-icon-180.png") }}">
@@ -22,15 +25,10 @@
 {% endblock %}
 
 {% block header %}
-  <div class="govuk-header">
-    <div class="govuk-header__container govuk-width-container">
-      <div class="govuk-header__logo">
-        <a href="https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs" class="govuk-header__homepage-link">
-          Department for Environment, Food and Rural Affairs
-        </a>
-      </div>
-    </div>
-  </div>
+  {{ govukGenericHeader({
+    url: "#",
+    logoText: "Department for Environment, Food and Rural Affairs"
+  }) }}
 
   {{ govukServiceNavigation({
     navigation: navigation
@@ -49,7 +47,19 @@
   {% endif %}
 {% endblock %}
 
-{% block content %}{% endblock %}
+{% block content %}
+  {% if errors | length > 0 %}
+    {% set errorList = [] %}
+    {% for fieldId, message in errors %}
+      {% set errorList = (errorList.push({ text: message, href: "#" + fieldId }), errorList) %}
+    {% endfor %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errorList
+    }) }}
+  {% endif %}
+  {% block pageContent %}{% endblock %}
+{% endblock %}
 
 {% block footer %}
 <div class="govuk-footer">

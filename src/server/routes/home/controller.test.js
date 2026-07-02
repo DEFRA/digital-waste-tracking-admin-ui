@@ -1,12 +1,10 @@
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
 
 describe('#homeController', () => {
   let server
-
-  const getElementText = (document, dataTestId) =>
-    document.querySelector(`[data-testid="${dataTestId}"]`).textContent.trim()
 
   beforeAll(async () => {
     server = await createServer()
