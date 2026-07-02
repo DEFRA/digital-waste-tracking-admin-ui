@@ -3,7 +3,9 @@ import { isValid, parseISO } from 'date-fns'
 /**
  * Creates an ISO Date from separate date/time parts.
  *
- * The function can handle month and day fields with both one and two digit values.
+ * Can handle month and day fields with both one and two digit values and
+ * returns undefined for an invalid date, which doesn't throw an error when
+ * formatting the date in the template.
  *
  * @param {String} day - The day
  * @param {String} month - The month
