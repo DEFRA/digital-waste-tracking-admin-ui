@@ -36,6 +36,7 @@
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
   "dependencies": {
+    "@date-fns/utc": "2.1.1",
     "@defra/cdp-auditing": "0.6.1",
     "@defra/cdp-metrics": "0.6.0",
     "@defra/hapi-secure-context": "0.4.0",
@@ -53,6 +54,7 @@
     "convict-format-with-validator": "6.2.0",
     "cssnano": "7.1.5",
     "cssnano-preset-default": "7.0.13",
+    "csv-stringify": "6.8.0",
     "date-fns": "4.1.0",
     "govuk-frontend": "6.3.0",
     "hapi-pino": "13.0.0",
