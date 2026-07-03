@@ -124,4 +124,39 @@ describe('#wasteOrganisationsReportingController', () => {
       `attachment; filename=${format(new Date(), 'yyMMddHHmmss')}-orgs-260624-260701.csv`
     )
   })
+
+  test('Should display error messages', async () => {
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/reporting/waste-organisations?date-from-Day=&date-from-Month=&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=&download=tsv'
+    })
+
+    const { document } = new JSDOM(result).window
+
+    const errorSummaryText = getElementText(document, 'error-summary')
+    const dateFromFieldText = getElementText(document, 'date-from')
+    const dateToFieldText = getElementText(document, 'date-to')
+
+    assertCommonPageElements(document, statusCode)
+
+    expect(errorSummaryText).toContain('There is a problem')
+    expect(errorSummaryText).toContain(
+      '"From date day" is not allowed to be empty'
+    )
+    expect(errorSummaryText).toContain(
+      '"From date month" is not allowed to be empty'
+    )
+    expect(errorSummaryText).toContain(
+      '"To date year" is not allowed to be empty'
+    )
+    expect(errorSummaryText).toContain('"Download" must be one of: csv')
+
+    expect(dateFromFieldText).toContain(
+      '"From date day" is not allowed to be empty'
+    )
+
+    expect(dateToFieldText).toContain(
+      '"To date year" is not allowed to be empty'
+    )
+  })
 })
