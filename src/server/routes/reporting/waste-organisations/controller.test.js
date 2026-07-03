@@ -2,6 +2,7 @@ import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
+import { format } from 'date-fns'
 
 function assertCommonPageElements(document, statusCode) {
   const pageTitle = getElementText(document, 'app-heading-title')
@@ -104,5 +105,23 @@ describe('#wasteOrganisationsReportingController', () => {
     expect(tableHeaders[2].textContent).toEqual('Active API Codes')
     expect(tableRows.length).toEqual(12) // 1 header row + 11 body rows
     expect(downloadCsvButtonText).toEqual('Download CSV')
+  })
+
+  test('Should download CSV file', async () => {
+    const { result, statusCode, headers } = await server.inject({
+      method: 'GET',
+      url: '/reporting/waste-organisations?date-from-Day=24&date-from-Month=06&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=2026&download=csv'
+    })
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(result).toEqual(
+      'Organisation ID,Registered,Active API Codes\n' +
+        '7680b304-b18c-4aa4-87a4-ea14cfa20d3d,"24 Jun 2026, 00:00",1\n'
+    )
+
+    expect(headers['content-type']).toEqual('text/csv; charset=utf-8')
+    expect(headers['content-disposition']).toEqual(
+      `attachment; filename=${format(new Date(), 'yyMMddHHmmss')}-orgs-260624-260701.csv`
+    )
   })
 })

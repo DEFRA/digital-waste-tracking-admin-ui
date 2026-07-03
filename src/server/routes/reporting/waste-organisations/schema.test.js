@@ -1,3 +1,4 @@
+import { downloadFormats } from '../../../common/constants/download-formats'
 import { wasteOrgansiationsReportingSchema } from './schema'
 
 describe('#wasteOrgansiationsReportingSchema', () => {
@@ -14,7 +15,15 @@ describe('#wasteOrgansiationsReportingSchema', () => {
     }
   })
 
-  test('Should pass when given valid data', () => {
+  test('Should pass when given valid search data', () => {
+    const { error } = wasteOrgansiationsReportingSchema.validate(data)
+
+    expect(error).toBeUndefined()
+  })
+
+  test('Should pass when given valid CSV download data', () => {
+    data.download = downloadFormats.csv
+
     const { error } = wasteOrgansiationsReportingSchema.validate(data)
 
     expect(error).toBeUndefined()
@@ -153,5 +162,14 @@ describe('#wasteOrgansiationsReportingSchema', () => {
 
     expect(error).toBeDefined()
     expect(error.message).toEqual('To date must be later than From date')
+  })
+
+  test('Should fail when download is not a valid value', () => {
+    data.download = 'tsv'
+
+    const { error } = wasteOrgansiationsReportingSchema.validate(data)
+
+    expect(error).toBeDefined()
+    expect(error.message).toEqual('"Download" must be one of: csv')
   })
 })
