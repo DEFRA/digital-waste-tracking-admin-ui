@@ -1,76 +1,52 @@
-import { parseISO } from 'date-fns'
+import { withTraceId } from '@defra/hapi-tracing'
+
+import { config } from '#/config/config.js'
+
+const getOrganisationsPath = '/organisations'
+
+/**
+ * Generates a Basic auth header for authenticating with internal backend
+ * services from the configured service credentials.
+ *
+ * @returns {String} The Basic auth header value
+ */
+function generateAuthHeader() {
+  const username = config.get('serviceAuth.username')
+  const password = config.get('serviceAuth.password')
+
+  return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+}
 
 /**
  * Gets Waste Organisations where the DefraID registration date is between a
- * from and to date.
+ * from and to date, from the Waste Organisation backend.
  *
- * Currently mock data is returned and this will eventually be replaced by an
- * API request to get actual data.
+ * @param {Date} dateFrom - The date from
+ * @param {Date} dateTo - The date to
  *
- * @param {ISOStringFormat} dateFrom - The date from
- * @param {ISOStringFormat} dateTo - The date to
- *
- * @returns {[{ organisationId: String, dateRegistered: String, activeApiCodeCount: Number }]} The Waste Organisations
+ * @returns {Promise<[{ organisationId: String, dateRegistered: String, activeApiCodeCount: Number }]>} The Waste Organisations
  */
-export function getWasteOrganisationsByDate(dateFrom, dateTo) {
-  return [
-    {
-      organisationId: '7680b304-b18c-4aa4-87a4-ea14cfa20d3d',
-      dateRegistered: '2026-06-24T00:00:00.000Z',
-      activeApiCodeCount: 1
-    },
-    {
-      organisationId: '5a22f8d7-bc9f-41d7-8746-88b11ca2ba72',
-      dateRegistered: '2026-06-23T00:00:00.000Z',
-      activeApiCodeCount: 2
-    },
-    {
-      organisationId: '9b6aa1e6-ad70-4ea9-a58f-6b9ac925d96b',
-      dateRegistered: '2026-06-22T00:00:00.000Z',
-      activeApiCodeCount: 3
-    },
-    {
-      organisationId: 'f5edcbe9-bf1e-4aaa-8e82-0c4531652b15',
-      dateRegistered: '2026-06-21T00:00:00.000Z',
-      activeApiCodeCount: 1
-    },
-    {
-      organisationId: '5bcf7db1-a41c-473a-ae0e-360504657ad9',
-      dateRegistered: '2026-06-20T00:00:00.000Z',
-      activeApiCodeCount: 4
-    },
-    {
-      organisationId: 'f813558f-d999-4259-b9c8-4dd0e82e56d0',
-      dateRegistered: '2026-06-19T00:00:00.000Z',
-      activeApiCodeCount: 3
-    },
-    {
-      organisationId: '60c32422-a5ec-4b62-a627-057eecfe0d37',
-      dateRegistered: '2026-06-18T00:00:00.000Z',
-      activeApiCodeCount: 1
-    },
-    {
-      organisationId: '3c3ae88f-475b-41dd-9d73-ca52ce6e812f',
-      dateRegistered: '2026-06-17T00:00:00.000Z',
-      activeApiCodeCount: 1
-    },
-    {
-      organisationId: 'c71a266d-6bbf-44c9-bda7-64e25398b582',
-      dateRegistered: '2026-06-16T00:00:00.000Z',
-      activeApiCodeCount: 2
-    },
-    {
-      organisationId: '2397f3d4-91a7-48d8-8932-1854a3e85185',
-      dateRegistered: '2026-06-15T00:00:00.000Z',
-      activeApiCodeCount: 4
-    },
-    {
-      organisationId: '342e76a6-8de1-46ea-85e4-e95328043249',
-      dateRegistered: '2026-06-14T00:00:00.000Z',
-      activeApiCodeCount: 5
-    }
-  ].filter(
-    ({ dateRegistered }) =>
-      parseISO(dateRegistered) >= dateFrom && parseISO(dateRegistered) <= dateTo
+export async function getWasteOrganisationsByDate(dateFrom, dateTo) {
+  const url = new URL(
+    getOrganisationsPath,
+    config.get('services.wasteOrganisation')
   )
+  url.searchParams.set('startDate', dateFrom.toISOString())
+  url.searchParams.set('endDate', dateTo.toISOString())
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: withTraceId(config.get('tracing.header'), {
+      'Content-Type': 'application/json',
+      Authorization: generateAuthHeader()
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to get waste organisations: ${response.status} ${response.statusText}`
+    )
+  }
+
+  return response.json()
 }

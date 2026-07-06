@@ -214,6 +214,28 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  services: {
+    wasteOrganisation: {
+      doc: 'Waste Organisation Service URL',
+      format: String,
+      default: 'https://waste-organisation-backend.dev.cdp-int.defra.cloud',
+      env: 'WASTE_ORGANISATION_SERVICE_URL'
+    }
+  },
+  serviceAuth: {
+    username: {
+      doc: 'Username for authenticating with internal backend services',
+      format: String,
+      default: 'digital-waste-tracking-admin-ui',
+      env: 'SERVICE_AUTH_USERNAME'
+    },
+    password: {
+      doc: 'Password for authenticating with internal backend services',
+      format: String,
+      default: '',
+      env: 'SERVICE_AUTH_PASSWORD'
+    }
   }
 })
 

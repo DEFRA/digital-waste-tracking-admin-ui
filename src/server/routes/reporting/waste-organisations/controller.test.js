@@ -29,15 +29,30 @@ function assertCommonPageElements(document, statusCode) {
   expect(dateToYear).toBeDefined()
 }
 
+const wasteOrganisations = Array.from({ length: 11 }, (_, index) => ({
+  organisationId: `org-${index}`,
+  dateRegistered: '2026-06-24T00:00:00.000Z',
+  activeApiCodeCount: 1
+}))
+
 describe('#wasteOrganisationsReportingController', () => {
   let server
 
   beforeAll(async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(wasteOrganisations)
+      })
+    )
+
     server = await createServer()
     await server.initialize()
   })
 
   afterAll(async () => {
+    vi.unstubAllGlobals()
     await server.stop({ timeout: 0 })
   })
 

@@ -4,7 +4,7 @@ import { getWasteOrganisationsByDate } from '../../../common/helpers/get-waste-o
 import { createIsoDate } from '../../../common/helpers/create-iso-date.js'
 
 export const wasteOrganisationsReportingController = {
-  handler(request, h) {
+  async handler(request, h) {
     let errors
     let dateFrom
     let dateTo
@@ -26,7 +26,10 @@ export const wasteOrganisationsReportingController = {
     if (!errors) {
       dateFrom = createIsoDate(dateFromDay, dateFromMonth, dateFromYear)
       dateTo = createIsoDate(dateToDay, dateToMonth, dateToYear)
-      wasteOrganisations = getWasteOrganisationsByDate(dateFrom, dateTo)
+
+      if (dateFrom && dateTo) {
+        wasteOrganisations = await getWasteOrganisationsByDate(dateFrom, dateTo)
+      }
     }
 
     return h.view('reporting/waste-organisations/index', {
