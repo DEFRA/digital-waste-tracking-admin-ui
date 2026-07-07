@@ -115,7 +115,7 @@ describe('#wasteOrganisationsReportingController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toEqual(
-      'Organisation ID,Registered,Active API Codes\n' +
+      '\ufeffOrganisation ID,Registered,Active API Codes\n' +
         '7680b304-b18c-4aa4-87a4-ea14cfa20d3d,"24 Jun 2026, 00:00",1\n'
     )
 

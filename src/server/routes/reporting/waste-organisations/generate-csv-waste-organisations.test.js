@@ -18,7 +18,7 @@ describe('#generateCsvWasteOrganisations', () => {
     const result = generateCsvWasteOrganisations(wasteOrganisations)
 
     expect(result).toEqual(
-      'Organisation ID,Registered,Active API Codes\n' +
+      '\ufeffOrganisation ID,Registered,Active API Codes\n' +
         '7680b304-b18c-4aa4-87a4-ea14cfa20d3d,"24 Jun 2026, 14:00",1\n' +
         '5a22f8d7-bc9f-41d7-8746-88b11ca2ba72,"23 Jun 2026, 00:00",2\n'
     )
@@ -36,7 +36,7 @@ describe('#generateCsvWasteOrganisations', () => {
     const result = generateCsvWasteOrganisations(wasteOrganisations)
 
     expect(result).toEqual(
-      'Organisation ID,Registered,Active API Codes\n' +
+      '\ufeffOrganisation ID,Registered,Active API Codes\n' +
         '\'=sum(2+3),"24 Jun 2026, 14:00",1\n'
     )
   })

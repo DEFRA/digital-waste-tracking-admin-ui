@@ -23,7 +23,7 @@ export function generateCsvWasteOrganisations(wasteOrganisations) {
     }
   )
   const csv = generateCsv(formattedWasteOrganisations, {
-    encoding: 'utf8',
+    bom: true,
     escape_formulas: true,
     header: true,
     columns: [
