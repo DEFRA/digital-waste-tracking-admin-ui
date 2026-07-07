@@ -46,6 +46,21 @@ export const config = convict({
     format: String,
     default: 'digital-waste-tracking-admin-ui'
   },
+  cdpEnvironment: {
+    doc: 'The CDP environment the app is running in. With the addition of "local" for local development',
+    format: [
+      'local',
+      'infra-dev',
+      'management',
+      'dev',
+      'test',
+      'perf-test',
+      'ext-test',
+      'prod'
+    ],
+    default: 'local',
+    env: 'ENVIRONMENT'
+  },
   root: {
     doc: 'Project root',
     format: String,
@@ -238,5 +253,13 @@ export const config = convict({
     }
   }
 })
+
+const overrideConfig = {
+  services: {
+    wasteOrganisation: `https://waste-organisation-backend.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
+  }
+}
+
+config.load(overrideConfig)
 
 config.validate({ allowed: 'strict' })
