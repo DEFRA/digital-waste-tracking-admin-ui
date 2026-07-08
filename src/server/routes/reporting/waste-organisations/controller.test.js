@@ -30,15 +30,30 @@ function assertCommonPageElements(document, statusCode) {
   expect(dateToYear).toBeDefined()
 }
 
+const wasteOrganisations = Array.from({ length: 11 }, (_, index) => ({
+  organisationId: `org-${index}`,
+  dateRegistered: '2026-06-24T00:00:00.000Z',
+  activeApiCodeCount: 1
+}))
+
 describe('#wasteOrganisationsReportingController', () => {
   let server
 
   beforeAll(async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(wasteOrganisations)
+      })
+    )
+
     server = await createServer()
     await server.initialize()
   })
 
   afterAll(async () => {
+    vi.unstubAllGlobals()
     await server.stop({ timeout: 0 })
   })
 
@@ -116,7 +131,11 @@ describe('#wasteOrganisationsReportingController', () => {
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toEqual(
       '\ufeffOrganisation ID,Registered,Active API Codes\n' +
-        '7680b304-b18c-4aa4-87a4-ea14cfa20d3d,"24 Jun 2026, 00:00",1\n'
+        wasteOrganisations
+          .map(
+            ({ organisationId }) => `${organisationId},"24 Jun 2026, 00:00",1\n`
+          )
+          .join('')
     )
 
     expect(headers['content-type']).toEqual('text/csv; charset=utf-8')

@@ -46,6 +46,21 @@ export const config = convict({
     format: String,
     default: 'digital-waste-tracking-admin-ui'
   },
+  cdpEnvironment: {
+    doc: 'The CDP environment the app is running in. With the addition of "local" for local development',
+    format: [
+      'local',
+      'infra-dev',
+      'management',
+      'dev',
+      'test',
+      'perf-test',
+      'ext-test',
+      'prod'
+    ],
+    default: 'local',
+    env: 'ENVIRONMENT'
+  },
   root: {
     doc: 'Project root',
     format: String,
@@ -214,7 +229,37 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  services: {
+    wasteOrganisation: {
+      doc: 'Waste Organisation Service URL',
+      format: String,
+      default: 'https://waste-organisation-backend.dev.cdp-int.defra.cloud',
+      env: 'WASTE_ORGANISATION_SERVICE_URL'
+    }
+  },
+  serviceAuth: {
+    username: {
+      doc: 'Username for authenticating with internal backend services',
+      format: String,
+      default: 'digital-waste-tracking-admin-ui',
+      env: 'SERVICE_AUTH_USERNAME'
+    },
+    password: {
+      doc: 'Password for authenticating with internal backend services',
+      format: String,
+      default: '',
+      env: 'SERVICE_AUTH_PASSWORD'
+    }
   }
 })
+
+const overrideConfig = {
+  services: {
+    wasteOrganisation: `https://waste-organisation-backend.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
+  }
+}
+
+config.load(overrideConfig)
 
 config.validate({ allowed: 'strict' })

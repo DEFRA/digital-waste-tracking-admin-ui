@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { generateCsvWasteOrganisations } from './generate-csv-waste-organisations.js'
 
 export const wasteOrganisationsReportingController = {
-  handler(request, h) {
+  async handler(request, h) {
     let errors
     let dateFrom
     let dateTo
@@ -31,18 +31,21 @@ export const wasteOrganisationsReportingController = {
     if (!errors) {
       dateFrom = createIsoDate(dateFromDay, dateFromMonth, dateFromYear)
       dateTo = createIsoDate(dateToDay, dateToMonth, dateToYear)
-      wasteOrganisations = getWasteOrganisationsByDate(dateFrom, dateTo)
 
-      if (download === downloadFormats.csv) {
-        const csv = generateCsvWasteOrganisations(wasteOrganisations)
+      if (dateFrom && dateTo) {
+        wasteOrganisations = await getWasteOrganisationsByDate(dateFrom, dateTo)
 
-        return h
-          .response(csv)
-          .header('Content-Type', 'text/csv')
-          .header(
-            'Content-Disposition',
-            `attachment; filename=${format(new Date(), 'yyMMddHHmmss')}-orgs-${format(dateFrom, 'yyMMdd')}-${format(dateTo, 'yyMMdd')}.csv`
-          )
+        if (download === downloadFormats.csv) {
+          const csv = generateCsvWasteOrganisations(wasteOrganisations)
+
+          return h
+            .response(csv)
+            .header('Content-Type', 'text/csv')
+            .header(
+              'Content-Disposition',
+              `attachment; filename=${format(new Date(), 'yyMMddHHmmss')}-orgs-${format(dateFrom, 'yyMMdd')}-${format(dateTo, 'yyMMdd')}.csv`
+            )
+        }
       }
     }
 
