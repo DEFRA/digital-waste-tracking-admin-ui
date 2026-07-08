@@ -55,7 +55,10 @@
     {% endfor %}
     {{ govukErrorSummary({
       titleText: "There is a problem",
-      errorList: errorList
+      errorList: errorList,
+      attributes: {
+        'data-testid': 'error-summary'
+      }
     }) }}
   {% endif %}
   {% block pageContent %}{% endblock %}
