@@ -39,7 +39,7 @@ export const wasteOrgansiationsReportingSchema = Joi.object({
     }
 
     if (isAfter(dateFrom, dateTo)) {
-      return helpers.message('To date must be later than From date', {
+      return helpers.message('To date cannot be before the From date', {
         local: { fieldName: 'date-to' }
       })
     }

@@ -161,7 +161,7 @@ describe('#wasteOrgansiationsReportingSchema', () => {
     const { error } = wasteOrgansiationsReportingSchema.validate(data)
 
     expect(error).toBeDefined()
-    expect(error.message).toEqual('To date must be later than From date')
+    expect(error.message).toEqual('To date cannot be before the From date')
   })
 
   test('Should fail when download is not a valid value', () => {
