@@ -29,11 +29,19 @@ export function catchAll(request, h) {
     request.logger.error(response?.stack)
   }
 
-  return h
+  const catchAllResponse = h
     .view('error/index', {
       pageTitle: errorMessage,
       heading: statusCode,
       message: errorMessage
     })
     .code(statusCode)
+
+  if (response.output.headers) {
+    Object.entries(response.output.headers).forEach(([key, value]) =>
+      catchAllResponse.header(key, value)
+    )
+  }
+
+  return catchAllResponse
 }
