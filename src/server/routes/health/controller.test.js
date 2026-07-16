@@ -13,7 +13,7 @@ describe('#healthController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should provide expected response', async () => {
+  test('Should provide successful response when not given a basic auth credential', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
       url: '/health'
