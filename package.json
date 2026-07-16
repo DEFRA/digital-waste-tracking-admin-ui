@@ -64,7 +64,8 @@
     "jsdom": "29.1.1",
     "lodash": "4.18.1",
     "nunjucks": "3.2.4",
-    "pino": "10.1.0"
+    "pino": "10.1.0",
+    "waste-movement-utils": "github:DEFRA/waste-movement-utils#88443a00c30297ca901f5b07e6f79a9aa275ac2c"
   },
   "devDependencies": {
     "@babel/preset-env": "7.29.2",
