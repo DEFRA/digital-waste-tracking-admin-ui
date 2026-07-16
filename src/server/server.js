@@ -14,6 +14,7 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
+import { basicAuth, getEnvVars } from 'waste-movement-utils'
 
 export async function createServer() {
   const server = hapi.server({
@@ -62,8 +63,11 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
+    basicAuth(getEnvVars('USER_BASIC_AUTH_')),
     router // Register all the controllers/routes defined in src/server/router.js
   ])
+
+  server.auth.default('basic')
 
   server.ext('onPreResponse', catchAll)
 
