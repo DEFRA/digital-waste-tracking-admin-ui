@@ -28,6 +28,17 @@ export const router = {
             appType: 'custom'
           })
 
+          server.ext('onPreAuth', (request, h) => {
+            // Exclude assets from 'basic' auth strategy (the default)
+            if (request.path.startsWith('/public/')) {
+              request.route.settings.auth = {
+                mode: 'try',
+                strategies: []
+              }
+            }
+            return h.continue
+          })
+
           await server.register({
             plugin: (await import('@defra/hapi-connect')).default,
             options: {

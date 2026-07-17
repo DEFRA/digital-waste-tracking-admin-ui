@@ -3,6 +3,10 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
 import { format } from 'date-fns'
+import {
+  requestBasicAuthTest1,
+  userBasicAuthTest1
+} from '../../../../../test-helpers/constants.js'
 
 function assertCommonPageElements(document, statusCode) {
   const pageTitle = getElementText(document, 'app-heading-title')
@@ -48,6 +52,8 @@ describe('#wasteOrganisationsReportingController', () => {
       })
     )
 
+    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
+
     server = await createServer()
     await server.initialize()
   })
@@ -57,10 +63,11 @@ describe('#wasteOrganisationsReportingController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should provide expected response when landing on the page', async () => {
+  test('Should provide successful response when landing on the page and given a basic auth credential', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/reporting/waste-organisations'
+      url: '/reporting/waste-organisations',
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
 
     const { document } = new JSDOM(result).window
@@ -83,10 +90,11 @@ describe('#wasteOrganisationsReportingController', () => {
     expect(downloadCsvButtonText).toBeUndefined()
   })
 
-  test('Should provide expected response when searching', async () => {
+  test('Should provide successful response when searching and given a basic auth credential', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/reporting/waste-organisations?date-from-Day=01&date-from-Month=06&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=2026'
+      url: '/reporting/waste-organisations?date-from-Day=01&date-from-Month=06&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=2026',
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
 
     const { document } = new JSDOM(result).window
@@ -122,10 +130,11 @@ describe('#wasteOrganisationsReportingController', () => {
     expect(downloadCsvButtonText).toEqual('Download CSV')
   })
 
-  test('Should download CSV file', async () => {
+  test('Should download CSV file when given a basic auth credential', async () => {
     const { result, statusCode, headers } = await server.inject({
       method: 'GET',
-      url: '/reporting/waste-organisations?date-from-Day=24&date-from-Month=06&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=2026&download=csv'
+      url: '/reporting/waste-organisations?date-from-Day=24&date-from-Month=06&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=2026&download=csv',
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
 
     expect(statusCode).toBe(statusCodes.ok)
@@ -147,7 +156,8 @@ describe('#wasteOrganisationsReportingController', () => {
   test('Should display error messages', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/reporting/waste-organisations?date-from-Day=&date-from-Month=&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=&download=tsv'
+      url: '/reporting/waste-organisations?date-from-Day=&date-from-Month=&date-from-Year=2026&date-to-Day=01&date-to-Month=07&date-to-Year=&download=tsv',
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
 
     const { document } = new JSDOM(result).window
@@ -177,5 +187,14 @@ describe('#wasteOrganisationsReportingController', () => {
     expect(dateToFieldText).toContain(
       '"To date year" is not allowed to be empty'
     )
+  })
+
+  test('Should provide failed response when not given a basic auth credential', async () => {
+    const { statusCode } = await server.inject({
+      method: 'GET',
+      url: '/reporting/waste-organisations'
+    })
+
+    expect(statusCode).toBe(statusCodes.unauthorized)
   })
 })
