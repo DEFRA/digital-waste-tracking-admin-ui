@@ -15,6 +15,9 @@ import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
 import { basicAuth, getEnvVars } from 'waste-movement-utils'
+import { createLogger } from './common/helpers/logging/logger.js'
+
+const logger = createLogger()
 
 export async function createServer() {
   const server = hapi.server({
@@ -63,7 +66,7 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
-    basicAuth(getEnvVars('USER_BASIC_AUTH_')),
+    basicAuth(getEnvVars('USER_BASIC_AUTH_'), logger),
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
