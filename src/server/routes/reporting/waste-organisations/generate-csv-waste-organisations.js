@@ -22,16 +22,16 @@ export function generateCsvWasteOrganisations(wasteOrganisations) {
       }
     }
   )
-  const csv = generateCsv(formattedWasteOrganisations, {
+
+
+  return generateCsv(formattedWasteOrganisations, {
     bom: true,
     escape_formulas: true,
     header: true,
     columns: [
       { key: 'organisationId', header: 'Organisation ID' },
-      { key: 'dateRegistered', header: 'Registered' },
+      { key: 'dateRegistered', header: 'Registered (UTC)' },
       { key: 'activeApiCodeCount', header: 'Active API Codes' }
     ]
   })
-
-  return csv
 }
