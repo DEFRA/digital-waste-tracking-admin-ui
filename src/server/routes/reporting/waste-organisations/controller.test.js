@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import {
   requestBasicAuthTest1,
   userBasicAuthTest1
-} from '../../../../../test-helpers/constants.js'
+} from '#/test-helpers/constants.js'
 
 function assertCommonPageElements(document, statusCode) {
   const pageTitle = getElementText(document, 'app-heading-title')
@@ -139,7 +139,7 @@ describe('#wasteOrganisationsReportingController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toEqual(
-      '\ufeffOrganisation ID,Registered,Active API Codes\n' +
+      '\ufeffOrganisation ID,Registered (UTC),Active API Codes\n' +
         wasteOrganisations
           .map(
             ({ organisationId }) => `${organisationId},"24 Jun 2026, 00:00",1\n`
