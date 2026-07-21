@@ -23,7 +23,6 @@ export function generateCsvWasteOrganisations(wasteOrganisations) {
     }
   )
 
-
   return generateCsv(formattedWasteOrganisations, {
     bom: true,
     escape_formulas: true,
