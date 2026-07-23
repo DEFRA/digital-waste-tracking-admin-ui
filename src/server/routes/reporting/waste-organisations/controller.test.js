@@ -195,6 +195,6 @@ describe('#wasteOrganisationsReportingController', () => {
       url: '/reporting/waste-organisations'
     })
 
-    expect(statusCode).toBe(statusCodes.unauthorized)
+    expect(statusCode).toBe(statusCodes.found)
   })
 })

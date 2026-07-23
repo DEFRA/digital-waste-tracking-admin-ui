@@ -6,6 +6,7 @@ import { serveStaticFiles } from './serve-static-files.js'
 import { config } from '#/config/config.js'
 import { reporting } from '../routes/reporting/index.js'
 import { wasteOrganisationsReporting } from '../routes/reporting/waste-organisations/index.js'
+import { login } from '#/server/routes/login/index.js'
 
 export const router = {
   plugin: {
@@ -17,7 +18,12 @@ export const router = {
       await server.register([health])
 
       // Application specific routes, add your own routes here
-      await server.register([home, reporting, wasteOrganisationsReporting])
+      await server.register([
+        home,
+        reporting,
+        wasteOrganisationsReporting,
+        login
+      ])
 
       // Static assets
       if (!config.get('isProduction') && !config.get('isTest')) {

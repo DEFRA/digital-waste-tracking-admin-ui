@@ -59,6 +59,6 @@ describe('#homeController', () => {
       url: '/'
     })
 
-    expect(statusCode).toBe(statusCodes.unauthorized)
+    expect(statusCode).toBe(statusCodes.found)
   })
 })
