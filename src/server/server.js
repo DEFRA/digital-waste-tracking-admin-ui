@@ -98,7 +98,6 @@ export async function createServer() {
     const response = request.response
 
     if (response.isBoom && response.output.statusCode === 401) {
-      delete response.output.headers['WWW-Authenticate']
       return h.redirect(`/login?redirectTo=${encodeURIComponent(request.path)}`)
     }
 

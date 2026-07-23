@@ -1,5 +1,4 @@
 import { loginSubmitController, loginViewController } from './controller.js'
-import { loginPayloadSchema } from '#/server/routes/login/schema.js'
 
 /**
  * Sets up the routes used in the login page.
@@ -20,13 +19,9 @@ export const login = {
           method: 'POST',
           path: '/login',
           options: {
-            auth: false,
-            validate: {
-              payload: loginPayloadSchema,
-              failAction: loginSubmitController.failAction
-            }
+            auth: false
           },
-          handler: loginSubmitController.handler
+          ...loginSubmitController
         }
       ])
     }

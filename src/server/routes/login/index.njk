@@ -2,10 +2,8 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
-{% block content %}
+{% block pageContent %}
   {{ appHeading({
     text: heading
   }) }}
@@ -13,16 +11,9 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-body" data-testid="app-page-body">
-        {% if errors %}
-                {{ govukErrorSummary({
-                  titleText: "There is a problem",
-                  errorList: errorList,
-                  attributes: { "data-testid": "error-summary" }
-                }) }}
-              {% endif %}
-
         <form method="post" action="/login" novalidate>
                 <input type="hidden" name="redirectTo" value="{{ redirectTo }}" />
+
                 {{ govukInput({
                   label: {
                     text: "Username"

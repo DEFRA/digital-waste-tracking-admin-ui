@@ -131,8 +131,7 @@ describe('loginSubmitController.handler', () => {
       errors: {
         username: USERNAME_PASSWORD_ERROR_MESSAGE,
         password: USERNAME_PASSWORD_ERROR_MESSAGE
-      },
-      errorList: [{ text: USERNAME_PASSWORD_ERROR_MESSAGE, href: '#username' }]
+      }
     })
     expect(h.viewResult.code).toHaveBeenCalledWith(401)
   })
@@ -156,61 +155,5 @@ describe('loginSubmitController.handler', () => {
 
     const [, context] = h.view.mock.calls[0]
     expect(context.errors.username).toBe(context.errors.password)
-  })
-})
-
-describe('loginSubmitController.failAction', () => {
-  it('builds a field error map and an error summary list from Joi error details', () => {
-    const h = createToolkit()
-    const request = { payload: { redirectTo: '/movements/123' } }
-    const error = {
-      details: [
-        { path: ['username'], message: 'Enter a username' },
-        { path: ['password'], message: 'Enter a password' }
-      ]
-    }
-
-    loginSubmitController.failAction(request, h, error)
-
-    expect(h.view).toHaveBeenCalledWith('login/index', {
-      ...LOGIN_VIEW_CONTEXT,
-      redirectTo: '/movements/123',
-      errors: {
-        username: 'Enter a username',
-        password: 'Enter a password'
-      },
-      errorList: [
-        { text: 'Enter a username', href: '#username' },
-        { text: 'Enter a password', href: '#password' }
-      ]
-    })
-  })
-
-  it('takes over the response and returns a 400', () => {
-    const h = createToolkit()
-    const request = { payload: {} }
-    const error = {
-      details: [{ path: ['username'], message: 'Enter a username' }]
-    }
-
-    loginSubmitController.failAction(request, h, error)
-
-    expect(h.viewResult.takeover).toHaveBeenCalled()
-    expect(h.viewResult.code).toHaveBeenCalledWith(400)
-  })
-
-  it('defaults redirectTo to / when payload is missing or has no redirectTo', () => {
-    const h = createToolkit()
-    const request = { payload: undefined }
-    const error = {
-      details: [{ path: ['username'], message: 'Enter a username' }]
-    }
-
-    loginSubmitController.failAction(request, h, error)
-
-    expect(h.view).toHaveBeenCalledWith(
-      'login/index',
-      expect.objectContaining({ redirectTo: '/' })
-    )
   })
 })
