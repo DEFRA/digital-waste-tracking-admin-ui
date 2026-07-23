@@ -35,6 +35,6 @@ describe('#reportingController', () => {
       url: '/reporting'
     })
 
-    expect(statusCode).toBe(statusCodes.unauthorized)
+    expect(statusCode).toBe(statusCodes.found)
   })
 })

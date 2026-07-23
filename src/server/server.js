@@ -53,6 +53,17 @@ export async function createServer() {
       strictHeader: false
     }
   })
+
+  // Defines how the dwtAuth cookie is encoded/secured.
+  server.state('dwtAuth', {
+    isSecure: true,
+    isHttpOnly: true,
+    encoding: 'iron',
+    password: config.get('session.cookie.password'),
+    clearInvalid: true,
+    strictHeader: false
+  })
+
   await server.register([
     requestLogger,
     requestTracing,
@@ -66,6 +77,30 @@ export async function createServer() {
     basicAuth(getEnvVars('USER_BASIC_AUTH_')),
     router // Register all the controllers/routes defined in src/server/router.js
   ])
+
+  // use cookie if there is one.
+  server.ext('onPreAuth', (request, h) => {
+    if (!request.headers.authorization) {
+      const stored = request.state?.dwtAuth
+      if (stored?.authorization) {
+        request.headers.authorization = stored.authorization
+      }
+    }
+    return h.continue
+  })
+
+  // Strip WWW-Authenticate (trigger for popup) so the browser never shows its native popup,
+  // and send to our own login form instead.
+  server.ext('onPreResponse', (request, h) => {
+    const response = request.response
+
+    if (response.isBoom && response.output.statusCode === 401) {
+      delete response.output.headers['WWW-Authenticate']
+      return h.redirect(`/login?redirectTo=${encodeURIComponent(request.path)}`)
+    }
+
+    return h.continue
+  })
 
   server.auth.default('basic')
 

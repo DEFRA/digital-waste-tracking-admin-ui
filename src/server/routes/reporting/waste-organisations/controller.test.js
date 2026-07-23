@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import {
   requestBasicAuthTest1,
   userBasicAuthTest1
-} from '../../../../../test-helpers/constants.js'
+} from '#/test-helpers/constants.js'
 
 function assertCommonPageElements(document, statusCode) {
   const pageTitle = getElementText(document, 'app-heading-title')
@@ -195,6 +195,6 @@ describe('#wasteOrganisationsReportingController', () => {
       url: '/reporting/waste-organisations'
     })
 
-    expect(statusCode).toBe(statusCodes.unauthorized)
+    expect(statusCode).toBe(statusCodes.found)
   })
 })
