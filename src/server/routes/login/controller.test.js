@@ -129,8 +129,7 @@ describe('loginSubmitController.handler', () => {
       ...LOGIN_VIEW_CONTEXT,
       redirectTo: '/movements/123',
       errors: {
-        username: USERNAME_PASSWORD_ERROR_MESSAGE,
-        password: USERNAME_PASSWORD_ERROR_MESSAGE
+        login: USERNAME_PASSWORD_ERROR_MESSAGE
       }
     })
     expect(h.viewResult.code).toHaveBeenCalledWith(401)

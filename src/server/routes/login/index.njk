@@ -2,6 +2,7 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/password-input/macro.njk" import govukPasswordInput %}
 
 {% block pageContent %}
   {{ appHeading({
@@ -23,10 +24,10 @@
                   type: "text",
                   autocomplete: "username",
                   spellcheck: false,
-                  errorMessage: errors.username and { text: errors.username } or undefined
+                  errorMessage: errors.login and { text: errors.login } or undefined
                 }) }}
 
-                {{ govukInput({
+                {{ govukPasswordInput({
                   label: {
                     text: "Password"
                   },
@@ -35,7 +36,7 @@
                   type: "password",
                   autocomplete: "current-password",
                   spellcheck: false,
-                  errorMessage: errors.password and { text: errors.password } or undefined
+                  errorMessage: errors.login and { text: errors.login } or undefined
                 }) }}
 
                 {{ govukButton({
