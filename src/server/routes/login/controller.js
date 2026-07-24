@@ -1,8 +1,6 @@
 import { validateData } from '#/server/common/helpers/validate-data.js'
 import { loginPayloadSchema } from '#/server/routes/login/schema.js'
 
-const USERNAME_PASSWORD_ERROR_MESSAGE = 'Enter a correct username and password'
-
 const LOGIN_VIEW_CONTEXT = {
   pageTitle: 'User Login',
   heading: 'User Login',
@@ -41,8 +39,7 @@ export const loginSubmitController = {
           .redirect(redirectTo || '/')
       } catch (err) {
         errors = {
-          username: USERNAME_PASSWORD_ERROR_MESSAGE,
-          password: USERNAME_PASSWORD_ERROR_MESSAGE
+          login: 'Enter a correct username and password'
         }
       }
     }
