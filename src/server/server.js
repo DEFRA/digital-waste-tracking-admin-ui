@@ -9,6 +9,7 @@ import { catchAll } from './common/helpers/errors.js'
 import { nunjucksConfig } from '#/config/nunjucks/nunjucks.js'
 import { requestTracing } from './plugins/request-tracing.js'
 import { requestLogger } from './plugins/request-logger.js'
+import { requestContext } from './plugins/request-context.js'
 import { sessionCache } from './plugins/session-cache.js'
 import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
@@ -78,6 +79,7 @@ export async function createServer() {
     Scooter,
     contentSecurityPolicy,
     basicAuth(getEnvVars('USER_BASIC_AUTH_'), logger),
+    requestContext,
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
