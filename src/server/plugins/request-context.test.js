@@ -1,5 +1,6 @@
 import { createServer } from '#/server/server.js'
 import { pageNames } from '#/server/common/constants/page-names.js'
+import { metricNames } from '#/server/common/constants/metric-names.js'
 import {
   requestBasicAuthTest1,
   userBasicAuthTest1
@@ -8,6 +9,7 @@ import {
 describe('#requestContext', () => {
   let server
   let bindings
+  let counter
 
   const inject = (url, headers = {}) =>
     server.inject({ method: 'GET', url, headers })
@@ -27,6 +29,10 @@ describe('#requestContext', () => {
       bindings = request.logger.bindings?.()
       return h.continue
     })
+
+    // `request.metrics` and `server.metrics` are decorated with the same
+    // instance, so this intercepts the counter the plugin calls
+    counter = vi.spyOn(server.metrics, 'counter').mockResolvedValue()
 
     await server.initialize()
   })
@@ -87,11 +93,33 @@ describe('#requestContext', () => {
     )
   })
 
-  test('Should not add a page name for an untracked path', async () => {
+  test('Should record a page view against the Basic Auth user', async () => {
+    await inject('/', authHeaders)
+
+    expect(counter).toHaveBeenCalledWith(metricNames.pageViews, 1, {
+      page: pageNames.home,
+      user: 'test1'
+    })
+  })
+
+  test('Should record a page view when the CSV is downloaded', async () => {
+    await inject(
+      '/reporting/waste-organisations?date-from-Day=09&date-from-Month=06&date-from-Year=2026&date-to-Day=10&date-to-Month=06&date-to-Year=2026&download=csv',
+      authHeaders
+    )
+
+    expect(counter).toHaveBeenCalledWith(metricNames.pageViews, 1, {
+      page: pageNames.wasteOrganisationsDownloadCsv,
+      user: 'test1'
+    })
+  })
+
+  test('Should not add a page name or record a page view for an untracked path', async () => {
     await inject('/login')
 
     expect(bindings.page).toBeUndefined()
     expect(bindings.user).toBeUndefined()
+    expect(counter).not.toHaveBeenCalled()
   })
 
   test('Should not error for a path excluded from logging', async () => {
