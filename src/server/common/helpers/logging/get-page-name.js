@@ -15,6 +15,10 @@ export function getPageName(request) {
     return pageNames.home
   }
 
+  if (request.path === '/software-providers') {
+    return pageNames.softwareProviders
+  }
+
   if (request.path !== wasteOrganisationsPath) {
     return undefined
   }

@@ -1,0 +1,52 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - DWT admin portal
+{% endblock %}
+
+{% block pageContent %}
+  {% set hasCredentials = clientCredentials | length > 0 %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l" data-testid="app-heading-title">Software providers</h1>
+      {# The design's spacing to the "Client credentials" heading: 50px to the table's caption, or 40px plus the H2's own padding #}
+      <p class="govuk-body {{ 'govuk-!-margin-bottom-8' if hasCredentials else 'govuk-!-margin-bottom-7' }}" data-testid="app-page-body">
+        Manage the client credentials that software providers use to connect to the Digital Waste Tracking service.
+      </p>
+      {% if not hasCredentials %}
+        <h2 class="govuk-heading-m" data-testid="client-credentials-empty-heading">Client credentials</h2>
+        <p class="govuk-body" data-testid="client-credentials-empty">New client credentials will be shown here.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if hasCredentials %}
+    {% set rows = [] %}
+    {% for credential in clientCredentials %}
+      {% set rows = (rows.push([
+        { text: credential.clientName },
+        { text: credential.clientId },
+        { text: credential.environment }
+      ]), rows) %}
+    {% endfor %}
+
+    {{ govukTable({
+      caption: "Client credentials",
+      captionClasses: "govuk-table__caption--m",
+      attributes: {
+        'data-module': 'moj-sortable-table',
+        'data-testid': 'client-credentials'
+      },
+      head: [
+        { text: "Client name", attributes: { 'aria-sort': 'ascending' } },
+        { text: "Client ID", attributes: { 'aria-sort': 'none' } },
+        { text: "Environment", attributes: { 'aria-sort': 'none' } }
+      ],
+      rows: rows
+    }) }}
+  {% endif %}
+
+{% endblock %}
