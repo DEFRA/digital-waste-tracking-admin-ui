@@ -1,0 +1,11 @@
+@use "govuk-frontend" as *;
+
+// A wrapper that lets a wide data table scroll sideways on its own, so the page
+// doesn't scroll at small widths or high zoom (WCAG 1.4.10)
+.app-table-scroll {
+  overflow-x: auto;
+
+  &:focus {
+    outline: $govuk-focus-width solid govuk-functional-colour(focus);
+  }
+}

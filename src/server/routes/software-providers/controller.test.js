@@ -118,6 +118,21 @@ describe('#softwareProvidersController', () => {
     ])
   })
 
+  test('Should put the table in a focusable, named region that scrolls on its own', async () => {
+    const { document } = await getPage(server)
+    const region = document.querySelector(
+      '[data-testid="client-credentials-region"]'
+    )
+
+    expect(region.getAttribute('role')).toEqual('region')
+    expect(region.getAttribute('aria-label')).toEqual('Client credentials')
+    expect(region.getAttribute('tabindex')).toEqual('0')
+    expect(region.classList).toContain('app-table-scroll')
+    expect(
+      region.querySelector('[data-testid="client-credentials"]')
+    ).not.toBeNull()
+  })
+
   test('Should sort by client name ignoring case, then by client ID, with a missing name first', async () => {
     fetchMock.mockResolvedValue({
       ok: true,

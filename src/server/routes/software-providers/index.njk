@@ -33,6 +33,8 @@
       ]), rows) %}
     {% endfor %}
 
+    {# Lets the table scroll on its own when it's wider than the screen, rather than the page. Focusable and named so keyboard users can scroll it too #}
+    <div class="app-table-scroll" role="region" aria-label="Client credentials" tabindex="0" data-testid="client-credentials-region">
     {{ govukTable({
       caption: "Client credentials",
       captionClasses: "govuk-table__caption--m",
@@ -47,6 +49,7 @@
       ],
       rows: rows
     }) }}
+    </div>
   {% endif %}
 
 {% endblock %}
