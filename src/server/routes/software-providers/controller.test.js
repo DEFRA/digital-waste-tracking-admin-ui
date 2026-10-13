@@ -118,6 +118,34 @@ describe('#softwareProvidersController', () => {
     ])
   })
 
+  test('Should sort by client name ignoring case, then by client ID, with a missing name first', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: statusCodes.ok,
+      json: () =>
+        Promise.resolve([
+          { clientName: 'bravo', clientId: 'id-5' },
+          { clientName: 'Alpha', clientId: 'id-4' },
+          { clientName: '_x', clientId: 'id-3' },
+          { clientName: 'Charlie', clientId: 'id-2' },
+          { clientName: 'charlie', clientId: 'id-1' },
+          { clientId: 'id-6' }
+        ])
+    })
+
+    const { statusCode, document } = await getPage(server)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(tableRows(document).map(([name, id]) => `${name}|${id}`)).toEqual([
+      '|id-6',
+      '_x|id-3',
+      'Alpha|id-4',
+      'bravo|id-5',
+      'charlie|id-1',
+      'Charlie|id-2'
+    ])
+  })
+
   test('Should show Production as the environment in prod', async () => {
     const originalEnvironment = config.get('cdpEnvironment')
     config.set('cdpEnvironment', 'prod')

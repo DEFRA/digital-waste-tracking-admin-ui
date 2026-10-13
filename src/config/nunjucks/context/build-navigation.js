@@ -1,3 +1,5 @@
+import { paths } from '#/server/common/constants/paths.js'
+
 export function buildNavigation(request) {
   return [
     {
@@ -7,8 +9,8 @@ export function buildNavigation(request) {
     },
     {
       text: 'Software providers',
-      href: '/software-providers',
-      current: request?.path === '/software-providers'
+      href: paths.softwareProviders,
+      current: request?.path === paths.softwareProviders
     },
     {
       text: 'Reporting',

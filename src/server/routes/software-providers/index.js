@@ -1,4 +1,5 @@
 import { softwareProvidersController } from './controller.js'
+import { paths } from '#/server/common/constants/paths.js'
 
 /**
  * Sets up the routes used in the /software-providers page.
@@ -11,7 +12,7 @@ export const softwareProviders = {
       server.route([
         {
           method: 'GET',
-          path: '/software-providers',
+          path: paths.softwareProviders,
           ...softwareProvidersController
         }
       ])

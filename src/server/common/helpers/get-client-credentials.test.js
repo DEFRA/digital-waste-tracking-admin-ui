@@ -1,6 +1,14 @@
 import { getClientCredentials } from './get-client-credentials.js'
 import { config } from '#/config/config.js'
 
+const mockLoggerWarn = vi.fn()
+
+vi.mock('./logging/logger.js', () => ({
+  createLogger: () => ({
+    warn: (...args) => mockLoggerWarn(...args)
+  })
+}))
+
 describe('#getClientCredentials', () => {
   const clientCredentials = [
     {
@@ -23,6 +31,7 @@ describe('#getClientCredentials', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    mockLoggerWarn.mockClear()
   })
 
   test('Should request the client credentials for the configured service', async () => {
@@ -37,7 +46,19 @@ describe('#getClientCredentials', () => {
       `${config.get('services.clientSync')}/clients/waste-movement-external-api`
     )
     expect(options.method).toEqual('GET')
-    expect(options.headers.Authorization).toMatch(/^Basic /)
+    expect(options.signal).toBeInstanceOf(AbortSignal)
+  })
+
+  test('Should authenticate as the portal with the service credentials', async () => {
+    await getClientCredentials()
+
+    const [, { headers }] = fetchMock.mock.calls[0]
+    const [scheme, encoded] = headers.Authorization.split(' ')
+
+    expect(scheme).toEqual('Basic')
+    expect(Buffer.from(encoded, 'base64').toString()).toEqual(
+      `${config.get('serviceAuth.username')}:${config.get('serviceAuth.password')}`
+    )
   })
 
   test('Should return no client credentials when the backend responds with 404', async () => {
@@ -48,6 +69,9 @@ describe('#getClientCredentials', () => {
     })
 
     await expect(getClientCredentials()).resolves.toEqual([])
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      `No client credentials found for waste-movement-external-api at ${config.get('services.clientSync')}/clients/waste-movement-external-api, showing none`
+    )
   })
 
   test('Should throw when the backend responds with another non-ok status', async () => {
@@ -60,5 +84,11 @@ describe('#getClientCredentials', () => {
     await expect(getClientCredentials()).rejects.toThrow(
       'Failed to get client credentials: 500 Internal Server Error'
     )
+  })
+
+  test('Should throw when the request fails', async () => {
+    fetchMock.mockRejectedValue(new TypeError('fetch failed'))
+
+    await expect(getClientCredentials()).rejects.toThrow('fetch failed')
   })
 })

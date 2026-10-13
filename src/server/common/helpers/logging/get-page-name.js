@@ -1,5 +1,6 @@
 import { downloadFormats } from '#/server/common/constants/download-formats.js'
 import { pageNames } from '#/server/common/constants/page-names.js'
+import { paths } from '#/server/common/constants/paths.js'
 
 const wasteOrganisationsPath = '/reporting/waste-organisations'
 
@@ -15,7 +16,7 @@ export function getPageName(request) {
     return pageNames.home
   }
 
-  if (request.path === '/software-providers') {
+  if (request.path === paths.softwareProviders) {
     return pageNames.softwareProviders
   }
 
