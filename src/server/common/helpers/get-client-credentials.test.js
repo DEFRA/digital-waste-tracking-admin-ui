@@ -52,7 +52,7 @@ describe('#getClientCredentials', () => {
   test('Should authenticate as the portal with the service credentials', async () => {
     await getClientCredentials()
 
-    const [, { headers }] = fetchMock.mock.calls[0]
+    const [_url, { headers }] = fetchMock.mock.calls[0]
     const [scheme, encoded] = headers.Authorization.split(' ')
 
     expect(scheme).toEqual('Basic')

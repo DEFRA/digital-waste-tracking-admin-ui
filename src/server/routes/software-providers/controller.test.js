@@ -180,7 +180,7 @@ describe('#softwareProvidersController', () => {
       const { document } = await getPage(server)
 
       expect(
-        tableRows(document).map(([, , environment]) => environment)
+        tableRows(document).map(([_name, _id, environment]) => environment)
       ).toEqual([label, label, label])
     } finally {
       config.set('cdpEnvironment', originalEnvironment)
