@@ -1,94 +1,45 @@
-version: '3.4'
+# The admin UI with the services it calls - waste-organisation-backend for the
+# Reporting page and dwt-client-sync for the Software providers page - from the
+# shared compose stack in digital-waste-tracking-uat (see shared-compose/README.md
+# there).
+#
+# docker compose up --build -d             Everything, with the admin UI built from
+#                                          your checkout and reloading as you edit
+# npm run dev:deps && npm run dev          Just the backends, with the admin UI run
+#                                          locally (see .env.example)
+#
+# Set SHARED_COMPOSE to a local checkout's shared-compose/compose.yml to try
+# changes to the shared stack.
+
+include:
+  - ${SHARED_COMPOSE:-https://github.com/DEFRA/digital-waste-tracking-uat.git#main:shared-compose/compose.yml}
+
 services:
-  floci:
-    image: hectorvent/floci:latest-aws
-    ports:
-      - '4566:4566'
-    env_file:
-      - 'compose/aws.env'
-    environment:
-      FLOCI_DEFAULT_REGION: eu-west-2
-    volumes:
-      - ./compose/floci/start.d:/etc/floci/init/start.d:ro
-    networks:
-      - cdp-tenant
-
-  redis:
-    image: redis:7.2.3-alpine3.18
-    ports:
-      - '6379:6379'
-    networks:
-      - cdp-tenant
-
-  mongodb:
-    image: mongo:7.0.28
-    networks:
-      - cdp-tenant
-    ports:
-      - '27017:27017'
-    volumes:
-      - ./compose/mongo:/docker-entrypoint-initdb.d:ro
-      - mongodb-data:/data
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.hello().ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-
-  ################################################################################
-
-  your-frontend:
-    build: ./
+  digital-waste-tracking-admin-ui:
+    # A local name, so the build doesn't clash with a published image
+    image: digital-waste-tracking-admin-ui:local
+    build:
+      context: .
+      target: development
     ports:
       - '3000:3000'
-    links:
-      - 'floci:floci'
-      - 'redis:redis'
     depends_on:
-      floci:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    env_file:
-      - 'compose/aws.env'
+      - waste-organisation-backend
+      - dwt-client-sync
     environment:
       PORT: 3000
-      NODE_ENV: production
-      REDIS_HOST: redis
-      LOG_FORMAT: pino-pretty
-      SESSION_COOKIE_SECURE: false
-      USE_SINGLE_INSTANCE_CACHE: true
-      REDIS_TLS: false
+      # Made-up local-only login: username "local", password "local"
+      USER_BASIC_AUTH_LOCAL: bG9jYWw9bG9jYWw=
+      WASTE_ORGANISATION_SERVICE_URL: http://waste-organisation-backend:3001
+      DWT_CLIENT_SYNC_SERVICE_URL: http://dwt-client-sync:3001
+      # Made-up, and accepted by the shared stack's organisation backend and client sync
+      SERVICE_AUTH_PASSWORD: local-admin-ui
+      # File change events don't reach containers through Docker Desktop or Colima
+      # mounts, so Vite has to poll to reload styles and scripts
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      # Run your working copy, reloading as you edit
+      - ./src:/home/node/src
+      - ./package.json:/home/node/package.json
     networks:
       - cdp-tenant
-
-  # your-backend:
-  #   image: defradigital/your-backend:${YOUR_BACKEND_VERSION:-latest}
-  #   ports:
-  #     - '3555:3555'
-  #   links:
-  #     - 'foci:floci'
-  #     - 'mongodb:mongodb'
-  #   depends_on:
-  #     floci:
-  #       condition: service_healthy
-  #     mongodb:
-  #       condition: service_started
-  #   env_file:
-  #     - 'compose/aws.env'
-  #   environment:
-  #     PORT: 3001
-  #     NODE_ENV: development
-  #     MONGO_URI: mongodb://mongodb:27017/
-  #   networks:
-  #     - cdp-tenant
-
-################################################################################
-
-volumes:
-  mongodb-data:
-
-networks:
-  cdp-tenant:
-    driver: bridge
