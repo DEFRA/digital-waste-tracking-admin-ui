@@ -246,7 +246,7 @@ docker compose exec -T mongodb mongosh waste-organisation-backend --quiet < ../d
 Then, in your fe-uat checkout:
 
 ```bash
-ENVIRONMENT=local adminUiPassword=local npm run test:admin-tool
+ENVIRONMENT=local adminUiPassword=local ADMIN_UI_BASE_URL=http://digital-waste-tracking-admin-ui:3000 npm run test:admin-tool
 ```
 
 The browser reaches the admin UI by its service name, `digital-waste-tracking-admin-ui`, so `vite.config.js`
