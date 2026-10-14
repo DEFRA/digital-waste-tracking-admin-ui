@@ -181,16 +181,52 @@ docker run -p 3000:3000 digital-waste-tracking-admin-ui
 
 ### Docker Compose
 
-A local environment with:
+The compose stack runs the admin UI with the services it calls: waste-organisation-backend
+(for the Reporting page) and dwt-client-sync (for the Software providers page), with their
+own dependencies. They come from the stack shared with the other DWT service repos, in
+[digital-waste-tracking-uat](https://github.com/DEFRA/digital-waste-tracking-uat/tree/main/shared-compose),
+so `docker compose` needs network access to fetch it. Every credential in it is made up
+and local-only, so you don't need a `.env` for it.
 
-- Floci (replacing Localstack) for AWS services (S3, SQS)
-- Redis
-- MongoDB
-- This service.
-- A commented out backend example.
+There are two ways to run it. Either run everything in Docker, with the admin UI built from
+your checkout and `src/` mounted so it reloads as you edit:
 
 ```bash
-docker compose up --build -d
+docker compose up --build -d digital-waste-tracking-admin-ui
+```
+
+Naming the service starts just it and the services it depends on. Plain `docker compose up`
+starts the whole shared stack, which you don't need here.
+
+Mounting `src/` covers code, templates and styles. After changing dependencies or config
+outside `src/` (such as `vite.config.js`), rebuild with `--build`.
+
+Or start just the backends in Docker and run the admin UI locally:
+
+```bash
+cp .env.example .env
+npm run dev:deps
+npm run dev
+```
+
+Either way, the admin UI is at <http://localhost:3000> and you log in as `local` / `local`.
+
+The Software providers page lists the three test clients the stack seeds. `dev:deps` also
+starts mockserver, which stands in for the CDP API that dwt-client-sync syncs clients from,
+so syncing works too:
+
+```bash
+curl -X POST -u digital-waste-tracking-admin-ui:local-admin-ui localhost:3005/clients/sync
+```
+
+Building the admin UI's image needs Docker BuildKit (the Dockerfile uses `COPY --chmod`). If
+`docker buildx version` fails, install the buildx plugin, e.g. `brew install docker-buildx`
+with Colima.
+
+To try changes to the shared stack, point `SHARED_COMPOSE` at your local checkout:
+
+```bash
+SHARED_COMPOSE=../digital-waste-tracking-uat/shared-compose/compose.yml docker compose up --build -d
 ```
 
 ### Dependabot
