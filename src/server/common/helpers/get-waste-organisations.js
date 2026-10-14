@@ -1,21 +1,9 @@
 import { withTraceId } from '@defra/hapi-tracing'
 
 import { config } from '#/config/config.js'
+import { generateServiceAuthHeader } from '#/server/common/helpers/generate-service-auth-header.js'
 
 const getOrganisationsPath = '/organisations'
-
-/**
- * Generates a Basic auth header for authenticating with internal backend
- * services from the configured service credentials.
- *
- * @returns {String} The Basic auth header value
- */
-function generateAuthHeader() {
-  const username = config.get('serviceAuth.username')
-  const password = config.get('serviceAuth.password')
-
-  return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
-}
 
 /**
  * Gets Waste Organisations where the DefraID registration date is between a
@@ -38,7 +26,7 @@ export async function getWasteOrganisationsByDate(dateFrom, dateTo) {
     method: 'GET',
     headers: withTraceId(config.get('tracing.header'), {
       'Content-Type': 'application/json',
-      Authorization: generateAuthHeader()
+      Authorization: generateServiceAuthHeader()
     })
   })
 

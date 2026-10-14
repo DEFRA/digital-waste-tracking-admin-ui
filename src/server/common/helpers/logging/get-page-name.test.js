@@ -8,6 +8,12 @@ describe('#getPageName', () => {
     expect(result).toEqual(pageNames.home)
   })
 
+  test('Should return the software providers page name', () => {
+    const result = getPageName({ path: '/software-providers', query: {} })
+
+    expect(result).toEqual(pageNames.softwareProviders)
+  })
+
   test('Should return the waste organisations page name when no search has been made', () => {
     const result = getPageName({
       path: '/reporting/waste-organisations',

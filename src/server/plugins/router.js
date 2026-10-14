@@ -7,6 +7,7 @@ import { config } from '#/config/config.js'
 import { reporting } from '../routes/reporting/index.js'
 import { wasteOrganisationsReporting } from '../routes/reporting/waste-organisations/index.js'
 import { login } from '#/server/routes/login/index.js'
+import { softwareProviders } from '#/server/routes/software-providers/index.js'
 
 export const router = {
   plugin: {
@@ -22,6 +23,7 @@ export const router = {
         home,
         reporting,
         wasteOrganisationsReporting,
+        softwareProviders,
         login
       ])
 

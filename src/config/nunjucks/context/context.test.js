@@ -67,6 +67,11 @@ describe('context and cache', () => {
             },
             {
               current: false,
+              href: '/software-providers',
+              text: 'Software providers'
+            },
+            {
+              current: false,
               href: '/reporting/waste-organisations',
               text: 'Reporting'
             }
@@ -153,6 +158,11 @@ describe('context and cache', () => {
               current: true,
               text: 'DWT Admin Portal',
               href: '/'
+            },
+            {
+              current: false,
+              href: '/software-providers',
+              text: 'Software providers'
             },
             {
               current: false,
