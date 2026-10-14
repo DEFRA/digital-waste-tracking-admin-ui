@@ -192,8 +192,14 @@ There are two ways to run it. Either run everything in Docker, with the admin UI
 your checkout and `src/` mounted so it reloads as you edit:
 
 ```bash
-docker compose up --build -d
+docker compose up --build -d digital-waste-tracking-admin-ui
 ```
+
+Naming the service starts just it and the services it depends on. Plain `docker compose up`
+starts the whole shared stack, which you don't need here.
+
+Mounting `src/` covers code, templates and styles. After changing dependencies or config
+outside `src/` (such as `vite.config.js`), rebuild with `--build`.
 
 Or start just the backends in Docker and run the admin UI locally:
 
@@ -204,6 +210,14 @@ npm run dev
 ```
 
 Either way, the admin UI is at <http://localhost:3000> and you log in as `local` / `local`.
+
+The Software providers page lists the three test clients the stack seeds. `dev:deps` also
+starts mockserver, which stands in for the CDP API that dwt-client-sync syncs clients from,
+so syncing works too:
+
+```bash
+curl -X POST -u digital-waste-tracking-admin-ui:local-admin-ui localhost:3005/clients/sync
+```
 
 Building the admin UI's image needs Docker BuildKit (the Dockerfile uses `COPY --chmod`). If
 `docker buildx version` fails, install the buildx plugin, e.g. `brew install docker-buildx`
