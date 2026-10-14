@@ -111,10 +111,14 @@ describe('#softwareProvidersController', () => {
       [
         'Greenlane_Digital_Test',
         '2f95e07b-4c86-41d3-9a72-58be6d10c9f4',
-        'Test'
+        'local'
       ],
-      ['Kerbside_Collect_Test', 'b3f9c41e-2a7d-4c58-9e10-6d8a5f2b71c4', 'Test'],
-      ['Skipflow_Test', '1c847b52-9de6-4a03-b7f8-52c96e1d4a37', 'Test']
+      [
+        'Kerbside_Collect_Test',
+        'b3f9c41e-2a7d-4c58-9e10-6d8a5f2b71c4',
+        'local'
+      ],
+      ['Skipflow_Test', '1c847b52-9de6-4a03-b7f8-52c96e1d4a37', 'local']
     ])
   })
 
@@ -161,16 +165,23 @@ describe('#softwareProvidersController', () => {
     ])
   })
 
-  test('Should show Production as the environment in prod', async () => {
+  test.each([
+    ['dev', 'Dev'],
+    ['test', 'Test'],
+    ['perf-test', 'Performance test'],
+    ['ext-test', 'External test'],
+    ['prod', 'Production'],
+    ['local', 'local']
+  ])('Should show the %s environment as %s', async (cdpEnvironment, label) => {
     const originalEnvironment = config.get('cdpEnvironment')
-    config.set('cdpEnvironment', 'prod')
+    config.set('cdpEnvironment', cdpEnvironment)
 
     try {
       const { document } = await getPage(server)
 
       expect(
         tableRows(document).map(([, , environment]) => environment)
-      ).toEqual(['Production', 'Production', 'Production'])
+      ).toEqual([label, label, label])
     } finally {
       config.set('cdpEnvironment', originalEnvironment)
     }
