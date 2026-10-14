@@ -60,7 +60,9 @@ export async function createServer() {
 
   // Defines how the dwtAuth cookie is encoded/secured.
   server.state('dwtAuth', {
-    isSecure: true,
+    // Like the session cookie: secure in production, and off locally so login
+    // works over plain HTTP, e.g. in the compose stack's browser tests
+    isSecure: config.get('session.cookie.secure'),
     isHttpOnly: true,
     encoding: 'iron',
     password: config.get('session.cookie.password'),
