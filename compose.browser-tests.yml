@@ -1,0 +1,19 @@
+# Adds a Chrome browser to the stack for the admin tool's browser tests, which
+# live in digital-waste-tracking-fe-uat (npm run test:admin-tool there, with
+# ENVIRONMENT=local). The tests drive Chrome through ChromeDriver on port 4444,
+# and Chrome reaches the admin UI by its service name on the stack's network.
+#
+#   docker compose -f compose.yml -f compose.browser-tests.yml up --build -d digital-waste-tracking-admin-ui selenium-chrome
+
+services:
+  selenium-chrome:
+    # Chromium rather than Chrome, as the Chrome image only runs on Intel/AMD and
+    # this one runs on Apple silicon Macs too
+    image: selenium/standalone-chromium:155.0
+    environment:
+      # Lets the tests read files Chrome downloads, such as the report's CSV
+      - SE_NODE_ENABLE_MANAGED_DOWNLOADS=true
+    ports:
+      - '4444:4444'
+    networks:
+      - cdp-tenant
