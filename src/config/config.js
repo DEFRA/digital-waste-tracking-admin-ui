@@ -250,6 +250,14 @@ export const config = convict({
       format: String,
       default: 'waste-movement-external-api',
       env: 'CLIENT_CREDENTIALS_TENANT_SERVICE_NAME'
+    },
+    apiUrl: {
+      // An example until the real URL for each environment is confirmed
+      doc: 'The API URL shown with new client credentials, for the software provider to connect to',
+      format: String,
+      default:
+        'https://waste-movement-external-api.api.ext-test.cdp-int.defra.cloud',
+      env: 'CLIENT_CREDENTIALS_API_URL'
     }
   },
   serviceAuth: {

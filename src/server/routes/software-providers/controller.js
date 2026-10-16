@@ -1,27 +1,6 @@
-import { config } from '#/config/config.js'
 import { getClientCredentials } from '#/server/common/helpers/get-client-credentials.js'
-
-// The Environment column's label for each CDP environment
-const environmentLabels = {
-  dev: 'Dev',
-  test: 'Test',
-  'perf-test': 'Performance test',
-  'ext-test': 'External test',
-  prod: 'Production'
-}
-
-/**
- * Names the environment the portal is running in, as shown in the
- * Environment column. Environments without a label, such as local, show their
- * own name.
- *
- * @returns {String} The environment name
- */
-function environmentName() {
-  const environment = config.get('cdpEnvironment')
-
-  return environmentLabels[environment] ?? environment
-}
+import { environmentName } from '#/server/common/helpers/environment.js'
+import { paths } from '#/server/common/constants/paths.js'
 
 /**
  * Orders client credentials by client name, then by client ID so that clients
@@ -57,6 +36,7 @@ export const softwareProvidersController = {
 
     return h.view('software-providers/index', {
       pageTitle: 'Software providers',
+      createClientCredentialsPath: paths.createClientCredentials,
       clientCredentials
     })
   }

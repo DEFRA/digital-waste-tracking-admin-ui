@@ -9,6 +9,8 @@ import {
 } from 'govuk-frontend'
 import { SortableTable } from '@ministryofjustice/frontend'
 
+import { initCopy } from './components/copy.js'
+
 createAll(Button)
 createAll(Checkboxes)
 createAll(ErrorSummary)
@@ -16,3 +18,4 @@ createAll(Radios)
 createAll(SkipLink)
 createAll(PasswordInput)
 createAll(SortableTable)
+initCopy()

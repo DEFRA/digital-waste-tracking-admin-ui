@@ -1,0 +1,16 @@
+@use "govuk-frontend" as *;
+
+.app-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: govuk-spacing(3);
+}
+
+.app-copy[hidden] {
+  display: none;
+}
+
+.app-copy__status {
+  margin-bottom: 0;
+}

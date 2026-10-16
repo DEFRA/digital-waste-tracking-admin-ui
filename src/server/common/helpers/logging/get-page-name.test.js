@@ -14,6 +14,13 @@ describe('#getPageName', () => {
     expect(result).toEqual(pageNames.softwareProviders)
   })
 
+  test.each([
+    ['/software-providers/create', pageNames.createClientCredentials],
+    ['/software-providers/credentials', pageNames.newClientCredentials]
+  ])('Should return the page name for %s', (path, pageName) => {
+    expect(getPageName({ path, query: {} })).toEqual(pageName)
+  })
+
   test('Should return the waste organisations page name when no search has been made', () => {
     const result = getPageName({
       path: '/reporting/waste-organisations',

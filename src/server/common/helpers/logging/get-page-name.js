@@ -20,6 +20,14 @@ export function getPageName(request) {
     return pageNames.softwareProviders
   }
 
+  if (request.path === paths.createClientCredentials) {
+    return pageNames.createClientCredentials
+  }
+
+  if (request.path === paths.newClientCredentials) {
+    return pageNames.newClientCredentials
+  }
+
   if (request.path !== wasteOrganisationsPath) {
     return undefined
   }
