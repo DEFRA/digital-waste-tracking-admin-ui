@@ -18,7 +18,7 @@ export function newClientCredentialsController(store) {
       }
     },
     async handler(request, h) {
-      const credentials = await store.take(request)
+      const credentials = await store.take(request, request.params.id)
 
       // Shown once: coming back to the page goes to the Software providers page
       if (!credentials) {

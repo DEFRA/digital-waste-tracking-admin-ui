@@ -43,7 +43,7 @@ export const softwareProviders = {
         },
         {
           method: 'GET',
-          path: paths.newClientCredentials,
+          path: `${paths.newClientCredentials}/{id}`,
           ...newClientCredentialsController(newClientCredentialsStore)
         }
       ])

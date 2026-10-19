@@ -45,32 +45,54 @@ describe('#createNewClientCredentialsStore', () => {
     )
   })
 
-  test('Should keep only a random key in the session, never the credentials', async () => {
+  test('Should keep only random ids in the session, never the credentials', async () => {
     const store = createNewClientCredentialsStore(server)
 
-    await store.save(request, credentials)
+    const id = await store.save(request, credentials)
 
-    const [, key] = request.yar.set.mock.calls[0]
-    expect(key).toMatch(/^[0-9a-f-]{36}$/)
+    expect(id).toMatch(/^[0-9a-f-]{36}$/)
+    expect(request.yar.set).toHaveBeenCalledWith('newClientCredentialsIds', [
+      id
+    ])
     expect(JSON.stringify(request.yar.set.mock.calls)).not.toContain(
       credentials.clientSecret
     )
-    expect(cache.set).toHaveBeenCalledWith(key, credentials)
+    expect(cache.set).toHaveBeenCalledWith(id, credentials)
   })
 
   test('Should give the credentials back once', async () => {
     const store = createNewClientCredentialsStore(server)
-    await store.save(request, credentials)
+    const id = await store.save(request, credentials)
 
-    expect(await store.take(request)).toEqual(credentials)
-    expect(await store.take(request)).toBeNull()
-    expect(cache.drop).toHaveBeenCalled()
+    expect(await store.take(request, id)).toEqual(credentials)
+    expect(await store.take(request, id)).toBeNull()
+    expect(cache.drop).toHaveBeenCalledWith(id)
+  })
+
+  test('Should keep each of two creates separate, as from two tabs', async () => {
+    const store = createNewClientCredentialsStore(server)
+    const other = { clientId: 'other-client-id', clientSecret: 'other-secret' }
+
+    const firstId = await store.save(request, credentials)
+    const secondId = await store.save(request, other)
+
+    expect(await store.take(request, firstId)).toEqual(credentials)
+    expect(await store.take(request, secondId)).toEqual(other)
+  })
+
+  test("Should not give another session's credentials back", async () => {
+    const store = createNewClientCredentialsStore(server)
+    const id = await store.save(request, credentials)
+    const otherSession = { yar: { get: vi.fn(), set: vi.fn() } }
+
+    expect(await store.take(otherSession, id)).toBeNull()
+    expect(cache.get).not.toHaveBeenCalled()
   })
 
   test('Should give nothing back when none were saved', async () => {
     const store = createNewClientCredentialsStore(server)
 
-    expect(await store.take(request)).toBeNull()
+    expect(await store.take(request, 'unknown-id')).toBeNull()
     expect(cache.get).not.toHaveBeenCalled()
   })
 })

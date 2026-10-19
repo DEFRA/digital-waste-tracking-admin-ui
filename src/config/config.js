@@ -254,7 +254,7 @@ export const config = convict({
     createEnabled: {
       // Off in production until the security concerns raised in refinement
       // are resolved (DWTSPI-458)
-      doc: 'Whether staff can create client credentials. Set for each environment below',
+      doc: 'Whether staff can create client credentials. Set for each environment below, and can be turned on in production from the CDP portal without a code change',
       format: Boolean,
       default: true,
       env: 'CLIENT_CREDENTIALS_CREATE_ENABLED'

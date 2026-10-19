@@ -4,8 +4,10 @@ import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { generateServiceAuthHeader } from '#/server/common/helpers/generate-service-auth-header.js'
 
-// Client Sync waits up to 10 seconds for CDP, and can take twice that when
-// CDP is slow to send its response
+// Client Sync checks for a duplicate name, creates the client and syncs before
+// replying, so several CDP calls. Its create call times out after 10 seconds
+// (up to 20 if CDP is slow to send its response), but the others have no
+// timeout yet, so a slow CDP can still outlast this and lose the secret
 const requestTimeoutMs = 30_000
 
 /**
@@ -48,7 +50,17 @@ export async function createClientCredentials(clientName) {
     )
   }
 
-  const { clientId, clientSecret } = await response.json()
+  // A parse error would quote part of the body, which holds the secret
+  let body
+  try {
+    body = await response.json()
+  } catch {
+    throw new Error(
+      'Client Sync returned client credentials that could not be read'
+    )
+  }
+
+  const { clientId, clientSecret } = body
 
   if (!clientId || !clientSecret) {
     throw new Error('Client Sync returned client credentials without a secret')

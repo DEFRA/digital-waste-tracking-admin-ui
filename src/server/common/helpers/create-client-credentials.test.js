@@ -67,6 +67,23 @@ describe('#createClientCredentials', () => {
     ).rejects.toThrow('Failed to create client credentials: 502 Status text')
   })
 
+  test('Should throw without quoting a response it cannot read', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => JSON.parse('{"clientSecret": "new-client-secret", oops')
+    })
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error.message).toEqual(
+      'Client Sync returned client credentials that could not be read'
+    )
+    expect(error.message).not.toContain('new-client-secret')
+  })
+
   test('Should throw when the response has no secret', async () => {
     respondWith(200, { ...created, clientSecret: undefined })
 

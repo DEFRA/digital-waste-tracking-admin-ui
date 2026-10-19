@@ -21,6 +21,7 @@ function nameViewContext({ clientName, errors } = {}) {
   return {
     pageTitle: 'What is the name of the software provider and package?',
     caption: `Create ${environmentName().toLowerCase()} environment credentials`,
+    softwareProvidersPath: paths.softwareProviders,
     clientName,
     errors
   }
@@ -78,12 +79,12 @@ export function createClientCredentialsSubmitController(store) {
         tenantServiceName: config.get('clientCredentials.tenantServiceName')
       })
 
-      await store.save(request, {
+      const id = await store.save(request, {
         ...result.credentials,
         generatedOn: new Date().toISOString()
       })
 
-      return h.redirect(paths.newClientCredentials)
+      return h.redirect(`${paths.newClientCredentials}/${id}`)
     }
   }
 }

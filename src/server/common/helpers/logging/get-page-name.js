@@ -24,7 +24,7 @@ export function getPageName(request) {
     return pageNames.createClientCredentials
   }
 
-  if (request.path === paths.newClientCredentials) {
+  if (request.path.startsWith(`${paths.newClientCredentials}/`)) {
     return pageNames.newClientCredentials
   }
 

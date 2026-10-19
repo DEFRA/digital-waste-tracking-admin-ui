@@ -137,6 +137,12 @@ describe('Create new credentials', () => {
       expect(getElementText(document, 'generate-credentials-button')).toEqual(
         'Generate credentials'
       )
+      // A second click would only show "already exists", losing the secret
+      expect(
+        document
+          .querySelector('[data-testid="generate-credentials-button"]')
+          .getAttribute('data-prevent-double-click')
+      ).toEqual('true')
       expect(
         document
           .querySelector('[data-testid="cancel-link"]')
@@ -251,10 +257,10 @@ describe('Create new credentials', () => {
       return { response, cookie: cookiesFrom(response.headers) }
     }
 
-    function getCredentialsPage(cookie) {
+    function getCredentialsPage(cookie, url) {
       return server.inject({
         method: 'GET',
-        url: '/software-providers/credentials',
+        url,
         headers: { ...auth, cookie }
       })
     }
@@ -263,8 +269,8 @@ describe('Create new credentials', () => {
       const { response } = await createCredentials()
 
       expect(response.statusCode).toEqual(302)
-      expect(response.headers.location).toEqual(
-        '/software-providers/credentials'
+      expect(response.headers.location).toMatch(
+        /^\/software-providers\/credentials\/[0-9a-f-]{36}$/
       )
       expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
         clientName: 'Waste_Technologies_Software'
@@ -295,9 +301,13 @@ describe('Create new credentials', () => {
     })
 
     test('Should show the new credentials, once, and not let them be cached', async () => {
-      const { cookie } = await createCredentials()
+      const { response, cookie } = await createCredentials()
+      const url = response.headers.location
 
-      const { statusCode, headers, result } = await getCredentialsPage(cookie)
+      const { statusCode, headers, result } = await getCredentialsPage(
+        cookie,
+        url
+      )
       const document = documentOf(result)
       const panel = document.querySelector(
         '[data-testid="client-credentials-panel"]'
@@ -363,17 +373,49 @@ describe('Create new credentials', () => {
       expect(close.classList).toContain('govuk-!-margin-top-6')
       expect(document.querySelector('.govuk-back-link')).toBeNull()
 
-      const again = await getCredentialsPage(cookie)
+      const again = await getCredentialsPage(cookie, url)
       expect(again.statusCode).toEqual(302)
       expect(again.headers.location).toEqual('/software-providers')
       expect(again.payload).not.toContain(created.clientSecret)
     })
 
     test('Should go to the Software providers page when there are no new credentials', async () => {
-      const { statusCode, headers } = await getCredentialsPage('')
+      const { statusCode, headers } = await getCredentialsPage(
+        '',
+        '/software-providers/credentials/unknown-id'
+      )
 
       expect(statusCode).toEqual(302)
       expect(headers.location).toEqual('/software-providers')
+    })
+
+    test('Should show each of two creates its own credentials, as from two tabs', async () => {
+      const first = await createCredentials()
+      clientSyncRespondsWith(200, {
+        clientId: 'second-client-id',
+        clientName: 'Second_Client',
+        clientSecret: 'second-client-secret'
+      })
+      const second = await server.inject({
+        method: 'POST',
+        url: '/software-providers/create',
+        headers: { ...auth, cookie: first.cookie },
+        payload: { clientName: 'Second_Client' }
+      })
+      const cookie = cookiesFrom(second.headers) || first.cookie
+
+      const secretOn = async (url) =>
+        getElementText(
+          documentOf((await getCredentialsPage(cookie, url)).result),
+          'client-secret'
+        )
+
+      expect(await secretOn(first.response.headers.location)).toEqual(
+        'new-client-secret'
+      )
+      expect(await secretOn(second.headers.location)).toEqual(
+        'second-client-secret'
+      )
     })
   })
 
@@ -410,7 +452,7 @@ describe('Create new credentials', () => {
     test.each([
       ['GET', '/software-providers/create'],
       ['POST', '/software-providers/create'],
-      ['GET', '/software-providers/credentials']
+      ['GET', '/software-providers/credentials/any-id']
     ])('Should not have %s %s', async (method, url) => {
       const { statusCode } = await offServer.inject({
         method,
