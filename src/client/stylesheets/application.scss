@@ -12,3 +12,59 @@
   margin-bottom: -10px;
   padding: 5px 0;
 }
+
+.defra-header {
+  border-bottom: 10px solid variables.$defra-green;
+  display: block;
+  unicode-bidi: isolate;
+}
+
+.defra-header__inner {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 12px 15px;
+
+}
+
+.defra-header__brand-group {
+  display: contents;
+
+}
+
+.defra-header__logo {
+  display: inline-block;
+  margin-right: 10px;
+  height: 60px;
+  width: auto;
+  @media (max-width: 768px) {
+    justify-self: start;
+    height: 45px;
+  }
+}
+
+
+.defra-header__service-name {
+  color: variables.$defra-green;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.2;
+  text-decoration: none;
+  justify-self: center;
+  &:visited {
+    color: variables.$defra-green;
+  }
+  &:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: .15em;
+  }
+}
+
+.defra-header__service-name .govuk-visually-hidden {
+  color: variables.$defra-green;
+}
