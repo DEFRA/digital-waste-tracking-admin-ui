@@ -229,6 +229,29 @@ To try changes to the shared stack, point `SHARED_COMPOSE` at your local checkou
 SHARED_COMPOSE=../digital-waste-tracking-uat/shared-compose/compose.yml docker compose up --build -d
 ```
 
+### Browser tests
+
+The admin tool's browser tests, including its accessibility checks, live in
+[digital-waste-tracking-fe-uat](https://github.com/DEFRA/digital-waste-tracking-fe-uat). They run in CI
+against this repo's compose stack, and you can run them locally against your working copy the same way.
+
+Start the admin UI with a Chrome browser for the tests to drive, and load the organisations the report
+tests expect:
+
+```bash
+docker compose -f compose.yml -f compose.browser-tests.yml up --build -d digital-waste-tracking-admin-ui selenium-chrome
+docker compose exec -T mongodb mongosh waste-organisation-backend --quiet < ../digital-waste-tracking-fe-uat/test/utils/test-data-organisations.js
+```
+
+Then, in your fe-uat checkout:
+
+```bash
+ENVIRONMENT=local adminUiPassword=local ADMIN_UI_BASE_URL=http://digital-waste-tracking-admin-ui:3000 npm run test:admin-tool
+```
+
+The browser reaches the admin UI by its service name, `digital-waste-tracking-admin-ui`, so `vite.config.js`
+allows that host, and the login cookie isn't `Secure` outside production.
+
 ### Dependabot
 
 We have added an example dependabot configuration file to the repository. You can enable it by renaming

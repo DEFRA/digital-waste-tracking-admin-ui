@@ -46,3 +46,92 @@ jobs:
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Runs the admin tool's browser tests from digital-waste-tracking-fe-uat
+  # against the compose stack, with the admin UI built from this PR. Every
+  # credential is a made-up local-only value (see compose.yml), so no secrets
+  # are needed.
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    needs: pr-validator
+    env:
+      COMPOSE_FILE: compose.yml:compose.browser-tests.yml
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Start Docker Compose Services
+        id: start-docker-compose-services
+        run: |
+          docker compose up -d --build --wait digital-waste-tracking-admin-ui selenium-chrome
+          docker compose ps
+
+      - name: Wait for the admin UI to start
+        run: timeout 120 sh -c 'until curl -sf http://localhost:3000/health; do sleep 2; done'
+
+      - name: Checkout fe-uat as Integration Test Suite
+        uses: actions/checkout@v6
+        with:
+          repository: DEFRA/digital-waste-tracking-fe-uat
+          path: integration-tests
+
+      # The organisations the waste organisations report tests expect
+      - name: Load the report test data
+        run: docker compose exec -T mongodb mongosh waste-organisation-backend --quiet < integration-tests/test/utils/test-data-organisations.js
+
+      - name: Setup Node.js for Integration Test Suite
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: integration-tests/.nvmrc
+          cache: npm
+          cache-dependency-path: integration-tests/package-lock.json
+
+      - name: Install Integration Test Dependencies
+        working-directory: integration-tests
+        run: npm ci --ignore-scripts
+
+      - name: Run Integration Tests
+        id: integration-tests
+        working-directory: integration-tests
+        env:
+          ENVIRONMENT: local
+          # The made-up login in compose.yml
+          adminUiPassword: local
+          # Chrome runs in a container, so reaches the admin UI by its service name
+          ADMIN_UI_BASE_URL: http://digital-waste-tracking-admin-ui:3000
+        run: npm run test:admin-tool
+
+      - name: Generate Test Report
+        if: always()
+        id: generate-report
+        working-directory: integration-tests
+        run: npm run report:generate
+
+      - name: Upload Test Report
+        if: always() && steps.generate-report.outcome == 'success'
+        id: upload-report
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-report
+          path: |
+            integration-tests/allure-report/
+            integration-tests/reports/
+          retention-days: 30
+
+      - name: Comment Test Report Link on PR
+        if: always() && steps.upload-report.outcome == 'success' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const statusEmoji = '${{ steps.integration-tests.outcome }}' === 'success' ? '✅' : '❌';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📊 Integration Test Report ${statusEmoji}\n\nThe test report has been generated and is available as an artifact.\n\n📥 [Download Test Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-report.outputs.artifact-id }})`
+            })
+
+      - name: Stop Docker Compose Services
+        if: always() && steps.start-docker-compose-services.outcome == 'success'
+        run: docker compose down

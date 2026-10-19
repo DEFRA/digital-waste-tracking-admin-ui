@@ -35,5 +35,9 @@ export default defineConfig({
     lightningcss: { errorRecovery: true }
   },
   // Dev server
-  server: {}
+  server: {
+    // Vite only serves requests addressed to localhost by default. In the
+    // compose stack the browser tests reach the admin UI by its service name
+    allowedHosts: ['digital-waste-tracking-admin-ui']
+  }
 })
