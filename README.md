@@ -211,9 +211,9 @@ npm run dev
 
 Either way, the admin UI is at <http://localhost:3000> and you log in as `local` / `local`.
 
-The Software providers page lists the three test clients the stack seeds. `dev:deps` also
-starts mockserver, which stands in for the CDP API that dwt-client-sync syncs clients from,
-so syncing works too:
+The Software providers page lists the three test clients the stack seeds. dwt-client-sync
+also starts a fake of the CDP API it manages clients through, so syncing, and creating,
+rotating and deleting clients, work too:
 
 ```bash
 curl -X POST -u digital-waste-tracking-admin-ui:local-admin-ui localhost:3005/clients/sync

@@ -236,6 +236,20 @@ export const config = convict({
       format: String,
       default: 'https://waste-organisation-backend.dev.cdp-int.defra.cloud',
       env: 'WASTE_ORGANISATION_SERVICE_URL'
+    },
+    clientSync: {
+      doc: 'DWT Client Sync Service URL',
+      format: String,
+      default: 'https://dwt-client-sync.dev.cdp-int.defra.cloud',
+      env: 'DWT_CLIENT_SYNC_SERVICE_URL'
+    }
+  },
+  clientCredentials: {
+    tenantServiceName: {
+      doc: 'The service whose client credentials the Software providers page lists',
+      format: String,
+      default: 'waste-movement-external-api',
+      env: 'CLIENT_CREDENTIALS_TENANT_SERVICE_NAME'
     }
   },
   serviceAuth: {
@@ -256,7 +270,8 @@ export const config = convict({
 
 const overrideConfig = {
   services: {
-    wasteOrganisation: `https://waste-organisation-backend.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
+    wasteOrganisation: `https://waste-organisation-backend.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`,
+    clientSync: `https://dwt-client-sync.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
   }
 }
 
