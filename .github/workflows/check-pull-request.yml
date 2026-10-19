@@ -74,8 +74,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: DEFRA/digital-waste-tracking-fe-uat
-          # TODO: drop once DEFRA/digital-waste-tracking-fe-uat#105 is merged
-          ref: DWTA-463-admin-tool-tests-in-ci
           path: integration-tests
 
       # The organisations the waste organisations report tests expect
