@@ -5,6 +5,7 @@
 @use 'core';
 @use 'components';
 @use 'partials';
+@use 'overrides';
 
 .govuk-generic-header__container {
   border-bottom: 10px solid #1d70b8;
@@ -14,13 +15,11 @@
 }
 
 .defra-header {
-  border-bottom: 10px solid variables.$defra-green;
   display: block;
   unicode-bidi: isolate;
 }
 
 .defra-header__inner {
-  align-items: center;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -55,9 +54,11 @@
   line-height: 1.2;
   text-decoration: none;
   justify-self: center;
+
   &:visited {
     color: variables.$defra-green;
   }
+
   &:hover {
     text-decoration: underline;
     text-decoration-thickness: 3px;
