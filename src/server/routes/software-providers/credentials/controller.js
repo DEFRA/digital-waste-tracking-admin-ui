@@ -3,6 +3,9 @@ import { paths } from '#/server/common/constants/paths.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { formatGeneratedOn } from '#/server/common/helpers/format-generated-on.js'
 
+// The panel capitalises the environment, e.g. "Local environment"
+const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
+
 /**
  * @param {ReturnType<import('#/server/common/helpers/new-client-credentials-store.js').createNewClientCredentialsStore>} store
  */
@@ -25,7 +28,7 @@ export function newClientCredentialsController(store) {
       return h.view('software-providers/credentials/index', {
         pageTitle: 'Copy the client credentials',
         generatedOn: formatGeneratedOn(new Date(credentials.generatedOn)),
-        environment: `${environmentName()} environment`,
+        environment: capitalise(`${environmentName()} environment`),
         apiUrl: config.get('clientCredentials.apiUrl'),
         clientId: credentials.clientId,
         clientSecret: credentials.clientSecret,

@@ -252,11 +252,10 @@ export const config = convict({
       env: 'CLIENT_CREDENTIALS_TENANT_SERVICE_NAME'
     },
     apiUrl: {
-      // An example until the real URL for each environment is confirmed
+      // Set for each environment below
       doc: 'The API URL shown with new client credentials, for the software provider to connect to',
       format: String,
-      default:
-        'https://waste-movement-external-api.api.ext-test.cdp-int.defra.cloud',
+      default: '',
       env: 'CLIENT_CREDENTIALS_API_URL'
     }
   },
@@ -276,7 +275,19 @@ export const config = convict({
   }
 })
 
+// The external API's address in each environment, from the CDP portal.
+// Production has a public address of its own
+const externalApiUrls = {
+  local: 'http://localhost:3001',
+  prod: 'https://waste-tracking.api.defra.gov.uk'
+}
+
 const overrideConfig = {
+  clientCredentials: {
+    apiUrl:
+      externalApiUrls[config.get('cdpEnvironment')] ??
+      `https://waste-movement-external-api.api.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
+  },
   services: {
     wasteOrganisation: `https://waste-organisation-backend.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`,
     clientSync: `https://dwt-client-sync.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`

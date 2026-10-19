@@ -339,7 +339,7 @@ describe('Create new credentials', () => {
         ])
       ).toEqual([
         ['Generated on', '15 October 2026 at 4:49pm'],
-        ['local environment', config.get('clientCredentials.apiUrl')],
+        ['Local environment', 'http://localhost:3001'],
         ['Client ID', 'new-client-id'],
         ['Client secret', 'new-client-secret']
       ])
