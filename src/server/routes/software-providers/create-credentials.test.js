@@ -360,7 +360,7 @@ describe('Create new credentials', () => {
         document
           .querySelector('[data-testid="copy-button"]')
           .getAttribute('aria-label')
-      ).toEqual('Copy client ID and client secret')
+      ).toEqual('Copy client credentials')
       expect(
         document
           .querySelector('[data-testid="copy-status"]')
