@@ -16,12 +16,14 @@
       <p class="govuk-body govuk-!-margin-bottom-7" data-testid="app-page-body">
         Manage the client credentials that software providers use to connect to the Digital Waste Tracking service.
       </p>
+      {% if createClientCredentialsPath %}
       {{ govukButton({
         text: "Create new credentials",
         href: createClientCredentialsPath,
         classes: "govuk-button--secondary govuk-!-margin-bottom-7",
         attributes: { "data-testid": "create-credentials-button" }
       }) }}
+      {% endif %}
       {% if not hasCredentials %}
         <h2 class="govuk-heading-m" data-testid="client-credentials-empty-heading">Client credentials</h2>
         <p class="govuk-body" data-testid="client-credentials-empty">New client credentials will be shown here.</p>

@@ -13,6 +13,33 @@ describe('#config', () => {
     vi.resetModules()
   })
 
+  describe('clientCredentials.createEnabled', () => {
+    test.each([
+      ['local', true],
+      ['dev', true],
+      ['test', true],
+      ['perf-test', true],
+      ['ext-test', true],
+      ['prod', false]
+    ])('Should be set for %s to %s', async (environment, enabled) => {
+      const config = await loadConfig({
+        ENVIRONMENT: environment,
+        CLIENT_CREDENTIALS_CREATE_ENABLED: undefined
+      })
+
+      expect(config.get('clientCredentials.createEnabled')).toBe(enabled)
+    })
+
+    test('Should be overridable', async () => {
+      const config = await loadConfig({
+        ENVIRONMENT: 'prod',
+        CLIENT_CREDENTIALS_CREATE_ENABLED: 'true'
+      })
+
+      expect(config.get('clientCredentials.createEnabled')).toBe(true)
+    })
+  })
+
   describe('clientCredentials.apiUrl', () => {
     test.each([
       ['local', 'http://localhost:3001'],

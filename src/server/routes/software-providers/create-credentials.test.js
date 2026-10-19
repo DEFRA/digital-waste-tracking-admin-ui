@@ -377,6 +377,53 @@ describe('Create new credentials', () => {
     })
   })
 
+  describe('When creating is switched off, as in production', () => {
+    let offServer
+
+    beforeAll(async () => {
+      config.set('clientCredentials.createEnabled', false)
+      offServer = await createServer()
+      await offServer.initialize()
+    })
+
+    afterAll(async () => {
+      config.set('clientCredentials.createEnabled', true)
+      await offServer.stop({ timeout: 0 })
+    })
+
+    test('Should not show the "Create new credentials" button', async () => {
+      clientSyncRespondsWith(200, [])
+
+      const { result } = await offServer.inject({
+        method: 'GET',
+        url: '/software-providers',
+        headers: auth
+      })
+
+      expect(
+        documentOf(result).querySelector(
+          '[data-testid="create-credentials-button"]'
+        )
+      ).toBeNull()
+    })
+
+    test.each([
+      ['GET', '/software-providers/create'],
+      ['POST', '/software-providers/create'],
+      ['GET', '/software-providers/credentials']
+    ])('Should not have %s %s', async (method, url) => {
+      const { statusCode } = await offServer.inject({
+        method,
+        url,
+        headers: auth,
+        payload: method === 'POST' ? { clientName: 'Any_Name' } : undefined
+      })
+
+      expect(statusCode).toEqual(404)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+  })
+
   test('Should ask anyone not signed in to sign in', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'GET',

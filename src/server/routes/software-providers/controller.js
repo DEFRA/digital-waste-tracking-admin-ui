@@ -1,3 +1,4 @@
+import { config } from '#/config/config.js'
 import { getClientCredentials } from '#/server/common/helpers/get-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { paths } from '#/server/common/constants/paths.js'
@@ -36,7 +37,9 @@ export const softwareProvidersController = {
 
     return h.view('software-providers/index', {
       pageTitle: 'Software providers',
-      createClientCredentialsPath: paths.createClientCredentials,
+      createClientCredentialsPath: config.get('clientCredentials.createEnabled')
+        ? paths.createClientCredentials
+        : null,
       clientCredentials
     })
   }

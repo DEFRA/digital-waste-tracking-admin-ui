@@ -251,6 +251,14 @@ export const config = convict({
       default: 'waste-movement-external-api',
       env: 'CLIENT_CREDENTIALS_TENANT_SERVICE_NAME'
     },
+    createEnabled: {
+      // Off in production until the security concerns raised in refinement
+      // are resolved (DWTSPI-458)
+      doc: 'Whether staff can create client credentials. Set for each environment below',
+      format: Boolean,
+      default: true,
+      env: 'CLIENT_CREDENTIALS_CREATE_ENABLED'
+    },
     apiUrl: {
       // Set for each environment below
       doc: 'The API URL shown with new client credentials, for the software provider to connect to',
@@ -284,6 +292,7 @@ const externalApiUrls = {
 
 const overrideConfig = {
   clientCredentials: {
+    createEnabled: config.get('cdpEnvironment') !== 'prod',
     apiUrl:
       externalApiUrls[config.get('cdpEnvironment')] ??
       `https://waste-movement-external-api.api.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
