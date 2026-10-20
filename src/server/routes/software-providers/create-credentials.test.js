@@ -344,6 +344,16 @@ describe('Create new credentials', () => {
       ).toEqual(
         'Warning Copy the client secret before leaving this page. Once you leave this page, you cannot view the client secret again.'
       )
+      // So the browser's back/forward cache can't show the secret again
+      const showOnce = document.querySelector('[data-module="app-show-once"]')
+      expect(showOnce.getAttribute('data-leave-to')).toEqual(
+        '/software-providers'
+      )
+      expect(
+        [...showOnce.querySelectorAll('[data-show-once]')].map((value) =>
+          value.getAttribute('data-testid')
+        )
+      ).toEqual(['client-id', 'client-secret'])
       expect(panel.tagName).toEqual('ARTICLE')
       expect(panel.getAttribute('aria-label')).toEqual(
         'Client credentials generated on 15 October 2026 at 4:49pm'

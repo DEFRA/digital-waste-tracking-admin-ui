@@ -10,6 +10,7 @@ import {
 import { SortableTable } from '@ministryofjustice/frontend'
 
 import { initCopy } from './components/copy.js'
+import { initShowOnce } from './components/show-once.js'
 import { initSingleSubmit } from './components/single-submit.js'
 
 createAll(Button)
@@ -21,3 +22,4 @@ createAll(PasswordInput)
 createAll(SortableTable)
 initCopy()
 initSingleSubmit()
+initShowOnce()
