@@ -46,4 +46,17 @@ describe('#buildNavigation', () => {
       }
     ])
   })
+
+  test.each([
+    ['/software-providers', true],
+    ['/software-providers/create', true],
+    ['/software-providers/credentials/an-id', true],
+    ['/software-providers-elsewhere', false]
+  ])('Should highlight Software providers for %s: %s', (path, current) => {
+    const softwareProviders = buildNavigation(mockRequest({ path })).find(
+      ({ text }) => text === 'Software providers'
+    )
+
+    expect(softwareProviders.current).toBe(current)
+  })
 })
