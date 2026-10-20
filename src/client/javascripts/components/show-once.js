@@ -6,6 +6,9 @@
  * When the user leaves, the values marked data-show-once are removed, so the
  * copy the browser keeps doesn't hold them. If the page is restored anyway, it
  * goes to the data-leave-to address, as going back to it should.
+ *
+ * Without JavaScript this can't run, so going back can still show the secret
+ * again from the browser's memory, although the server only sends it once.
  */
 export class ShowOnce {
   /**
