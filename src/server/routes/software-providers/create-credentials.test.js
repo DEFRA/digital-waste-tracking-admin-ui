@@ -5,7 +5,9 @@ import { config } from '#/config/config.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import {
   requestBasicAuthTest1,
-  userBasicAuthTest1
+  requestBasicAuthTest2,
+  userBasicAuthTest1,
+  userBasicAuthTest2
 } from '#/test-helpers/constants.js'
 
 const { mockAudit } = vi.hoisted(() => ({ mockAudit: vi.fn() }))
@@ -61,6 +63,7 @@ describe('Create new credentials', () => {
 
   beforeAll(async () => {
     process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
+    process.env.USER_BASIC_AUTH_TEST2 = userBasicAuthTest2
 
     server = await createServer()
     await server.initialize()
@@ -137,7 +140,10 @@ describe('Create new credentials', () => {
       expect(getElementText(document, 'generate-credentials-button')).toEqual(
         'Generate credentials'
       )
-      // A second click would only show "already exists", losing the secret
+      // A second submission would only show "already exists", losing the secret
+      expect(
+        document.querySelector('form').getAttribute('data-module')
+      ).toEqual('app-single-submit')
       expect(
         document
           .querySelector('[data-testid="generate-credentials-button"]')
@@ -377,6 +383,20 @@ describe('Create new credentials', () => {
       expect(again.statusCode).toEqual(302)
       expect(again.headers.location).toEqual('/software-providers')
       expect(again.payload).not.toContain(created.clientSecret)
+    })
+
+    test("Should not show another user's new credentials", async () => {
+      const { response } = await createCredentials()
+
+      const otherUser = await server.inject({
+        method: 'GET',
+        url: response.headers.location,
+        headers: { Authorization: `Basic ${requestBasicAuthTest2}` }
+      })
+
+      expect(otherUser.statusCode).toEqual(302)
+      expect(otherUser.headers.location).toEqual('/software-providers')
+      expect(otherUser.payload).not.toContain(created.clientSecret)
     })
 
     test('Should go to the Software providers page when there are no new credentials', async () => {

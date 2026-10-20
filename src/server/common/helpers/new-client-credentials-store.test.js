@@ -8,7 +8,11 @@ describe('#createNewClientCredentialsStore', () => {
 
   let cache
   let server
-  let request
+
+  const requestFrom = (username) => ({
+    auth: { credentials: { username } },
+    yar: { get: vi.fn(), set: vi.fn() }
+  })
 
   beforeEach(() => {
     const stored = new Map()
@@ -18,20 +22,6 @@ describe('#createNewClientCredentialsStore', () => {
       drop: vi.fn(async (key) => stored.delete(key))
     }
     server = { cache: vi.fn(() => cache) }
-
-    const session = new Map()
-    request = {
-      yar: {
-        set: vi.fn((key, value) => session.set(key, value)),
-        get: vi.fn((key, clear) => {
-          const value = session.get(key)
-          if (clear) {
-            session.delete(key)
-          }
-          return value
-        })
-      }
-    }
   })
 
   test('Should keep the credentials in a short-lived server-side cache', () => {
@@ -45,23 +35,23 @@ describe('#createNewClientCredentialsStore', () => {
     )
   })
 
-  test('Should keep only random ids in the session, never the credentials', async () => {
+  test('Should keep the credentials and their owner under a random id, and nothing in the session', async () => {
     const store = createNewClientCredentialsStore(server)
+    const request = requestFrom('test1')
 
     const id = await store.save(request, credentials)
 
     expect(id).toMatch(/^[0-9a-f-]{36}$/)
-    expect(request.yar.set).toHaveBeenCalledWith('newClientCredentialsIds', [
-      id
-    ])
-    expect(JSON.stringify(request.yar.set.mock.calls)).not.toContain(
-      credentials.clientSecret
-    )
-    expect(cache.set).toHaveBeenCalledWith(id, credentials)
+    expect(cache.set).toHaveBeenCalledWith(id, {
+      owner: 'test1',
+      credentials
+    })
+    expect(request.yar.set).not.toHaveBeenCalled()
   })
 
   test('Should give the credentials back once', async () => {
     const store = createNewClientCredentialsStore(server)
+    const request = requestFrom('test1')
     const id = await store.save(request, credentials)
 
     expect(await store.take(request, id)).toEqual(credentials)
@@ -71,28 +61,35 @@ describe('#createNewClientCredentialsStore', () => {
 
   test('Should keep each of two creates separate, as from two tabs', async () => {
     const store = createNewClientCredentialsStore(server)
+    const request = requestFrom('test1')
     const other = { clientId: 'other-client-id', clientSecret: 'other-secret' }
 
     const firstId = await store.save(request, credentials)
     const secondId = await store.save(request, other)
 
-    expect(await store.take(request, firstId)).toEqual(credentials)
     expect(await store.take(request, secondId)).toEqual(other)
+    expect(await store.take(request, firstId)).toEqual(credentials)
   })
 
-  test("Should not give another session's credentials back", async () => {
+  test("Should not give another user's credentials back, or drop them", async () => {
     const store = createNewClientCredentialsStore(server)
-    const id = await store.save(request, credentials)
-    const otherSession = { yar: { get: vi.fn(), set: vi.fn() } }
+    const id = await store.save(requestFrom('test1'), credentials)
 
-    expect(await store.take(otherSession, id)).toBeNull()
-    expect(cache.get).not.toHaveBeenCalled()
+    expect(await store.take(requestFrom('test2'), id)).toBeNull()
+    expect(cache.drop).not.toHaveBeenCalled()
+    expect(await store.take(requestFrom('test1'), id)).toEqual(credentials)
   })
 
-  test('Should give nothing back when none were saved', async () => {
+  test('Should give nothing back without a signed-in user', async () => {
+    const store = createNewClientCredentialsStore(server)
+    const id = await store.save(requestFrom('test1'), credentials)
+
+    expect(await store.take(requestFrom(undefined), id)).toBeNull()
+  })
+
+  test('Should give nothing back for an unknown id', async () => {
     const store = createNewClientCredentialsStore(server)
 
-    expect(await store.take(request, 'unknown-id')).toBeNull()
-    expect(cache.get).not.toHaveBeenCalled()
+    expect(await store.take(requestFrom('test1'), 'unknown-id')).toBeNull()
   })
 })

@@ -13,7 +13,7 @@
       <span class="govuk-caption-l" data-testid="app-heading-caption">{{ caption }}</span>
       <h1 class="govuk-heading-l" data-testid="app-heading-title">{{ pageTitle }}</h1>
 
-      <form method="post" novalidate>
+      <form method="post" novalidate data-module="app-single-submit">
         {{ govukInput({
           label: {
             text: "Client name",

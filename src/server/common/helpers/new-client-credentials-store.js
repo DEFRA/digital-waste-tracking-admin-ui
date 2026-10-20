@@ -6,7 +6,11 @@ import { config } from '#/config/config.js'
 // that a secret nobody views doesn't stay stored
 const expiresInMs = 5 * 60 * 1000
 
-const sessionKey = 'newClientCredentialsIds'
+/**
+ * @param {import('@hapi/hapi').Request} request - The request
+ * @returns {String|undefined} The signed-in user, who owns what they create
+ */
+const ownerOf = (request) => request.auth.credentials?.username
 
 /**
  * Holds new client credentials between creating them and showing them, so the
@@ -14,8 +18,9 @@ const sessionKey = 'newClientCredentialsIds'
  *
  * The credentials are kept in the server-side cache, never in the session,
  * as small sessions are stored in the browser's cookie. Each set gets a random
- * id for the redirect, and the session lists the ids it created, so another
- * session can't read them and two tabs each get their own.
+ * id for the redirect and records the user who created it, so only they can
+ * read it. Nothing is written to the session, so two tabs creating at once
+ * can't overwrite each other.
  *
  * @param {import('@hapi/hapi').Server} server - The server
  */
@@ -36,8 +41,7 @@ export function createNewClientCredentialsStore(server) {
     async save(request, credentials) {
       const id = randomUUID()
 
-      await cache.set(id, credentials)
-      request.yar.set(sessionKey, [...(request.yar.get(sessionKey) ?? []), id])
+      await cache.set(id, { owner: ownerOf(request), credentials })
 
       return id
     },
@@ -48,25 +52,20 @@ export function createNewClientCredentialsStore(server) {
      * @param {import('@hapi/hapi').Request} request - The request
      * @param {String} id - The id they were saved with
      *
-     * @returns {Promise<Object|null>} The new credentials, or null if this
-     * session has none with that id
+     * @returns {Promise<Object|null>} The new credentials, or null if there are
+     * none with that id that this user created
      */
     async take(request, id) {
-      const ids = request.yar.get(sessionKey) ?? []
+      const owner = ownerOf(request)
+      const saved = await cache.get(id)
 
-      if (!ids.includes(id)) {
+      if (!owner || saved?.owner !== owner) {
         return null
       }
 
-      request.yar.set(
-        sessionKey,
-        ids.filter((saved) => saved !== id)
-      )
-
-      const credentials = await cache.get(id)
       await cache.drop(id)
 
-      return credentials
+      return saved.credentials
     }
   }
 }

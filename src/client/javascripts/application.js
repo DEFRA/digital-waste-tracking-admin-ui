@@ -10,6 +10,7 @@ import {
 import { SortableTable } from '@ministryofjustice/frontend'
 
 import { initCopy } from './components/copy.js'
+import { initSingleSubmit } from './components/single-submit.js'
 
 createAll(Button)
 createAll(Checkboxes)
@@ -19,3 +20,4 @@ createAll(SkipLink)
 createAll(PasswordInput)
 createAll(SortableTable)
 initCopy()
+initSingleSubmit()
