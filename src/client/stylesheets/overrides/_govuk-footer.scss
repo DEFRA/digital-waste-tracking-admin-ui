@@ -1,0 +1,24 @@
+@use 'variables/colours' as *;
+
+.govuk-footer {
+  --govuk-brand-colour: #{$defra-green-dark};
+  --govuk-template-background-colour: #{$app-mid-grey};
+  padding-top: 25px;
+  padding-bottom: 25px;
+}
+
+.govuk-footer__meta {
+  justify-content: start;
+}
+
+.govuk-footer__licence-description {
+  font-size: 16px;
+  line-height: 1.25;
+  color: $app-black;
+  text-wrap: balance;
+  text-align: left;
+}
+
+.govuk-footer__link:link, .govuk-footer__link:visited {
+  color: $app-black;
+}
