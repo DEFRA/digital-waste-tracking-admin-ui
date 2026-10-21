@@ -36,7 +36,7 @@ describe('#homeController', () => {
     const pageBody = getElementText(document, 'app-page-body')
 
     expect(statusCode).toBe(statusCodes.ok)
-    expect(document.title).toEqual('Home | DWT admin portal')
+    expect(document.title).toEqual('Home - DWT admin portal')
     expect(pageTitle).toEqual('DWT admin portal')
     expect(pageBody).toEqual(
       'This site houses a collection of tools for the use of the Digital Waste Tracking service team to facilitate managing and monitoring the service.'

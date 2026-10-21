@@ -23,7 +23,7 @@ describe('#errors', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Page not found | DWT admin portal')
+      expect.stringContaining('Page not found - DWT admin portal')
     )
     expect(statusCode).toBe(statusCodes.notFound)
   })
