@@ -62,7 +62,7 @@ describe('context and cache', () => {
           navigation: [
             {
               current: true,
-              text: 'DWT Admin Portal',
+              text: 'DWT admin portal',
               href: '/'
             },
             {
@@ -156,7 +156,7 @@ describe('context and cache', () => {
           navigation: [
             {
               current: true,
-              text: 'DWT Admin Portal',
+              text: 'DWT admin portal',
               href: '/'
             },
             {

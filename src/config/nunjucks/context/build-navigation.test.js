@@ -11,7 +11,7 @@ describe('#buildNavigation', () => {
     ).toEqual([
       {
         current: false,
-        text: 'DWT Admin Portal',
+        text: 'DWT admin portal',
         href: '/'
       },
       {
@@ -31,7 +31,7 @@ describe('#buildNavigation', () => {
     expect(buildNavigation(mockRequest({ path: '/' }))).toEqual([
       {
         current: true,
-        text: 'DWT Admin Portal',
+        text: 'DWT admin portal',
         href: '/'
       },
       {

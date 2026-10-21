@@ -4,7 +4,7 @@ import { loginPayloadSchema } from '#/server/routes/login/schema.js'
 const LOGIN_VIEW_CONTEXT = {
   pageTitle: 'User Login',
   heading: 'User Login',
-  serviceName: 'DWT Admin Portal',
+  serviceName: 'DWT admin portal',
   breadcrumbs: [{ text: 'Login', href: '/login' }]
 }
 
