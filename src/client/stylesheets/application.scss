@@ -46,7 +46,6 @@
   }
 }
 
-
 .defra-header__service-name {
   color: variables.$defra-green;
   font-weight: 700;
@@ -59,7 +58,7 @@
     color: variables.$defra-green;
   }
 
-  &:hover {
+  span:hover {
     text-decoration: underline;
     text-decoration-thickness: 3px;
     text-underline-offset: .15em;

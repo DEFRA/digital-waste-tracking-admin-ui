@@ -27,12 +27,13 @@
 {% block header %}
   <header class="defra-header">
     <div class="defra-header__inner">
-      <div class="defra-header__brand-group">
+      <a href="/" class="defra-header__service-name defra-header__brand-group">
         <img src="{{ getAssetPath('src/client/images/defra-logo.svg') }}" alt="" role="presentation" class="defra-header__logo">
-        <a href="/" class="defra-header__service-name">
-          <span class="govuk-visually-hidden">Department for Environment, Food and Rural Affairs: </span>DWT admin portal
-        </a>
-      </div>
+        <span class="govuk-visually-hidden">
+        Department for Environment, Food and Rural Affairs:
+        </span>
+        <span>DWT admin portal</span>
+      </a>
     </div>
   </header>
 
