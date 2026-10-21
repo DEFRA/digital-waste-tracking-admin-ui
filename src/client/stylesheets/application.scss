@@ -7,13 +7,6 @@
 @use 'partials';
 @use 'overrides';
 
-.govuk-generic-header__container {
-  border-bottom: 10px solid #1d70b8;
-  position: relative;
-  margin-bottom: -10px;
-  padding: 5px 0;
-}
-
 .defra-header {
   display: block;
   unicode-bidi: isolate;

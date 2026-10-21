@@ -1,7 +1,6 @@
 {% extends "govuk/template.njk" %}
 
 {# Import GOVUK components globally #}
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/generic-header/macro.njk" import govukGenericHeader %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
@@ -67,12 +66,12 @@
 <div class="govuk-footer">
   <div class="govuk-width-container">
     <div class="govuk-footer__meta">
-      <div class="govuk-footer__meta-item govuk-footer__meta-item">
+      <div class="govuk-footer__meta-item">
         <span class="govuk-footer__licence-description">
           Maintained by the DWT Software Provider team at Defra.
         </span>
       </div>
-      <div class="govuk-footer__meta-item govuk-footer__meta-item">
+      <div class="govuk-footer__meta-item">
         <span class="govuk-footer__licence-description">
           All content is available under the
           <a
