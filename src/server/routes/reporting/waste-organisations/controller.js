@@ -50,8 +50,8 @@ export const wasteOrganisationsReportingController = {
     }
 
     return h.view('reporting/waste-organisations/index', {
-      pageTitle: 'Waste Organisations Report',
-      heading: 'Waste Organisations',
+      pageTitle: 'Waste organisations report',
+      heading: 'Waste organisations',
       serviceName: 'DWT admin portal',
       breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Reporting' }],
       wasteOrganisations,

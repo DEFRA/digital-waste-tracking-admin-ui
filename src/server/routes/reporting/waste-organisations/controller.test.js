@@ -20,9 +20,9 @@ function assertCommonPageElements(document, statusCode) {
 
   expect(statusCode).toBe(statusCodes.ok)
   expect(document.title).toEqual(
-    'Waste Organisations Report - DWT admin portal'
+    'Waste organisations report - DWT admin portal'
   )
-  expect(pageTitle).toEqual('Waste Organisations')
+  expect(pageTitle).toEqual('Waste organisations')
   expect(pageBody).toContain(
     'Search waste organisations by DefraID registration date.'
   )
