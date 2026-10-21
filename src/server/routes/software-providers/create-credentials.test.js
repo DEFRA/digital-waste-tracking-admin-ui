@@ -131,7 +131,7 @@ describe('Create new credentials', () => {
       expect(
         document.querySelector('#clientName-hint').textContent.trim()
       ).toEqual(
-        'Enter the name of the software provider and software package, using letters and underscores only. For example, Waste_Technologies_Software.'
+        'Enter the name of the software provider and software package, using letters and underscores only. For example, Waste_Technologies_Software'
       )
       expect(input.getAttribute('aria-describedby')).toEqual('clientName-hint')
       expect(input.getAttribute('autocomplete')).toEqual('off')
