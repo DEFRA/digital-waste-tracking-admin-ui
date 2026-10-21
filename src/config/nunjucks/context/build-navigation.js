@@ -10,7 +10,10 @@ export function buildNavigation(request) {
     {
       text: 'Software providers',
       href: paths.softwareProviders,
-      current: request?.path === paths.softwareProviders
+      // Including the pages under it, such as creating credentials
+      current:
+        request?.path === paths.softwareProviders ||
+        request?.path?.startsWith(`${paths.softwareProviders}/`) === true
     },
     {
       text: 'Reporting',

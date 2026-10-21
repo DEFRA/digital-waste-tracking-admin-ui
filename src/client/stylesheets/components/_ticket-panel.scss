@@ -1,0 +1,26 @@
+@use "govuk-frontend" as *;
+
+// Styles for MoJ Frontend's ticket panel, based on
+// @ministryofjustice/frontend/moj/components/ticket-panel. As with the sortable
+// table, its own Sass clashes with our GOV.UK Frontend set-up, so we don't load it.
+
+.moj-ticket-panel {
+  display: block;
+  margin-bottom: govuk-spacing(4);
+}
+
+.moj-ticket-panel__content {
+  padding: govuk-spacing(4);
+  background-color: govuk-colour("black", $variant: "tint-95");
+}
+
+.moj-ticket-panel__content--blue {
+  border-left: 4px solid govuk-colour("blue");
+}
+
+// The client ID and secret have no spaces, so let them wrap rather than
+// widen the page
+.app-credentials dd {
+  margin-left: 0;
+  overflow-wrap: anywhere;
+}

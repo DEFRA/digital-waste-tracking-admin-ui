@@ -250,6 +250,21 @@ export const config = convict({
       format: String,
       default: 'waste-movement-external-api',
       env: 'CLIENT_CREDENTIALS_TENANT_SERVICE_NAME'
+    },
+    createEnabled: {
+      // Off in production until the security concerns raised in refinement
+      // are resolved (DWTSPI-458)
+      doc: 'Whether staff can create client credentials. Set for each environment below, and can be turned on in production from the CDP portal without a code change',
+      format: Boolean,
+      default: true,
+      env: 'CLIENT_CREDENTIALS_CREATE_ENABLED'
+    },
+    apiUrl: {
+      // Set for each environment below
+      doc: 'The API URL shown with new client credentials, for the software provider to connect to',
+      format: String,
+      default: '',
+      env: 'CLIENT_CREDENTIALS_API_URL'
     }
   },
   serviceAuth: {
@@ -268,7 +283,20 @@ export const config = convict({
   }
 })
 
+// The external API's address in each environment, from the CDP portal.
+// Production has a public address of its own
+const externalApiUrls = {
+  local: 'http://localhost:3001',
+  prod: 'https://waste-tracking.api.defra.gov.uk'
+}
+
 const overrideConfig = {
+  clientCredentials: {
+    createEnabled: config.get('cdpEnvironment') !== 'prod',
+    apiUrl:
+      externalApiUrls[config.get('cdpEnvironment')] ??
+      `https://waste-movement-external-api.api.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
+  },
   services: {
     wasteOrganisation: `https://waste-organisation-backend.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`,
     clientSync: `https://dwt-client-sync.${config.get('cdpEnvironment')}.cdp-int.defra.cloud`
