@@ -3,7 +3,7 @@ import { paths } from '#/server/common/constants/paths.js'
 export function buildNavigation(request) {
   return [
     {
-      text: 'DWT Admin Portal',
+      text: 'DWT admin portal',
       href: '/',
       current: request?.path === '/'
     },
