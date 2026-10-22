@@ -5,10 +5,69 @@
 @use 'core';
 @use 'components';
 @use 'partials';
+@use 'overrides';
 
-.govuk-generic-header__container {
-  border-bottom: 10px solid #1d70b8;
-  position: relative;
-  margin-bottom: -10px;
-  padding: 5px 0;
+.defra-header {
+  display: block;
+  unicode-bidi: isolate;
+}
+
+.defra-header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 12px 15px;
+
+}
+
+.defra-header__brand-group {
+  display: contents;
+
+}
+
+.defra-header__logo {
+  display: inline-block;
+  margin-right: 10px;
+  height: 60px;
+  width: auto;
+  @media (max-width: 768px) {
+    justify-self: start;
+    height: 45px;
+  }
+}
+
+.defra-header__service-name {
+  color: variables.$defra-green;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.2;
+  text-decoration: none;
+  justify-self: center;
+
+  &:visited {
+    color: variables.$defra-green;
+  }
+
+  span:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: .15em;
+  }
+}
+
+.defra-header__service-name .govuk-visually-hidden {
+  color: variables.$defra-green;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.govuk-width-container {
+  flex: 1;
 }

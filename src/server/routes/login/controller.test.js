@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { loginViewController, loginSubmitController } from './controller.js'
 
 const LOGIN_VIEW_CONTEXT = {
-  pageTitle: 'User Login',
-  heading: 'User Login',
-  serviceName: 'DWT Admin Portal',
+  pageTitle: 'User login',
+  heading: 'User login',
+  serviceName: 'DWT admin portal',
   breadcrumbs: [{ text: 'Login', href: '/login' }]
 }
 

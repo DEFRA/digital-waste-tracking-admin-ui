@@ -62,7 +62,7 @@ describe('context and cache', () => {
           navigation: [
             {
               current: true,
-              text: 'DWT Admin Portal',
+              text: 'DWT admin portal',
               href: '/'
             },
             {
@@ -76,7 +76,7 @@ describe('context and cache', () => {
               text: 'Reporting'
             }
           ],
-          serviceName: 'digital-waste-tracking-admin-ui',
+          serviceName: 'DWT admin portal',
           serviceUrl: '/'
         })
       })
@@ -156,7 +156,7 @@ describe('context and cache', () => {
           navigation: [
             {
               current: true,
-              text: 'DWT Admin Portal',
+              text: 'DWT admin portal',
               href: '/'
             },
             {
@@ -170,7 +170,7 @@ describe('context and cache', () => {
               text: 'Reporting'
             }
           ],
-          serviceName: 'digital-waste-tracking-admin-ui',
+          serviceName: 'DWT admin portal',
           serviceUrl: '/'
         })
       })

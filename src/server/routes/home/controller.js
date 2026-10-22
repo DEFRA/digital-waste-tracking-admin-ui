@@ -6,8 +6,8 @@ export const homeController = {
   handler(_request, h) {
     return h.view('home/index', {
       pageTitle: 'Home',
-      heading: 'DWT Admin Portal',
-      serviceName: 'DWT Admin Portal'
+      heading: 'DWT admin portal',
+      serviceName: 'DWT admin portal'
     })
   }
 }
