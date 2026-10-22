@@ -18,8 +18,10 @@ import { initSingleSubmit } from './components/single-submit.js'
  * Shows/hides the navigation menu on mobile devices
  */
 export function initServiceNavigation() {
-  const toggleButton = document.querySelector('.js-service-navigation-toggle')
-  const navList = document.getElementById('service-navigation-list')
+  const toggleButton = document.querySelector(
+    '.govuk-js-service-navigation-toggle'
+  )
+  const navList = document.getElementById('navigation')
 
   if (!toggleButton || !navList) {
     return
@@ -30,7 +32,7 @@ export function initServiceNavigation() {
   toggleButton.addEventListener('click', function () {
     const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true'
     toggleButton.setAttribute('aria-expanded', String(!isExpanded))
-    navList.classList.toggle('defra-service-navigation__list--open')
+    navList.classList.toggle('govuk-service-navigation__list--open')
   })
 }
 
