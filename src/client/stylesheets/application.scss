@@ -1,11 +1,22 @@
-@use 'govuk-frontend';
+@use 'sass:meta';
+@use 'variables/colours' as *;
 
-@use 'variables';
-@use 'helpers';
-@use 'core';
-@use 'components';
-@use 'partials';
-@use 'overrides';
+@layer imports, default, overrides;
+
+@layer imports {
+  @include meta.load-css('govuk-frontend');
+}
+
+@layer default {
+  @include meta.load-css('helpers');
+  @include meta.load-css('core');
+  @include meta.load-css('components');
+  @include meta.load-css('partials');
+}
+
+@layer overrides {
+  @include meta.load-css('overrides');
+}
 
 .defra-header {
   display: block;
@@ -40,7 +51,7 @@
 }
 
 .defra-header__service-name {
-  color: variables.$defra-green;
+  color: $defra-green;
   font-weight: 700;
   font-size: 22px;
   line-height: 1.2;
@@ -48,7 +59,7 @@
   justify-self: center;
 
   &:visited {
-    color: variables.$defra-green;
+    color: $defra-green;
   }
 
   span:hover {
@@ -59,7 +70,7 @@
 }
 
 .defra-header__service-name .govuk-visually-hidden {
-  color: variables.$defra-green;
+  color: $defra-green;
 }
 
 body {
