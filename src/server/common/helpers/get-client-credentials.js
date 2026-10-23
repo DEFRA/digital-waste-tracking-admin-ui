@@ -49,3 +49,45 @@ export async function getClientCredentials() {
 
   return response.json()
 }
+
+/**
+ * Gets the client credentials for a client of the configured service from the
+ * DWT Client Sync backend, for the environment the portal is running in.
+ *
+ * @param {String} clientId - The client's ID
+ *
+ * @returns {Promise<[{ clientId: String, clientName: String, tenantServiceName: String }]> | undefined} The client credentials, or undefined when the client has none
+ */
+export async function getClientCredentialsById(clientId) {
+  const tenantServiceName = config.get('clientCredentials.tenantServiceName')
+  const url = new URL(
+    `/clients/${encodeURIComponent(tenantServiceName)}/${encodeURIComponent(clientId)}`,
+    config.get('services.clientSync')
+  )
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: withTraceId(config.get('tracing.header'), {
+      'Content-Type': 'application/json',
+      Authorization: generateServiceAuthHeader()
+    }),
+    signal: AbortSignal.timeout(requestTimeoutMs)
+  })
+
+  // Client Sync answers 404 when the client has no credentials. A wrong client
+  // ID also gives a 404, so log it to make that visible
+  if (response.status === statusCodes.notFound) {
+    logger.warn(
+      `Client '${clientId}' not found for tenant service '${tenantServiceName}' at ${url}, showing none`
+    )
+    return undefined
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to get client credentials: ${response.status} ${response.statusText}`
+    )
+  }
+
+  return response.json()
+}
