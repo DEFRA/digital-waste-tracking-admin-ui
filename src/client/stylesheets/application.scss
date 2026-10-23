@@ -82,3 +82,7 @@ body {
 .govuk-width-container {
   flex: 1;
 }
+
+.govuk-width-container:has(main) {
+  width: 100%;
+}
