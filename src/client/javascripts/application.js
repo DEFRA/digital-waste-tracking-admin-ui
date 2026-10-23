@@ -27,7 +27,21 @@ export function initServiceNavigation() {
     return
   }
 
-  toggleButton.hidden = false
+  const mediaQuery = window.matchMedia('(max-width: 768px)')
+
+  // Remove the 'aria-hidden' accessibility tag when the menu is shown
+  // Required for browser accessibility checks
+  function updateToggleVisibility() {
+    if (mediaQuery.matches) {
+      toggleButton.hidden = false
+      toggleButton.removeAttribute('aria-hidden')
+    } else {
+      toggleButton.hidden = true
+      toggleButton.setAttribute('aria-hidden', 'true')
+    }
+  }
+  mediaQuery.addEventListener('change', updateToggleVisibility)
+  updateToggleVisibility()
 
   toggleButton.addEventListener('click', function () {
     const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true'
