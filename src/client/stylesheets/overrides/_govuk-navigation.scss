@@ -90,6 +90,10 @@
   }
 }
 
+.govuk-service-navigation__item:first-child .govuk-service-navigation__link {
+  margin-left: -16px;
+}
+
 .govuk-service-navigation__toggle {
   display: none;
   padding: 12px 16px;
