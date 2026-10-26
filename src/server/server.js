@@ -15,7 +15,7 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
-import { basicAuth, getEnvVars } from 'waste-movement-utils'
+import { basicAuth, getEnvVars } from '@defra/waste-movement-utils'
 import { createLogger } from './common/helpers/logging/logger.js'
 
 const logger = createLogger()
