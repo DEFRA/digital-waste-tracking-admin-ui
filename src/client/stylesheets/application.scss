@@ -1,13 +1,10 @@
 @use 'sass:meta';
 @use 'variables/colours' as *;
 
-@layer imports, default, overrides;
-
-@layer imports {
-  @include meta.load-css('govuk-frontend');
-}
+@layer default, overrides;
 
 @layer default {
+  @include meta.load-css('govuk-frontend');
   @include meta.load-css('helpers');
   @include meta.load-css('core');
   @include meta.load-css('components');

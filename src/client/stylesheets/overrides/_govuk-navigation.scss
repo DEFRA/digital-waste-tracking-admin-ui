@@ -1,5 +1,5 @@
 @use 'variables/colours' as *;
-@use 'govuk-frontend' as *;
+@use 'govuk-frontend/dist/govuk/base' as *;
 
 .govuk-service-navigation {
   --govuk-surface-background-colour: #{$defra-green-dark};
