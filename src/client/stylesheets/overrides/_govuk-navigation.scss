@@ -1,5 +1,5 @@
 @use 'variables/colours' as *;
-@use 'govuk-frontend/dist/govuk/base' as *;
+@use 'pkg:govuk-frontend/base' as *;
 
 .govuk-service-navigation {
   --govuk-surface-background-colour: #{$defra-green-dark};
@@ -112,12 +112,15 @@
 
   @include govuk-media-query($until: tablet) {
     font-size: 16px;
-    display: block;
     width: 100%;
 
     &:focus:not(:focus-visible) {
       box-shadow: none;
     }
+
+  &:not([hidden]) {
+    display: block;
+  }
 
   &:focus-visible {
       outline: 3px solid $app-yellow;
