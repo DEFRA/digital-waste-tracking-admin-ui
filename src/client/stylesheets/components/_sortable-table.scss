@@ -1,4 +1,4 @@
-@use "govuk-frontend" as *;
+@use "pkg:govuk-frontend/base" as *;
 
 // Styles for MoJ Frontend's sortable table (data-module="moj-sortable-table"),
 // copied from @ministryofjustice/frontend/moj/components/sortable-table. Its own
