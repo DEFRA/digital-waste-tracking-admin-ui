@@ -255,7 +255,6 @@ describe('Create new credentials', () => {
         () => clientSyncRespondsWith(502, { outcome: 'failure' }),
         'failure'
       ],
-
       [
         'does not reply in time',
         () =>
@@ -355,14 +354,22 @@ describe('Create new credentials', () => {
     test('Should record who created which client, without the secret', async () => {
       await createCredentials()
 
-      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
-        action: 'created new credentials',
-        outcome: 'success',
-        client: {
-          clientId: 'new-client-id',
-          clientName: 'Waste_Technologies_Software'
+      expect(mockAuditWriteAction).toHaveBeenCalledExactlyOnceWith(
+        // The signed-in user, whom the log line names
+        expect.objectContaining({
+          auth: expect.objectContaining({
+            credentials: expect.objectContaining({ username: 'test1' })
+          })
+        }),
+        {
+          action: 'created new credentials',
+          outcome: 'success',
+          client: {
+            clientId: 'new-client-id',
+            clientName: 'Waste_Technologies_Software'
+          }
         }
-      })
+      )
       expect(
         JSON.stringify(
           mockAuditWriteAction.mock.calls.map(([, options]) => options)
