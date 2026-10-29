@@ -305,6 +305,12 @@ export const config = convict({
       format: Boolean,
       default: !isProduction,
       env: 'AWS_S3_FORCE_PATH_STYLE'
+    },
+    bucketName: {
+      doc: 'S3 Client path config',
+      format: String,
+      default: '',
+      env: 'AWS_S3_BUCKET_TO_DELETE_FROM'
     }
   }
 })

@@ -7,6 +7,7 @@ import {
 } from '#/test-helpers/constants.js'
 import { paths } from '#/server/common/constants/paths.js'
 import { randomUUID } from 'node:crypto'
+import { config } from '#/config/config.js'
 
 let mockSend = () => {
   return {
@@ -23,10 +24,13 @@ vi.mock('@aws-sdk/client-s3', () => ({
   DeleteObjectCommand: class {}
 }))
 
-describe('#softwareProvidersController', () => {
+describe('#spreadsheetController', () => {
   let server
+  let oldBucket = null
 
   beforeAll(async () => {
+    oldBucket = config.get('aws.bucketName')
+    config.set('aws.bucketName', 'test-bucket')
     process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
 
     server = await createServer()
@@ -35,6 +39,7 @@ describe('#softwareProvidersController', () => {
 
   afterAll(() => {
     vi.clearAllMocks()
+    config.set('aws.bucketName', oldBucket)
   })
 
   test('Should show the delete form', async () => {
@@ -59,7 +64,7 @@ describe('#softwareProvidersController', () => {
       method: 'POST',
       url: paths.spreadsheetAdminDelete,
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
-      payload: { bucket: 'waste-dwt-test', key: 'test' }
+      payload: { key: 'test' }
     })
     expect(result).toEqual('')
     expect(statusCode).toBe(statusCodes.found)
@@ -75,40 +80,26 @@ describe('#softwareProvidersController', () => {
       method: 'POST',
       url: paths.spreadsheetAdminDelete,
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
-      payload: { bucket: 'waste-dwt-test', key: 'test' }
+      payload: { key: 'test' }
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toContain(errMsg)
   })
 
-  test('Should show warn when the bucket is empty', async () => {
+  test('Should warn when the bucket is empty', async () => {
     mockSend = () => ({
       Body: []
     })
 
+    config.set('aws.bucketName', '')
     const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: paths.spreadsheetAdminDelete,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
-      payload: { key: 'test' }
+      method: 'GET',
+      url: paths.spreadsheetAdmin,
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
     expect(statusCode).toBe(statusCodes.ok)
-    expect(result).toContain('Bucket must be specified')
-  })
-
-  test('Should show warn when the bucket fails pattern match', async () => {
-    mockSend = () => ({
-      Body: []
-    })
-
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: paths.spreadsheetAdminDelete,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
-      payload: { key: 'test', bucket: 'fail' }
-    })
-    expect(statusCode).toBe(statusCodes.ok)
-    expect(result).toContain('Bucket must be specified')
+    expect(result).toContain('Bucket name not configured')
+    config.set('aws.bucketName', 'test-bucket')
   })
 
   test('Should show warn when the key is empty', async () => {
@@ -120,7 +111,7 @@ describe('#softwareProvidersController', () => {
       method: 'POST',
       url: paths.spreadsheetAdminDelete,
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
-      payload: { bucket: 'test' }
+      payload: {}
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toContain('Key must be specified')

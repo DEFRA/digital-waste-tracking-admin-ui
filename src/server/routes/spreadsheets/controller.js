@@ -22,10 +22,9 @@ const deleteS3Object = async (Bucket, Key) => {
 
 export const deleteController = {
   async handler(request, h) {
-    const bucket = request?.payload?.bucket
+    const bucket = config.get('aws.bucketName')
     const key = request?.payload?.key
-    const validBucket = bucket ? bucket.matches(/-dwt-/) : false
-    if (bucket && key && validBucket) {
+    if (bucket && key) {
       try {
         await deleteS3Object(bucket, key)
         return h.redirect(paths.spreadsheetAdmin)
@@ -33,17 +32,13 @@ export const deleteController = {
         return h.view('spreadsheets/index', {
           pageTitle: 'Spreadsheets',
           paths,
-          bucketError: `${e}`
+          keyError: `${e}`
         })
       }
     }
     return h.view('spreadsheets/index', {
       pageTitle: 'Spreadsheets',
       paths,
-      bucketError:
-        bucket == null || !validBucket
-          ? 'Bucket must be specified and contain `-dwt-`'
-          : null,
       keyError: key == null ? 'Key must be specified' : null
     })
   }
@@ -51,6 +46,10 @@ export const deleteController = {
 
 export const showController = {
   handler(request, h) {
-    return h.view('spreadsheets/index', { pageTitle: 'Spreadsheets', paths })
+    const d = { pageTitle: 'Spreadsheets', paths }
+    if (!config.get('aws.bucketName')) {
+      d.keyError = 'Bucket name not configured'
+    }
+    return h.view('spreadsheets/index', d)
   }
 }
