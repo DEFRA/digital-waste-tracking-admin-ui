@@ -241,20 +241,38 @@ describe('Create new credentials', () => {
       })
     })
 
-    test('Should show the error page when Client Sync fails', async () => {
-      clientSyncRespondsWith(502, {})
+    test.each([
+      ['refuses the request', () => clientSyncRespondsWith(400, {}), 'failure'],
+      [
+        'fails, so the client may exist',
+        () => clientSyncRespondsWith(502, {}),
+        'unknown'
+      ],
+      [
+        'does not reply in time',
+        () =>
+          fetchMock.mockRejectedValue(
+            new DOMException('The operation timed out', 'TimeoutError')
+          ),
+        'unknown'
+      ]
+    ])(
+      'Should show the error page when Client Sync %s',
+      async (_, clientSyncFails, outcome) => {
+        clientSyncFails()
 
-      const { statusCode } = await submitName('Waste_Technologies_Software')
+        const { statusCode } = await submitName('Waste_Technologies_Software')
 
-      expect(statusCode).toEqual(500)
-      expect(mockAudit).toHaveBeenCalledWith({
-        action: 'created new credentials',
-        outcome: 'failure',
-        user: 'test1',
-        clientName: 'Waste_Technologies_Software',
-        tenantServiceName: 'waste-movement-external-api'
-      })
-    })
+        expect(statusCode).toEqual(500)
+        expect(mockAudit).toHaveBeenCalledWith({
+          action: 'created new credentials',
+          outcome,
+          user: 'test1',
+          clientName: 'Waste_Technologies_Software',
+          tenantServiceName: 'waste-movement-external-api'
+        })
+      }
+    )
 
     test('Should not record an attempt the form rejects', async () => {
       await submitName('')

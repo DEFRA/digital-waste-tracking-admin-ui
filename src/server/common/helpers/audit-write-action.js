@@ -14,7 +14,8 @@ import { config } from '#/config/config.js'
  * @param {import('@hapi/hapi').Request} request
  * @param {Object} options
  * @param {String} options.action - What was attempted, such as "created new credentials"
- * @param {'success' | 'failure'} options.outcome
+ * @param {'success' | 'failure' | 'unknown'} options.outcome - As ECS's
+ * event.outcome. Unknown when the action may have happened
  * @param {{ clientName: String, clientId?: String }} options.client - The
  * software provider acted on. A failed create has no client id
  */

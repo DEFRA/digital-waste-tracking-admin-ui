@@ -10,6 +10,19 @@ import { generateServiceAuthHeader } from '#/server/common/helpers/generate-serv
 const requestTimeoutMs = 30_000
 
 /**
+ * A failed create. `outcomeUnknown` is false only when Client Sync refused the
+ * request (4xx), so no client was created. Otherwise (5xx, timeout, network
+ * error or an unreadable response) the client may exist.
+ */
+export class CreateClientCredentialsError extends Error {
+  constructor(message, { outcomeUnknown, cause } = {}) {
+    super(message, { cause })
+    this.name = 'CreateClientCredentialsError'
+    this.outcomeUnknown = outcomeUnknown
+  }
+}
+
+/**
  * Creates client credentials for the configured service with the DWT Client
  * Sync backend, for the environment the portal is running in.
  *
@@ -28,15 +41,23 @@ export async function createClientCredentials(clientName) {
     config.get('services.clientSync')
   )
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: withTraceId(config.get('tracing.header'), {
-      'Content-Type': 'application/json',
-      Authorization: generateServiceAuthHeader()
-    }),
-    body: JSON.stringify({ clientName }),
-    signal: AbortSignal.timeout(requestTimeoutMs)
-  })
+  let response
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: withTraceId(config.get('tracing.header'), {
+        'Content-Type': 'application/json',
+        Authorization: generateServiceAuthHeader()
+      }),
+      body: JSON.stringify({ clientName }),
+      signal: AbortSignal.timeout(requestTimeoutMs)
+    })
+  } catch (err) {
+    throw new CreateClientCredentialsError(
+      `Failed to create client credentials: ${err.message}`,
+      { outcomeUnknown: true, cause: err }
+    )
+  }
 
   // Client Sync compares names ignoring case
   if (response.status === statusCodes.conflict) {
@@ -44,8 +65,9 @@ export async function createClientCredentials(clientName) {
   }
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to create client credentials: ${response.status} ${response.statusText}`
+    throw new CreateClientCredentialsError(
+      `Failed to create client credentials: ${response.status} ${response.statusText}`,
+      { outcomeUnknown: response.status >= 500 }
     )
   }
 
@@ -54,15 +76,19 @@ export async function createClientCredentials(clientName) {
   try {
     body = await response.json()
   } catch {
-    throw new Error(
-      'Client Sync returned client credentials that could not be read'
+    throw new CreateClientCredentialsError(
+      'Client Sync returned client credentials that could not be read',
+      { outcomeUnknown: true }
     )
   }
 
   const { clientId, clientSecret } = body
 
   if (!clientId || !clientSecret) {
-    throw new Error('Client Sync returned client credentials without a secret')
+    throw new CreateClientCredentialsError(
+      'Client Sync returned client credentials without a secret',
+      { outcomeUnknown: true }
+    )
   }
 
   return {
