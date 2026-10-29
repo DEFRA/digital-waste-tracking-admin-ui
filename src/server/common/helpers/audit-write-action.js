@@ -7,8 +7,9 @@ import { config } from '#/config/config.js'
  * team can search, and an audit event, which CDP sends to Defra's Security
  * Operations Centre rather than to the logs. Never pass it a secret.
  *
- * CDP's log schema has no tenant.name, so the client's name goes in
- * tenant.message, as the external API logs it.
+ * The user (user.id and user.name) comes from the request logger, which the
+ * request-context plugin binds it to. CDP's log schema has no tenant.name, so
+ * the client's name goes in tenant.message, as the external API logs it.
  *
  * @param {import('@hapi/hapi').Request} request
  * @param {Object} options
@@ -24,7 +25,6 @@ export function auditWriteAction(request, { action, outcome, client }) {
 
   request.logger.info(
     {
-      user: { id: user, name: user },
       event: { action, outcome },
       tenant: { ...(clientId && { id: clientId }), message: clientName }
     },

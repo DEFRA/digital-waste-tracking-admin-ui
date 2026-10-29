@@ -51,7 +51,7 @@ describe('#requestContext', () => {
     expect(bindings).toEqual(
       expect.objectContaining({
         page: { name: pageNames.home },
-        user: { name: 'test1' }
+        user: { id: 'test1', name: 'test1' }
       })
     )
   })
@@ -65,7 +65,7 @@ describe('#requestContext', () => {
     expect(bindings).toEqual(
       expect.objectContaining({
         page: { name: pageNames.wasteOrganisationsDownloadCsv },
-        user: { name: 'test1' }
+        user: { id: 'test1', name: 'test1' }
       })
     )
   })
@@ -88,7 +88,7 @@ describe('#requestContext', () => {
     expect(bindings).toEqual(
       expect.objectContaining({
         page: { name: pageNames.home },
-        user: { name: 'test1' }
+        user: { id: 'test1', name: 'test1' }
       })
     )
   })
