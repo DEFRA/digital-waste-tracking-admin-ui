@@ -1,11 +1,6 @@
-import { audit } from '@defra/cdp-auditing'
-
-import { config } from '#/config/config.js'
-
 /**
- * Records an attempt at a write action, whatever its outcome: a log line the
- * team can search, and an audit event, which CDP sends to Defra's Security
- * Operations Centre rather than to the logs. Never pass it a secret.
+ * Logs an attempt at a write action, whatever its outcome, so it's known who
+ * did what. Never pass it a secret.
  *
  * The user (user.id and user.name) comes from the request logger, which the
  * request-context plugin binds it to. CDP's log schema has no tenant.name, so
@@ -31,13 +26,4 @@ export function auditWriteAction(request, { action, outcome, client }) {
     },
     `[AdminServiceUIAudit] ${user} took action ${action} on ${target} resulting in ${outcome}`
   )
-
-  audit({
-    action,
-    outcome,
-    user,
-    ...(clientId && { clientId }),
-    clientName,
-    tenantServiceName: config.get('clientCredentials.tenantServiceName')
-  })
 }
