@@ -41,7 +41,7 @@ services:
       CHOKIDAR_USEPOLLING: 'true'
     volumes:
       # Run your working copy, reloading as you edit
-      - ./src:/home/node/src
-      - ./package.json:/home/node/package.json
+      - ./src:/home/node/src:Z
+      - ./package.json:/home/node/package.json:Z
     networks:
       - cdp-tenant

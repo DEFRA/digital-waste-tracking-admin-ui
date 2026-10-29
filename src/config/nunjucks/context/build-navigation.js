@@ -17,8 +17,13 @@ export function buildNavigation(request) {
     },
     {
       text: 'Reporting',
-      href: '/reporting/waste-organisations',
-      current: request?.path === '/reporting/waste-organisations'
+      href: paths.wasteOrgReporting,
+      current: request?.path === paths.wasteOrgReporting
+    },
+    {
+      text: 'Spreadsheet Administration',
+      href: paths.spreadsheetAdmin,
+      current: request?.path === paths.spreadsheetAdmin
     }
   ]
 }

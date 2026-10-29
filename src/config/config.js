@@ -280,6 +280,32 @@ export const config = convict({
       default: '',
       env: 'SERVICE_AUTH_PASSWORD'
     }
+  },
+  aws: {
+    checksumMode: {
+      doc: 'S3 Client Checksum Mode',
+      format: ['ENABLED', 'DISABLED'],
+      default: 'ENABLED',
+      env: 'AWS_S3_CHECKSUM_MODE'
+    },
+    region: {
+      doc: 'AWS region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
+    },
+    s3Endpoint: {
+      doc: 'AWS S3 endpoint',
+      format: String,
+      default: 'http://127.0.0.1:4566',
+      env: 'S3_ENDPOINT'
+    },
+    forcePathStyle: {
+      doc: 'S3 Client path config',
+      format: Boolean,
+      default: !isProduction,
+      env: 'AWS_S3_FORCE_PATH_STYLE'
+    }
   }
 })
 
