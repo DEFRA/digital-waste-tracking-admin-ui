@@ -25,7 +25,9 @@ export const requestContext = {
         if (page || user) {
           request.logger = request.logger.child({
             ...(page && { page: { name: page } }),
-            ...(user && { user: { name: user } })
+            // user.id is for the audit log lines. Bound only here, as pino
+            // writes a key twice if it's bound and then logged again
+            ...(user && { user: { id: user, name: user } })
           })
         }
 
