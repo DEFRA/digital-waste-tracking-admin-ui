@@ -26,7 +26,7 @@ describe('#auditWriteAction', () => {
         event: { action: 'created new credentials', outcome: 'success' },
         tenant: { id: '38sc860c82ub10cq8vjl4ere2b', message: 'Total_Rubbish' }
       },
-      '[AdminServiceUIAudit] test1 took action created new credentials on Total_Rubbish (38sc860c82ub10cq8vjl4ere2b) resulting in success'
+      "[AdminServiceUIAudit] 'test1' took action 'created new credentials' on 'Total_Rubbish (38sc860c82ub10cq8vjl4ere2b)' resulting in 'success'"
     )
   })
 
@@ -42,7 +42,7 @@ describe('#auditWriteAction', () => {
         event: { action: 'created new credentials', outcome: 'failure' },
         tenant: { message: 'Total_Rubbish' }
       },
-      '[AdminServiceUIAudit] test1 took action created new credentials on Total_Rubbish resulting in failure'
+      "[AdminServiceUIAudit] 'test1' took action 'created new credentials' on 'Total_Rubbish' resulting in 'failure'"
     )
   })
 

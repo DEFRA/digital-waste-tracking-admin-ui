@@ -24,6 +24,8 @@ export function auditWriteAction(request, { action, outcome, client }) {
       event: { action, outcome },
       tenant: { ...(clientId && { id: clientId }), message: clientName }
     },
-    `[AdminServiceUIAudit] ${user} took action ${action} on ${target} resulting in ${outcome}`
+    // Values are quoted, as client sync's messages do, so they stand out from
+    // the wording around them. A client name can't contain a quote
+    `[AdminServiceUIAudit] '${user}' took action '${action}' on '${target}' resulting in '${outcome}'`
   )
 }
