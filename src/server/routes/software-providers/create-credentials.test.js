@@ -232,7 +232,13 @@ describe('Create new credentials', () => {
       expect(document.querySelector('#clientName').value).toEqual(
         'Existing_Client'
       )
-      expect(mockAudit).not.toHaveBeenCalled()
+      expect(mockAudit).toHaveBeenCalledWith({
+        action: 'created new credentials',
+        outcome: 'failure',
+        user: 'test1',
+        clientName: 'Existing_Client',
+        tenantServiceName: 'waste-movement-external-api'
+      })
     })
 
     test('Should show the error page when Client Sync fails', async () => {
@@ -241,6 +247,18 @@ describe('Create new credentials', () => {
       const { statusCode } = await submitName('Waste_Technologies_Software')
 
       expect(statusCode).toEqual(500)
+      expect(mockAudit).toHaveBeenCalledWith({
+        action: 'created new credentials',
+        outcome: 'failure',
+        user: 'test1',
+        clientName: 'Waste_Technologies_Software',
+        tenantServiceName: 'waste-movement-external-api'
+      })
+    })
+
+    test('Should not record an attempt the form rejects', async () => {
+      await submitName('')
+
       expect(mockAudit).not.toHaveBeenCalled()
     })
   })
@@ -295,7 +313,8 @@ describe('Create new credentials', () => {
       await createCredentials()
 
       expect(mockAudit).toHaveBeenCalledWith({
-        event: 'client-credentials-created',
+        action: 'created new credentials',
+        outcome: 'success',
         user: 'test1',
         clientId: 'new-client-id',
         clientName: 'Waste_Technologies_Software',

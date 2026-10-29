@@ -4,10 +4,9 @@ import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { generateServiceAuthHeader } from '#/server/common/helpers/generate-service-auth-header.js'
 
-// Client Sync checks for a duplicate name, creates the client and syncs before
-// replying, so several CDP calls. Its create call times out after 10 seconds
-// (up to 20 if CDP is slow to send its response), but the others have no
-// timeout yet, so a slow CDP can still outlast this and lose the secret
+// Client Sync checks for a duplicate name, asks CDP to create the client and
+// saves it before replying. It allows CDP up to 120 seconds, as CDP's docs
+// advise, so a slow CDP can outlast this and lose the secret
 const requestTimeoutMs = 30_000
 
 /**
