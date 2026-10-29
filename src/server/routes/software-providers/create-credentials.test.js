@@ -249,6 +249,16 @@ describe('Create new credentials', () => {
         'unknown'
       ],
       [
+        'says CDP refused',
+        () => clientSyncRespondsWith(502, { outcome: 'failure' }),
+        'failure'
+      ],
+      [
+        'created the client without a secret',
+        () => clientSyncRespondsWith(502, { outcome: 'success' }),
+        'success'
+      ],
+      [
         'does not reply in time',
         () =>
           fetchMock.mockRejectedValue(

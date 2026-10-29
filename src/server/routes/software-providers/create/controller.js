@@ -58,11 +58,10 @@ export function createClientCredentialsSubmitController(store) {
       try {
         result = await createClientCredentials(clientName)
       } catch (err) {
-        // Only a refusal means nothing was created. Otherwise the client may
-        // exist, so it isn't recorded as a failure
+        // An unexpected error may come after the client was created
         auditWriteAction(request, {
           action: createAction,
-          outcome: err.outcomeUnknown === false ? 'failure' : 'unknown',
+          outcome: err.outcome ?? 'unknown',
           client: { clientName }
         })
         throw err

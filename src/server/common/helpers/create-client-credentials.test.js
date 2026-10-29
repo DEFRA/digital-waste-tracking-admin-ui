@@ -68,22 +68,41 @@ describe('#createClientCredentials', () => {
   })
 
   test.each([
-    [400, false],
-    [404, false],
-    [500, true],
-    [502, true]
+    [400, {}, 'failure'],
+    [404, {}, 'failure'],
+    [500, {}, 'unknown'],
+    [502, {}, 'unknown'],
+    [502, { outcome: 'failure' }, 'failure'],
+    [502, { outcome: 'unknown' }, 'unknown'],
+    [502, { outcome: 'success' }, 'success'],
+    [502, { outcome: 'something else' }, 'unknown']
   ])(
-    'Should say whether the client may exist when Client Sync replies %s',
-    async (status, outcomeUnknown) => {
-      respondWith(status, {})
+    'Should say whether the client was created when Client Sync replies %s with %j',
+    async (status, body, outcome) => {
+      respondWith(status, body)
 
       const error = await createClientCredentials(
         'Waste_Technologies_Software'
       ).catch((err) => err)
 
-      expect(error.outcomeUnknown).toBe(outcomeUnknown)
+      expect(error.outcome).toBe(outcome)
     }
   )
+
+  test('Should fall back to the status when the error response cannot be read', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Status text',
+      json: () => Promise.reject(new SyntaxError('Unexpected token'))
+    })
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error.outcome).toBe('failure')
+  })
 
   test('Should say the client may exist when Client Sync does not reply in time', async () => {
     const timeout = new DOMException('The operation timed out', 'TimeoutError')
@@ -96,7 +115,7 @@ describe('#createClientCredentials', () => {
     expect(error.message).toEqual(
       'Failed to create client credentials: The operation timed out'
     )
-    expect(error.outcomeUnknown).toBe(true)
+    expect(error.outcome).toBe('unknown')
     expect(error.cause).toBe(timeout)
   })
 
@@ -115,7 +134,7 @@ describe('#createClientCredentials', () => {
       'Client Sync returned client credentials that could not be read'
     )
     expect(error.message).not.toContain('new-client-secret')
-    expect(error.outcomeUnknown).toBe(true)
+    expect(error.outcome).toBe('unknown')
   })
 
   test('Should throw when the response has no secret', async () => {
@@ -125,7 +144,7 @@ describe('#createClientCredentials', () => {
       createClientCredentials('Waste_Technologies_Software')
     ).rejects.toMatchObject({
       message: 'Client Sync returned client credentials without a secret',
-      outcomeUnknown: true
+      outcome: 'unknown'
     })
   })
 })

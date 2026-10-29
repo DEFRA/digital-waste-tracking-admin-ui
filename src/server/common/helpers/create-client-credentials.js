@@ -9,17 +9,42 @@ import { generateServiceAuthHeader } from '#/server/common/helpers/generate-serv
 // CDP's docs advise, so a slow CDP can outlast this and lose the secret
 const requestTimeoutMs = 30_000
 
+const outcomes = new Set(['success', 'failure', 'unknown'])
+
 /**
- * A failed create. `outcomeUnknown` is false only when Client Sync refused the
- * request (4xx), so no client was created. Otherwise (5xx, timeout, network
- * error or an unreadable response) the client may exist.
+ * A failed create. `outcome` says whether the client was created, as ECS's
+ * event.outcome: `failure` when it wasn't, `success` when it was but its
+ * secret wasn't returned, and `unknown` when it may have been.
  */
 export class CreateClientCredentialsError extends Error {
-  constructor(message, { outcomeUnknown, cause } = {}) {
+  constructor(message, { outcome, cause }) {
     super(message, { cause })
     this.name = 'CreateClientCredentialsError'
-    this.outcomeUnknown = outcomeUnknown
+    this.outcome = outcome
   }
+}
+
+/**
+ * Client Sync says in a 502 whether the client was created. Without that, only
+ * a refusal (4xx) means it wasn't
+ *
+ * @param {Response} response - An error response, which never holds a secret
+ *
+ * @returns {Promise<'success' | 'failure' | 'unknown'>}
+ */
+async function outcomeOf(response) {
+  let outcome
+  try {
+    ;({ outcome } = await response.json())
+  } catch {
+    // Unreadable, so fall back to the status
+  }
+
+  if (outcomes.has(outcome)) {
+    return outcome
+  }
+
+  return response.status < 500 ? 'failure' : 'unknown'
 }
 
 /**
@@ -55,7 +80,7 @@ export async function createClientCredentials(clientName) {
   } catch (err) {
     throw new CreateClientCredentialsError(
       `Failed to create client credentials: ${err.message}`,
-      { outcomeUnknown: true, cause: err }
+      { outcome: 'unknown', cause: err }
     )
   }
 
@@ -67,7 +92,7 @@ export async function createClientCredentials(clientName) {
   if (!response.ok) {
     throw new CreateClientCredentialsError(
       `Failed to create client credentials: ${response.status} ${response.statusText}`,
-      { outcomeUnknown: response.status >= 500 }
+      { outcome: await outcomeOf(response) }
     )
   }
 
@@ -78,7 +103,7 @@ export async function createClientCredentials(clientName) {
   } catch {
     throw new CreateClientCredentialsError(
       'Client Sync returned client credentials that could not be read',
-      { outcomeUnknown: true }
+      { outcome: 'unknown' }
     )
   }
 
@@ -87,7 +112,7 @@ export async function createClientCredentials(clientName) {
   if (!clientId || !clientSecret) {
     throw new CreateClientCredentialsError(
       'Client Sync returned client credentials without a secret',
-      { outcomeUnknown: true }
+      { outcome: 'unknown' }
     )
   }
 
