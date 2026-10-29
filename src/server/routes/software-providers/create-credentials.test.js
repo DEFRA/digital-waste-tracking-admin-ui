@@ -253,11 +253,7 @@ describe('Create new credentials', () => {
         () => clientSyncRespondsWith(502, { outcome: 'failure' }),
         'failure'
       ],
-      [
-        'created the client without a secret',
-        () => clientSyncRespondsWith(502, { outcome: 'success' }),
-        'success'
-      ],
+
       [
         'does not reply in time',
         () =>
@@ -283,6 +279,25 @@ describe('Create new credentials', () => {
         })
       }
     )
+
+    test('Should record which client was created when Client Sync returns no secret', async () => {
+      clientSyncRespondsWith(502, {
+        outcome: 'success',
+        clientId: 'new-client-id'
+      })
+
+      const { statusCode } = await submitName('Waste_Technologies_Software')
+
+      expect(statusCode).toEqual(500)
+      expect(mockAudit).toHaveBeenCalledWith({
+        action: 'created new credentials',
+        outcome: 'success',
+        user: 'test1',
+        clientId: 'new-client-id',
+        clientName: 'Waste_Technologies_Software',
+        tenantServiceName: 'waste-movement-external-api'
+      })
+    })
 
     test('Should not record an attempt the form rejects', async () => {
       await submitName('')

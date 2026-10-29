@@ -14,37 +14,42 @@ const outcomes = new Set(['success', 'failure', 'unknown'])
 /**
  * A failed create. `outcome` says whether the client was created, as ECS's
  * event.outcome: `failure` when it wasn't, `success` when it was but its
- * secret wasn't returned, and `unknown` when it may have been.
+ * secret wasn't returned, and `unknown` when it may have been. `clientId` is
+ * set when the client is known to exist.
  */
 export class CreateClientCredentialsError extends Error {
-  constructor(message, { outcome, cause }) {
+  constructor(message, { outcome, clientId, cause }) {
     super(message, { cause })
     this.name = 'CreateClientCredentialsError'
     this.outcome = outcome
+    this.clientId = clientId
   }
 }
 
 /**
- * Client Sync says in a 502 whether the client was created. Without that, only
- * a refusal (4xx) means it wasn't
+ * Client Sync says in a 502 whether the client was created, and which client
+ * when it was. Without that, only a refusal (4xx) means it wasn't
  *
  * @param {Response} response - An error response, which never holds a secret
  *
- * @returns {Promise<'success' | 'failure' | 'unknown'>}
+ * @returns {Promise<{ outcome: 'success' | 'failure' | 'unknown', clientId?: String }>}
  */
 async function outcomeOf(response) {
-  let outcome
+  let body
   try {
-    ;({ outcome } = await response.json())
+    body = await response.json()
   } catch {
     // Unreadable, so fall back to the status
   }
 
-  if (outcomes.has(outcome)) {
-    return outcome
+  if (outcomes.has(body?.outcome)) {
+    return {
+      outcome: body.outcome,
+      ...(typeof body.clientId === 'string' && { clientId: body.clientId })
+    }
   }
 
-  return response.status < 500 ? 'failure' : 'unknown'
+  return { outcome: response.status < 500 ? 'failure' : 'unknown' }
 }
 
 /**
@@ -66,14 +71,18 @@ export async function createClientCredentials(clientName) {
     config.get('services.clientSync')
   )
 
+  const headers = withTraceId(config.get('tracing.header'), {
+    'Content-Type': 'application/json',
+    Authorization: generateServiceAuthHeader()
+  })
+
+  // Built first, so only fetch's errors are caught: once it's called, the
+  // request may have been sent
   let response
   try {
     response = await fetch(url, {
       method: 'POST',
-      headers: withTraceId(config.get('tracing.header'), {
-        'Content-Type': 'application/json',
-        Authorization: generateServiceAuthHeader()
-      }),
+      headers,
       body: JSON.stringify({ clientName }),
       signal: AbortSignal.timeout(requestTimeoutMs)
     })
@@ -92,7 +101,7 @@ export async function createClientCredentials(clientName) {
   if (!response.ok) {
     throw new CreateClientCredentialsError(
       `Failed to create client credentials: ${response.status} ${response.statusText}`,
-      { outcome: await outcomeOf(response) }
+      await outcomeOf(response)
     )
   }
 
@@ -107,12 +116,20 @@ export async function createClientCredentials(clientName) {
     )
   }
 
-  const { clientId, clientSecret } = body
+  const { clientId, clientSecret } = body ?? {}
 
-  if (!clientId || !clientSecret) {
+  if (!clientId) {
+    throw new CreateClientCredentialsError(
+      'Client Sync returned client credentials without a client id',
+      { outcome: 'unknown' }
+    )
+  }
+
+  // The client was created, as Client Sync says when CDP returns no secret
+  if (!clientSecret) {
     throw new CreateClientCredentialsError(
       'Client Sync returned client credentials without a secret',
-      { outcome: 'unknown' }
+      { outcome: 'success', clientId }
     )
   }
 

@@ -58,11 +58,11 @@ export function createClientCredentialsSubmitController(store) {
       try {
         result = await createClientCredentials(clientName)
       } catch (err) {
-        // An unexpected error may come after the client was created
+        // Any other error is recorded as unknown, to be safe
         auditWriteAction(request, {
           action: createAction,
           outcome: err.outcome ?? 'unknown',
-          client: { clientName }
+          client: { clientId: err.clientId, clientName }
         })
         throw err
       }

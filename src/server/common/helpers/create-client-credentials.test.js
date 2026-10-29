@@ -89,6 +89,29 @@ describe('#createClientCredentials', () => {
     }
   )
 
+  test('Should say which client was created when Client Sync names it', async () => {
+    respondWith(502, { outcome: 'success', clientId: 'new-client-id' })
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error).toMatchObject({
+      outcome: 'success',
+      clientId: 'new-client-id'
+    })
+  })
+
+  test('Should fall back to the status when the error response is empty', async () => {
+    respondWith(502, null)
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error.outcome).toBe('unknown')
+  })
+
   test('Should fall back to the status when the error response cannot be read', async () => {
     fetchMock.mockResolvedValue({
       ok: false,
@@ -144,6 +167,18 @@ describe('#createClientCredentials', () => {
       createClientCredentials('Waste_Technologies_Software')
     ).rejects.toMatchObject({
       message: 'Client Sync returned client credentials without a secret',
+      outcome: 'success',
+      clientId: 'new-client-id'
+    })
+  })
+
+  test('Should throw when the response has no client id', async () => {
+    respondWith(200, { ...created, clientId: undefined })
+
+    await expect(
+      createClientCredentials('Waste_Technologies_Software')
+    ).rejects.toMatchObject({
+      message: 'Client Sync returned client credentials without a client id',
       outcome: 'unknown'
     })
   })
