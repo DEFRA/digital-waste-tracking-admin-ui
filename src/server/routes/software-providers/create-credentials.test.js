@@ -274,7 +274,7 @@ describe('Create new credentials', () => {
         expect(statusCode).toEqual(500)
         expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
           action: 'created new credentials',
-          outcome: outcome,
+          outcome,
           client: { clientName: 'Waste_Technologies_Software' }
         })
       }
