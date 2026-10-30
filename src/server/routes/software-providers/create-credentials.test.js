@@ -10,9 +10,13 @@ import {
   userBasicAuthTest2
 } from '#/test-helpers/constants.js'
 
-const { mockAudit } = vi.hoisted(() => ({ mockAudit: vi.fn() }))
+const { mockAuditWriteAction } = vi.hoisted(() => ({
+  mockAuditWriteAction: vi.fn()
+}))
 
-vi.mock('@defra/cdp-auditing', () => ({ audit: mockAudit }))
+vi.mock('#/server/common/helpers/audit-write-action.js', () => ({
+  auditWriteAction: mockAuditWriteAction
+}))
 
 const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
 
@@ -232,16 +236,72 @@ describe('Create new credentials', () => {
       expect(document.querySelector('#clientName').value).toEqual(
         'Existing_Client'
       )
-      expect(mockAudit).not.toHaveBeenCalled()
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'created new credentials',
+        outcome: 'failure',
+        client: { clientName: 'Existing_Client' }
+      })
     })
 
-    test('Should show the error page when Client Sync fails', async () => {
-      clientSyncRespondsWith(502, {})
+    test.each([
+      ['refuses the request', () => clientSyncRespondsWith(400, {}), 'failure'],
+      [
+        'fails, so the client may exist',
+        () => clientSyncRespondsWith(502, {}),
+        'unknown'
+      ],
+      [
+        'says CDP refused',
+        () => clientSyncRespondsWith(502, { outcome: 'failure' }),
+        'failure'
+      ],
+      [
+        'does not reply in time',
+        () =>
+          fetchMock.mockRejectedValue(
+            new DOMException('The operation timed out', 'TimeoutError')
+          ),
+        'unknown'
+      ]
+    ])(
+      'Should show the error page when Client Sync %s',
+      async (_, clientSyncFails, outcome) => {
+        clientSyncFails()
+
+        const { statusCode } = await submitName('Waste_Technologies_Software')
+
+        expect(statusCode).toEqual(500)
+        expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+          action: 'created new credentials',
+          outcome,
+          client: { clientName: 'Waste_Technologies_Software' }
+        })
+      }
+    )
+
+    test('Should record which client was created when Client Sync returns no secret', async () => {
+      clientSyncRespondsWith(502, {
+        outcome: 'success',
+        clientId: 'new-client-id'
+      })
 
       const { statusCode } = await submitName('Waste_Technologies_Software')
 
       expect(statusCode).toEqual(500)
-      expect(mockAudit).not.toHaveBeenCalled()
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'created new credentials',
+        outcome: 'success',
+        client: {
+          clientId: 'new-client-id',
+          clientName: 'Waste_Technologies_Software'
+        }
+      })
+    })
+
+    test('Should not record an attempt the form rejects', async () => {
+      await submitName('')
+
+      expect(mockAuditWriteAction).not.toHaveBeenCalled()
     })
   })
 
@@ -294,16 +354,27 @@ describe('Create new credentials', () => {
     test('Should record who created which client, without the secret', async () => {
       await createCredentials()
 
-      expect(mockAudit).toHaveBeenCalledWith({
-        event: 'client-credentials-created',
-        user: 'test1',
-        clientId: 'new-client-id',
-        clientName: 'Waste_Technologies_Software',
-        tenantServiceName: 'waste-movement-external-api'
-      })
-      expect(JSON.stringify(mockAudit.mock.calls)).not.toContain(
-        created.clientSecret
+      expect(mockAuditWriteAction).toHaveBeenCalledExactlyOnceWith(
+        // The signed-in user, whom the log line names
+        expect.objectContaining({
+          auth: expect.objectContaining({
+            credentials: expect.objectContaining({ username: 'test1' })
+          })
+        }),
+        {
+          action: 'created new credentials',
+          outcome: 'success',
+          client: {
+            clientId: 'new-client-id',
+            clientName: 'Waste_Technologies_Software'
+          }
+        }
       )
+      expect(
+        JSON.stringify(
+          mockAuditWriteAction.mock.calls.map(([, options]) => options)
+        )
+      ).not.toContain(created.clientSecret)
     })
 
     test('Should show the new credentials, once, and not let them be cached', async () => {

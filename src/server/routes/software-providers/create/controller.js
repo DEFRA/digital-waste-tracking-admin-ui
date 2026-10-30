@@ -1,11 +1,11 @@
-import { audit } from '@defra/cdp-auditing'
-
-import { config } from '#/config/config.js'
 import { paths } from '#/server/common/constants/paths.js'
+import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { createClientCredentials } from '#/server/common/helpers/create-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { validateData } from '#/server/common/helpers/validate-data.js'
 import { createClientCredentialsSchema } from './schema.js'
+
+const createAction = 'created new credentials'
 
 const duplicateNameError =
   'A client with this name already exists. Enter a different client name'
@@ -54,9 +54,26 @@ export function createClientCredentialsSubmitController(store) {
           .code(400)
       }
 
-      const result = await createClientCredentials(clientName)
+      let result
+      try {
+        result = await createClientCredentials(clientName)
+      } catch (err) {
+        // Any other error is recorded as unknown, to be safe
+        auditWriteAction(request, {
+          action: createAction,
+          outcome: err.outcome ?? 'unknown',
+          client: { clientId: err.clientId, clientName }
+        })
+        throw err
+      }
 
       if (result.isDuplicate) {
+        auditWriteAction(request, {
+          action: createAction,
+          outcome: 'failure',
+          client: { clientName }
+        })
+
         return h
           .view(
             'software-providers/create/index',
@@ -68,15 +85,11 @@ export function createClientCredentialsSubmitController(store) {
           .code(409)
       }
 
-      const { clientId } = result.credentials
-
       // Who created which client, never the secret
-      audit({
-        event: 'client-credentials-created',
-        user: request.auth.credentials?.username,
-        clientId,
-        clientName,
-        tenantServiceName: config.get('clientCredentials.tenantServiceName')
+      auditWriteAction(request, {
+        action: createAction,
+        outcome: 'success',
+        client: { clientId: result.credentials.clientId, clientName }
       })
 
       const id = await store.save(request, {

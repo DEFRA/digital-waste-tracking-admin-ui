@@ -67,6 +67,81 @@ describe('#createClientCredentials', () => {
     ).rejects.toThrow('Failed to create client credentials: 502 Status text')
   })
 
+  test.each([
+    [400, {}, 'failure'],
+    [404, {}, 'failure'],
+    [500, {}, 'unknown'],
+    [502, {}, 'unknown'],
+    [502, { outcome: 'failure' }, 'failure'],
+    [502, { outcome: 'unknown' }, 'unknown'],
+    [502, { outcome: 'success' }, 'success'],
+    [502, { outcome: 'something else' }, 'unknown']
+  ])(
+    'Should say whether the client was created when Client Sync replies %s with %j',
+    async (status, body, outcome) => {
+      respondWith(status, body)
+
+      const error = await createClientCredentials(
+        'Waste_Technologies_Software'
+      ).catch((err) => err)
+
+      expect(error.outcome).toBe(outcome)
+    }
+  )
+
+  test('Should say which client was created when Client Sync names it', async () => {
+    respondWith(502, { outcome: 'success', clientId: 'new-client-id' })
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error).toMatchObject({
+      outcome: 'success',
+      clientId: 'new-client-id'
+    })
+  })
+
+  test('Should fall back to the status when the error response is empty', async () => {
+    respondWith(502, null)
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error.outcome).toBe('unknown')
+  })
+
+  test('Should fall back to the status when the error response cannot be read', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Status text',
+      json: () => Promise.reject(new SyntaxError('Unexpected token'))
+    })
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error.outcome).toBe('failure')
+  })
+
+  test('Should say the client may exist when Client Sync does not reply in time', async () => {
+    const timeout = new DOMException('The operation timed out', 'TimeoutError')
+    fetchMock.mockRejectedValue(timeout)
+
+    const error = await createClientCredentials(
+      'Waste_Technologies_Software'
+    ).catch((err) => err)
+
+    expect(error.message).toEqual(
+      'Failed to create client credentials: The operation timed out'
+    )
+    expect(error.outcome).toBe('unknown')
+    expect(error.cause).toBe(timeout)
+  })
+
   test('Should throw without quoting a response it cannot read', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
@@ -82,6 +157,7 @@ describe('#createClientCredentials', () => {
       'Client Sync returned client credentials that could not be read'
     )
     expect(error.message).not.toContain('new-client-secret')
+    expect(error.outcome).toBe('unknown')
   })
 
   test('Should throw when the response has no secret', async () => {
@@ -89,8 +165,21 @@ describe('#createClientCredentials', () => {
 
     await expect(
       createClientCredentials('Waste_Technologies_Software')
-    ).rejects.toThrow(
-      'Client Sync returned client credentials without a secret'
-    )
+    ).rejects.toMatchObject({
+      message: 'Client Sync returned client credentials without a secret',
+      outcome: 'success',
+      clientId: 'new-client-id'
+    })
+  })
+
+  test('Should throw when the response has no client id', async () => {
+    respondWith(200, { ...created, clientId: undefined })
+
+    await expect(
+      createClientCredentials('Waste_Technologies_Software')
+    ).rejects.toMatchObject({
+      message: 'Client Sync returned client credentials without a client id',
+      outcome: 'unknown'
+    })
   })
 })
