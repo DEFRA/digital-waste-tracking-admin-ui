@@ -54,6 +54,34 @@ describe('#readRegistrationDates', () => {
     ).toBeUndefined()
   })
 
+  test("Should reject tomorrow's UK date in the first hour of a summer day", () => {
+    const earlyBst = new Date('2026-07-01T23:30:00Z') // 00:30 on 2 July in the UK
+
+    expect(
+      readRegistrationDates(
+        query(['3', '7', '2026'], ['3', '7', '2026']),
+        earlyBst
+      ).errors['date-from'].text
+    ).toEqual('‘From’ date must be today or in the past')
+  })
+
+  test('Should use the same date as UTC in winter, when the UK is on GMT', () => {
+    const lateGmt = new Date('2026-12-01T23:30:00Z') // 23:30 on 1 December in the UK
+
+    expect(
+      readRegistrationDates(
+        query(['1', '12', '2026'], ['1', '12', '2026']),
+        lateGmt
+      ).errors
+    ).toBeUndefined()
+    expect(
+      readRegistrationDates(
+        query(['2', '12', '2026'], ['2', '12', '2026']),
+        lateGmt
+      ).errors['date-from'].text
+    ).toEqual('‘From’ date must be today or in the past')
+  })
+
   test('Should treat a repeated parameter as the wrong format', () => {
     expect(
       readRegistrationDates(

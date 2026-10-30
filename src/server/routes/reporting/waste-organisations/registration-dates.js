@@ -111,8 +111,9 @@ function readDate(query, id, name, today) {
  * The dates, or the errors by date id ("date-from" and "date-to"), From first
  */
 export function readRegistrationDates(query, now = new Date()) {
-  // Staff are in the UK, so "today" is the UK's date, which is a day ahead of
-  // UTC's for the first hour of each day in summer time
+  // The latest date allowed is the UK's today, as staff are in the UK. That's
+  // a day ahead of UTC's for the first hour of each day in summer time. The
+  // search itself still covers whole UTC days, as registration dates are UTC
   const { year, month, day } = Object.fromEntries(
     ukDateFormat.formatToParts(now).map(({ type, value }) => [type, value])
   )

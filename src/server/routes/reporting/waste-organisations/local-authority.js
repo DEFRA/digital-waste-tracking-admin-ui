@@ -1,8 +1,8 @@
 /**
- * @param {Boolean} [isLocalAuthority]
+ * @param {Boolean} [isLocalAuthority] - Optional: missing when it isn't known,
+ * as the flag is only stored when an organisation says it's a local authority
  *
- * @returns {String} Yes or No, or Not known, as the flag is only stored for an
- * organisation that said it's a local authority
+ * @returns {String} Yes, No or Not known
  */
 export function localAuthorityText(isLocalAuthority) {
   if (isLocalAuthority === true) {
