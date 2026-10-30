@@ -82,23 +82,36 @@ describe('#spreadsheetController', () => {
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
       payload: { key: 'test' }
     })
-    expect(statusCode).toBe(statusCodes.ok)
+    expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toContain(errMsg)
   })
 
   test('Should warn when the bucket is empty', async () => {
-    mockSend = () => ({
-      Body: []
-    })
-
     config.set('aws.bucketName', '')
     const { statusCode, result } = await server.inject({
       method: 'GET',
       url: paths.spreadsheetAdmin,
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
-    expect(statusCode).toBe(statusCodes.ok)
+    expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toContain('Bucket name not configured')
+    config.set('aws.bucketName', 'test-bucket')
+  })
+
+  test('Should error when the bucket is empty', async () => {
+    mockSend = () => ({
+      Body: []
+    })
+
+    config.set('aws.bucketName', '')
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: paths.spreadsheetAdminDelete,
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
+      payload: { key: 'test' }
+    })
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect(result).toMatch(/Bucket[^<>]*is not allowed to be empty/)
     config.set('aws.bucketName', 'test-bucket')
   })
 
@@ -113,7 +126,7 @@ describe('#spreadsheetController', () => {
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` },
       payload: {}
     })
-    expect(statusCode).toBe(statusCodes.ok)
+    expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toContain('Key must be specified')
   })
 })

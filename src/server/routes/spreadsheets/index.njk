@@ -12,20 +12,6 @@
   <form id="login-form" method="POST" action="{{ paths.spreadsheetAdminDelete }}">
     {{
         govukInput({
-          id: "bucket",
-          name: "bucket",
-          label: {
-            text: "S3 Bucket",
-            classes: "govuk-label--s"
-          },
-          hint: {
-            text: "S3 Bucket to delete from"
-          },
-          errorMessage: { text: bucketError } if bucketError
-        })
-    }}
-    {{
-        govukInput({
           id: "key",
           name: "key",
           label: {
