@@ -87,12 +87,12 @@
         {% endset %}
         {% set rows = (rows.push([
           { html: nameHtml, attributes: { "data-sort-value": organisation.name | default("") | lower } },
+          { text: organisation.localAuthority },
           { text: organisation.activeApiCodeCount, format: "numeric" },
           {
             text: organisation.registered,
             attributes: { "data-sort-value": organisation.dateRegistered }
-          },
-          { text: organisation.localAuthority }
+          }
         ]), rows) %}
       {% endfor %}
 
@@ -107,10 +107,10 @@
             "data-testid": "waste-organisations-list"
           },
           head: [
-            { text: "Organisation name and ID", attributes: { "aria-sort": "none" } },
-            { text: "Active API codes", format: "numeric", attributes: { "aria-sort": "none" } },
-            { text: "Registered", attributes: { "aria-sort": "ascending" } },
-            { text: "Local authority", attributes: { "aria-sort": "none" } }
+            { text: "Organisation name and ID", classes: "app-table__header--wide", attributes: { "aria-sort": "none" } },
+            { text: "Local authority", classes: "app-table__header--narrow", attributes: { "aria-sort": "none" } },
+            { text: "Active API codes", format: "numeric", classes: "app-table__header--narrow", attributes: { "aria-sort": "none" } },
+            { text: "Registered", classes: "app-table__header--narrow", attributes: { "aria-sort": "ascending" } }
           ],
           rows: rows
         }) }}

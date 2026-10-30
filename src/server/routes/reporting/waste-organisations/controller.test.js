@@ -177,9 +177,9 @@ describe('#wasteOrganisationsReportingController', () => {
         ])
       ).toEqual([
         ['Organisation name and ID', 'none', 'col'],
+        ['Local authority', 'none', 'col'],
         ['Active API codes', 'none', 'col'],
-        ['Registered', 'ascending', 'col'],
-        ['Local authority', 'none', 'col']
+        ['Registered', 'ascending', 'col']
       ])
 
       const rows = [...table.querySelectorAll('tbody tr')].map((row) => [
@@ -191,9 +191,9 @@ describe('#wasteOrganisationsReportingController', () => {
           cells.map((cell) => cell.textContent.trim().replace(/\s+/g, ' '))
         )
       ).toEqual([
-        ['Deepdale Salvage Partners org-1', '2', '1 Jun 2026', 'Yes'],
-        ['(Not known) org-2', '1', '24 Jun 2026', ''],
-        ['Grantley <Environmental> org-3', '0', '1 Jul 2026', 'No']
+        ['Deepdale Salvage Partners org-1', 'Yes', '2', '1 Jun 2026'],
+        ['(Not known) org-2', 'Not known', '1', '24 Jun 2026'],
+        ['Grantley <Environmental> org-3', 'No', '0', '1 Jul 2026']
       ])
       // The name is a row header, sorted by the name alone
       expect(rows[0][0].tagName).toEqual('TH')
@@ -202,7 +202,7 @@ describe('#wasteOrganisationsReportingController', () => {
         'deepdale salvage partners'
       )
       // Registered sorts by the full time, not the shown date
-      expect(rows[0][2].getAttribute('data-sort-value')).toEqual(
+      expect(rows[0][3].getAttribute('data-sort-value')).toEqual(
         '2026-06-01T09:30:00.000Z'
       )
     })
@@ -300,10 +300,10 @@ describe('#wasteOrganisationsReportingController', () => {
 
       expect(statusCode).toBe(statusCodes.ok)
       expect(result).toEqual(
-        '﻿Organisation name,Organisation ID,Active API codes,Registered (UTC),Local authority\n' +
-          'Deepdale Salvage Partners,org-1,2,"01 Jun 2026, 09:30",Yes\n' +
-          ',org-2,1,"24 Jun 2026, 00:00",\n' +
-          'Grantley <Environmental>,org-3,0,"01 Jul 2026, 23:59",No\n'
+        '\ufeffOrganisation name,Organisation ID,Local authority,Active API codes,Registered (UTC)\n' +
+          'Deepdale Salvage Partners,org-1,Yes,2,"01 Jun 2026, 09:30"\n' +
+          ',org-2,Not known,1,"24 Jun 2026, 00:00"\n' +
+          'Grantley <Environmental>,org-3,No,0,"01 Jul 2026, 23:59"\n'
       )
       expect(headers['content-type']).toEqual('text/csv; charset=utf-8')
       expect(headers['content-disposition']).toEqual(

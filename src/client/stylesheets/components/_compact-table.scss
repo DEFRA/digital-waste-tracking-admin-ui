@@ -14,6 +14,16 @@
   }
 }
 
+// Column widths, so the space a full-width table has spare is shared evenly
+// rather than by how long each column's content is
+.app-table__header--wide {
+  width: 40%;
+}
+
+.app-table__header--narrow {
+  width: 20%;
+}
+
 // An organisation's ID, on its own line under its name
 .app-organisation-id {
   display: block;

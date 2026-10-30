@@ -36,9 +36,9 @@ export function generateCsvWasteOrganisations(wasteOrganisations) {
     columns: [
       { key: 'name', header: 'Organisation name' },
       { key: 'organisationId', header: 'Organisation ID' },
+      { key: 'localAuthority', header: 'Local authority' },
       { key: 'activeApiCodeCount', header: 'Active API codes' },
-      { key: 'dateRegistered', header: 'Registered (UTC)' },
-      { key: 'localAuthority', header: 'Local authority' }
+      { key: 'dateRegistered', header: 'Registered (UTC)' }
     ]
   })
 }

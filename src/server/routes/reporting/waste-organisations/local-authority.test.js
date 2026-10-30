@@ -4,8 +4,8 @@ describe('#localAuthorityText', () => {
   test.each([
     [true, 'Yes'],
     [false, 'No'],
-    [undefined, ''],
-    [null, '']
+    [undefined, 'Not known'],
+    [null, 'Not known']
   ])('Should show %s as "%s"', (isLocalAuthority, text) => {
     expect(localAuthorityText(isLocalAuthority)).toEqual(text)
   })
