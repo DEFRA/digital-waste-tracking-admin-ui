@@ -1,14 +1,9 @@
 import { UTCDate } from '@date-fns/utc'
 import { format, isAfter, isValid } from 'date-fns'
 
-const parts = ['Day', 'Month', 'Year']
+import { ukDateOf } from './uk-date.js'
 
-const ukDateFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Europe/London',
-  year: 'numeric',
-  month: 'numeric',
-  day: 'numeric'
-})
+const parts = ['Day', 'Month', 'Year']
 
 const formats = {
   Day: /^\d{1,2}$/,
@@ -111,13 +106,8 @@ function readDate(query, id, name, today) {
  * The dates, or the errors by date id ("date-from" and "date-to"), From first
  */
 export function readRegistrationDates(query, now = new Date()) {
-  // The latest date allowed is the UK's today, as staff are in the UK. That's
-  // a day ahead of UTC's for the first hour of each day in summer time. The
-  // search itself still covers whole UTC days, as registration dates are UTC
-  const { year, month, day } = Object.fromEntries(
-    ukDateFormat.formatToParts(now).map(({ type, value }) => [type, value])
-  )
-  const today = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+  // The latest date allowed is today in the UK, where staff are
+  const today = ukDateOf(now)
   const from = readDate(query, 'date-from', 'From', today)
   const to = readDate(query, 'date-to', 'To', today)
 

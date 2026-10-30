@@ -193,7 +193,8 @@ describe('#wasteOrganisationsReportingController', () => {
       ).toEqual([
         ['Deepdale Salvage Partners org-1', 'Yes', '2', '1 Jun 2026'],
         ['(Not known) org-2', 'Not known', '1', '24 Jun 2026'],
-        ['Grantley <Environmental> org-3', 'No', '0', '1 Jul 2026']
+        // Registered 23:59 UTC on 1 July, which was 2 July in the UK
+        ['Grantley <Environmental> org-3', 'No', '0', '2 Jul 2026']
       ])
       // The name is a row header, sorted by the name alone
       expect(rows[0][0].tagName).toEqual('TH')

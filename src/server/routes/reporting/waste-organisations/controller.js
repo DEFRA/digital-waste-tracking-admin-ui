@@ -6,6 +6,7 @@ import { downloadFormats } from '../../../common/constants/download-formats.js'
 import { generateCsvWasteOrganisations } from './generate-csv-waste-organisations.js'
 import { localAuthorityText } from './local-authority.js'
 import { readRegistrationDates } from './registration-dates.js'
+import { ukDateOf } from './uk-date.js'
 
 const dateFields = [
   'date-from-Day',
@@ -78,15 +79,16 @@ export const wasteOrganisationsReportingController = {
       dateErrors,
       // For the layout's error summary
       errors: errorSummaryOf(dateErrors),
-      // Dates are shown in UTC, as the CSV gives them
+      // The dates entered, which are midnight UTC
       period: dateFrom && {
         from: format(new UTCDate(dateFrom), 'd MMMM yyyy'),
         to: format(new UTCDate(dateTo), 'd MMMM yyyy')
       },
       wasteOrganisations: wasteOrganisations?.map((organisation) => ({
         ...organisation,
+        // The date it was registered in the UK. The CSV gives the time in UTC
         registered: format(
-          new UTCDate(organisation.dateRegistered),
+          new UTCDate(ukDateOf(organisation.dateRegistered)),
           'd MMM yyyy'
         ),
         localAuthority: localAuthorityText(organisation.isLocalAuthority)
