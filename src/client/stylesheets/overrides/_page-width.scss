@@ -1,0 +1,17 @@
+@use "pkg:govuk-frontend/base" as *;
+
+// Every page is 1100px wide rather than GOV.UK's 960px, so the data tables fit,
+// as the DWP design system does for its wider internal services
+.govuk-width-container {
+  @include govuk-width-container(1100px);
+}
+
+// The body is a flex column, so the main container is given a width: the page's,
+// less its gutters, or it overflows the page on a small screen
+.govuk-width-container:has(main) {
+  width: calc(100% - #{$govuk-gutter-half * 2});
+
+  @include govuk-media-query($from: tablet) {
+    width: calc(100% - #{$govuk-gutter * 2});
+  }
+}

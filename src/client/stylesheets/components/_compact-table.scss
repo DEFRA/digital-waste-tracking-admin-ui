@@ -1,0 +1,23 @@
+@use "pkg:govuk-frontend/base" as *;
+
+// A data table in smaller text, so more fits on screen and its column headings
+// stay on one line
+.app-table--compact {
+  .govuk-table__header,
+  .govuk-table__cell {
+    @include govuk-font-size($size: 16);
+  }
+
+  .govuk-table__header {
+    white-space: nowrap;
+  }
+}
+
+// An organisation's ID, on its own line under its name
+.app-organisation-id {
+  display: block;
+  @include govuk-font-size($size: 16);
+  // Not bold, although the name's cell is a row header
+  @include govuk-typography-weight-regular;
+  color: govuk-functional-colour(secondary-text);
+}
