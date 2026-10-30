@@ -53,7 +53,9 @@ export const wasteOrganisationsReportingController = {
       // Oldest first, which is also the order without JavaScript
       wasteOrganisations = (
         await getWasteOrganisationsByDate(dateFrom, dateTo)
-      ).toSorted((a, b) => a.dateRegistered.localeCompare(b.dateRegistered))
+      ).toSorted((a, b) =>
+        (a.dateRegistered ?? '').localeCompare(b.dateRegistered ?? '')
+      )
 
       if (query.download === downloadFormats.csv) {
         return h

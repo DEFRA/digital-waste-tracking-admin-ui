@@ -1,10 +1,9 @@
-import { createIsoDate } from './create-iso-date.js'
 import { getWasteOrganisationsByDate } from './get-waste-organisations.js'
 import { config } from '#/config/config.js'
 
 describe('#getWasteOrganisationsByDate', () => {
-  const dateFrom = createIsoDate('24', '06', '2026')
-  const dateTo = createIsoDate('24', '07', '2026')
+  const dateFrom = new Date('2026-06-24T00:00:00.000Z')
+  const dateTo = new Date('2026-07-24T00:00:00.000Z')
 
   const wasteOrganisations = [
     {

@@ -8,7 +8,8 @@
     @include govuk-font-size($size: 16);
   }
 
-  .govuk-table__header {
+  // The column headings, not the row headers
+  thead .govuk-table__header {
     white-space: nowrap;
   }
 }

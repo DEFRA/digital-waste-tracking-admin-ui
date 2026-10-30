@@ -3,6 +3,13 @@ import { format, isAfter, isValid } from 'date-fns'
 
 const parts = ['Day', 'Month', 'Year']
 
+const ukDateFormat = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/London',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric'
+})
+
 const formats = {
   Day: /^\d{1,2}$/,
   Month: /^\d{1,2}$/,
@@ -22,13 +29,17 @@ const formats = {
  * @param {Object} query - The search's query parameters
  * @param {String} id - The date's id, such as "date-from"
  * @param {String} name - The date's name in messages, such as "From"
- * @param {Date} today - The start of today (UTC)
+ * @param {Date} today - Today's date in the UK, as the start of that day (UTC)
  *
  * @returns {{ date: Date } | { error: DateError }}
  */
 function readDate(query, id, name, today) {
+  // A repeated parameter arrives as an array, which is in the wrong format
   const values = Object.fromEntries(
-    parts.map((part) => [part, (query[`${id}-${part}`] ?? '').trim()])
+    parts.map((part) => {
+      const value = query[`${id}-${part}`] ?? ''
+      return [part, typeof value === 'string' ? value.trim() : null]
+    })
   )
   const missing = parts.filter((part) => values[part] === '')
 
@@ -55,7 +66,9 @@ function readDate(query, id, name, today) {
     }
   }
 
-  const wrongFormat = parts.filter((part) => !formats[part].test(values[part]))
+  const wrongFormat = parts.filter(
+    (part) => values[part] === null || !formats[part].test(values[part])
+  )
 
   if (wrongFormat.length > 0) {
     return {
@@ -98,9 +111,12 @@ function readDate(query, id, name, today) {
  * The dates, or the errors by date id ("date-from" and "date-to"), From first
  */
 export function readRegistrationDates(query, now = new Date()) {
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  // Staff are in the UK, so "today" is the UK's date, which is a day ahead of
+  // UTC's for the first hour of each day in summer time
+  const { year, month, day } = Object.fromEntries(
+    ukDateFormat.formatToParts(now).map(({ type, value }) => [type, value])
   )
+  const today = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
   const from = readDate(query, 'date-from', 'From', today)
   const to = readDate(query, 'date-to', 'To', today)
 

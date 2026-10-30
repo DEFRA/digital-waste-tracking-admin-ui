@@ -1,6 +1,7 @@
 import { downloadFormats } from '#/server/common/constants/download-formats.js'
 import { pageNames } from '#/server/common/constants/page-names.js'
 import { paths } from '#/server/common/constants/paths.js'
+import { readRegistrationDates } from '#/server/routes/reporting/waste-organisations/registration-dates.js'
 
 const wasteOrganisationsPath = '/reporting/waste-organisations'
 
@@ -32,13 +33,13 @@ export function getPageName(request) {
     return undefined
   }
 
-  if (request.query.download === downloadFormats.csv) {
-    return pageNames.wasteOrganisationsDownloadCsv
+  // The search is a GET, so only a search with valid dates shows results or
+  // downloads them. Anything else is the search form, with or without errors
+  if (readRegistrationDates(request.query).errors) {
+    return pageNames.wasteOrganisations
   }
 
-  // The search is a GET, so query params are what distinguishes a results view
-  // from the empty search form
-  return Object.keys(request.query).length
-    ? pageNames.wasteOrganisationsResults
-    : pageNames.wasteOrganisations
+  return request.query.download === downloadFormats.csv
+    ? pageNames.wasteOrganisationsDownloadCsv
+    : pageNames.wasteOrganisationsResults
 }

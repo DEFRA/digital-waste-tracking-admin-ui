@@ -43,6 +43,31 @@ describe('#readRegistrationDates', () => {
     })
   })
 
+  test("Should allow today's UK date in the first hour of a summer day, when it's still yesterday in UTC", () => {
+    const earlyBst = new Date('2026-07-01T23:30:00Z') // 00:30 on 2 July in the UK
+
+    expect(
+      readRegistrationDates(
+        query(['2', '7', '2026'], ['2', '7', '2026']),
+        earlyBst
+      ).errors
+    ).toBeUndefined()
+  })
+
+  test('Should treat a repeated parameter as the wrong format', () => {
+    expect(
+      readRegistrationDates(
+        { ...query(valid, valid), 'date-from-Day': ['1', '2'] },
+        now
+      ).errors
+    ).toEqual({
+      'date-from': {
+        text: 'Enter the ‘From’ date in the correct format',
+        parts: ['Day']
+      }
+    })
+  })
+
   test('Should ignore spaces around the values', () => {
     expect(
       readRegistrationDates(query([' 1 ', '1', '2026 '], valid), now).dateFrom
