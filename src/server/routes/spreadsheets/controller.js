@@ -1,3 +1,4 @@
+import { audit } from '@defra/cdp-auditing'
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { paths } from '#/server/common/constants/paths.js'
 import { config } from '#/config/config.js'
@@ -59,6 +60,13 @@ export const deleteController = {
     }
     try {
       await deleteS3Object(command.value)
+      audit({
+        event: 'spreadsheet-deleted',
+        user: request.auth.credentials?.username,
+        spreadsheetBucket: command.value.Bucket,
+        spreadsheetKey: command.value.Key,
+        tenantServiceName: config.get('clientCredentials.tenantServiceName')
+      })
       return h.redirect(paths.spreadsheetAdmin)
     } catch (e) {
       return h

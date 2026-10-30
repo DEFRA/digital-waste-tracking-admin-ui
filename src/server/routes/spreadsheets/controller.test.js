@@ -24,6 +24,10 @@ vi.mock('@aws-sdk/client-s3', () => ({
   DeleteObjectCommand: class {}
 }))
 
+const { mockAudit } = vi.hoisted(() => ({ mockAudit: vi.fn() }))
+
+vi.mock('@defra/cdp-auditing', () => ({ audit: mockAudit }))
+
 describe('#spreadsheetController', () => {
   let server
   let oldBucket = null
@@ -68,6 +72,7 @@ describe('#spreadsheetController', () => {
     })
     expect(result).toEqual('')
     expect(statusCode).toBe(statusCodes.found)
+    expect(mockAudit).toHaveBeenCalled()
   })
 
   test('Should show a message when delete file errors', async () => {
@@ -84,6 +89,7 @@ describe('#spreadsheetController', () => {
     })
     expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toContain(errMsg)
+    expect(mockAudit).not.toHaveBeenCalled()
   })
 
   test('Should warn when the bucket is empty', async () => {
@@ -95,6 +101,7 @@ describe('#spreadsheetController', () => {
     })
     expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toContain('Bucket name not configured')
+    expect(mockAudit).not.toHaveBeenCalled()
     config.set('aws.bucketName', 'test-bucket')
   })
 
@@ -112,6 +119,7 @@ describe('#spreadsheetController', () => {
     })
     expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toMatch(/Bucket[^<>]*is not allowed to be empty/)
+    expect(mockAudit).not.toHaveBeenCalled()
     config.set('aws.bucketName', 'test-bucket')
   })
 
@@ -128,5 +136,6 @@ describe('#spreadsheetController', () => {
     })
     expect(statusCode).toBe(statusCodes.badRequest)
     expect(result).toContain('Key must be specified')
+    expect(mockAudit).not.toHaveBeenCalled()
   })
 })
