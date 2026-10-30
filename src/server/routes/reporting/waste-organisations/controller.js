@@ -1,69 +1,102 @@
-import { wasteOrgansiationsReportingSchema } from './schema.js'
-import { validateData } from '../../../common/helpers/validate-data.js'
-import { getWasteOrganisationsByDate } from '../../../common/helpers/get-waste-organisations.js'
-import { createIsoDate } from '../../../common/helpers/create-iso-date.js'
-import { downloadFormats } from '../../../common/constants/download-formats.js'
+import { UTCDate } from '@date-fns/utc'
 import { format } from 'date-fns'
+
+import { getWasteOrganisationsByDate } from '../../../common/helpers/get-waste-organisations.js'
+import { downloadFormats } from '../../../common/constants/download-formats.js'
 import { generateCsvWasteOrganisations } from './generate-csv-waste-organisations.js'
+import { localAuthorityText } from './local-authority.js'
+import { readRegistrationDates } from './registration-dates.js'
+import { ukDateOf } from './uk-date.js'
+
+const dateFields = [
+  'date-from-Day',
+  'date-from-Month',
+  'date-from-Year',
+  'date-to-Day',
+  'date-to-Month',
+  'date-to-Year'
+]
+
+/**
+ * @param {Object} [dateErrors] - The errors by date id, From first
+ *
+ * @returns {Object<String, String>} The messages for the error summary, each
+ * linking to the date's first wrong input
+ */
+function errorSummaryOf(dateErrors = {}) {
+  return Object.fromEntries(
+    Object.entries(dateErrors).map(([id, { text, parts }]) => [
+      `${id}-${parts[0]}`,
+      text
+    ])
+  )
+}
 
 export const wasteOrganisationsReportingController = {
   async handler(request, h) {
-    let errors
-    let dateFrom
-    let dateTo
-    let wasteOrganisations = []
+    const { query } = request
+    const values = Object.fromEntries(
+      dateFields.map((field) => [field, query[field]])
+    )
 
-    // Search is done as a GET request so we can provide bookmarkable search results
+    // Search is done as a GET request so we can provide bookmarkable search
+    // results. Nothing is shown until someone searches
+    const searched = dateFields.some((field) => field in query)
     const {
-      'date-from-Day': dateFromDay,
-      'date-from-Month': dateFromMonth,
-      'date-from-Year': dateFromYear,
-      'date-to-Day': dateToDay,
-      'date-to-Month': dateToMonth,
-      'date-to-Year': dateToYear,
-      download
-    } = request.query
+      dateFrom,
+      dateTo,
+      errors: dateErrors
+    } = searched ? readRegistrationDates(query) : {}
 
-    if (Object.values(request.query).length > 0) {
-      errors = validateData(request.query, wasteOrgansiationsReportingSchema)
-    }
+    let wasteOrganisations
 
-    if (!errors) {
-      dateFrom = createIsoDate(dateFromDay, dateFromMonth, dateFromYear)
-      dateTo = createIsoDate(dateToDay, dateToMonth, dateToYear)
+    if (dateFrom && dateTo) {
+      // Oldest first, which is also the order without JavaScript
+      wasteOrganisations = (
+        await getWasteOrganisationsByDate(dateFrom, dateTo)
+      ).toSorted((a, b) =>
+        (a.dateRegistered ?? '').localeCompare(b.dateRegistered ?? '')
+      )
 
-      if (dateFrom && dateTo) {
-        wasteOrganisations = await getWasteOrganisationsByDate(dateFrom, dateTo)
-
-        if (download === downloadFormats.csv) {
-          const csv = generateCsvWasteOrganisations(wasteOrganisations)
-
-          return h
-            .response(csv)
-            .header('Content-Type', 'text/csv')
-            .header(
-              'Content-Disposition',
-              `attachment; filename=${format(new Date(), 'yyMMddHHmmss')}-orgs-${format(dateFrom, 'yyMMdd')}-${format(dateTo, 'yyMMdd')}.csv`
-            )
-        }
+      if (query.download === downloadFormats.csv) {
+        return h
+          .response(generateCsvWasteOrganisations(wasteOrganisations))
+          .header('Content-Type', 'text/csv')
+          .header(
+            'Content-Disposition',
+            `attachment; filename=${format(new Date(), 'yyMMddHHmmss')}-orgs-${format(new UTCDate(dateFrom), 'yyMMdd')}-${format(new UTCDate(dateTo), 'yyMMdd')}.csv`
+          )
       }
     }
 
     return h.view('reporting/waste-organisations/index', {
-      pageTitle: 'Waste organisations report',
+      pageTitle: dateErrors
+        ? 'Error: Waste organisations'
+        : 'Waste organisations',
       heading: 'Waste organisations',
       serviceName: 'DWT admin portal',
-      breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Reporting' }],
-      wasteOrganisations,
-      dateFromDay,
-      dateFromMonth,
-      dateFromYear,
-      dateToDay,
-      dateToMonth,
-      dateToYear,
-      dateFrom,
-      dateTo,
-      errors
+      values,
+      dateErrors,
+      // For the layout's error summary
+      errors: errorSummaryOf(dateErrors),
+      // The dates entered, which are midnight UTC
+      period: dateFrom && {
+        from: format(new UTCDate(dateFrom), 'd MMMM yyyy'),
+        to: format(new UTCDate(dateTo), 'd MMMM yyyy')
+      },
+      wasteOrganisations: wasteOrganisations?.map((organisation) => ({
+        ...organisation,
+        // The date it was registered in the UK. The CSV gives the time in UTC
+        registered: format(
+          new UTCDate(ukDateOf(organisation.dateRegistered)),
+          'd MMM yyyy'
+        ),
+        localAuthority: localAuthorityText(organisation.isLocalAuthority)
+      })),
+      csvQuery: new URLSearchParams({
+        ...values,
+        download: downloadFormats.csv
+      }).toString()
     })
   }
 }

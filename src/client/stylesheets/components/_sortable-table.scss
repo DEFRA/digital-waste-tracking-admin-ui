@@ -31,3 +31,8 @@
     0 -2px govuk-functional-colour(focus),
     0 4px govuk-functional-colour(focus-text);
 }
+
+// Keeps the sort icon at its full 22px when a heading wraps
+[aria-sort] button svg {
+  flex-shrink: 0;
+}

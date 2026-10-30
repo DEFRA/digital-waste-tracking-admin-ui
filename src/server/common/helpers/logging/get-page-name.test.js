@@ -30,10 +30,28 @@ describe('#getPageName', () => {
     expect(result).toEqual(pageNames.wasteOrganisations)
   })
 
+  const search = {
+    'date-from-Day': '09',
+    'date-from-Month': '06',
+    'date-from-Year': '2026',
+    'date-to-Day': '10',
+    'date-to-Month': '06',
+    'date-to-Year': '2026'
+  }
+
+  test('Should return the waste organisations page name when a search has wrong dates', () => {
+    const result = getPageName({
+      path: '/reporting/waste-organisations',
+      query: { ...search, 'date-from-Month': '', download: 'csv' }
+    })
+
+    expect(result).toEqual(pageNames.wasteOrganisations)
+  })
+
   test('Should return the results page name when a search has been made', () => {
     const result = getPageName({
       path: '/reporting/waste-organisations',
-      query: { 'date-from-Day': '09', 'date-from-Month': '06' }
+      query: search
     })
 
     expect(result).toEqual(pageNames.wasteOrganisationsResults)
@@ -42,7 +60,7 @@ describe('#getPageName', () => {
   test('Should return the download CSV page name when downloading the results', () => {
     const result = getPageName({
       path: '/reporting/waste-organisations',
-      query: { 'date-from-Day': '09', download: 'csv' }
+      query: { ...search, download: 'csv' }
     })
 
     expect(result).toEqual(pageNames.wasteOrganisationsDownloadCsv)
