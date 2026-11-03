@@ -135,7 +135,7 @@ describe('Create new credentials', () => {
       expect(
         document.querySelector('#clientName-hint').textContent.trim()
       ).toEqual(
-        'Enter the name of the software provider and software package, using letters and underscores only. For example, Waste_Technologies_Software'
+        'Enter the name of the software provider and software package using letters, numbers, hyphens, underscores and full stops only. For example, Waste1-Tech.com_Software'
       )
       expect(input.getAttribute('aria-describedby')).toEqual('clientName-hint')
       expect(input.getAttribute('autocomplete')).toEqual('off')
@@ -183,9 +183,14 @@ describe('Create new credentials', () => {
       ['empty', '', 'Enter a client name'],
       ['blank', '   ', 'Enter a client name'],
       [
-        'not just letters and underscores',
-        'Waste-Tech 2',
-        'Client name must only include letters and underscores'
+        'using other characters',
+        'Waste Tech/2',
+        'Client name must only include letters, numbers, hyphens, underscores and full stops'
+      ],
+      [
+        'using letters other than a to z, which Client Sync rejects',
+        'Café_Software',
+        'Client name must only include letters, numbers, hyphens, underscores and full stops'
       ],
       [
         'too long',
@@ -340,6 +345,19 @@ describe('Create new credentials', () => {
       )
       expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
         clientName: 'Waste_Technologies_Software'
+      })
+    })
+
+    test.each([
+      ['numbers, hyphens and full stops', 'Waste1-Tech.com_Software'],
+      // Client Sync doesn't allow spaces, so they're removed before it's sent
+      ['spaces around it', '  Waste1-Tech.com_Software  ']
+    ])('Should accept a name with %s', async (_, clientName) => {
+      const response = await submitName(clientName)
+
+      expect(response.statusCode).toEqual(302)
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+        clientName: 'Waste1-Tech.com_Software'
       })
     })
 
