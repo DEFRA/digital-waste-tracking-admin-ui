@@ -11,7 +11,7 @@ export const createClientCredentialsSchema = Joi.object({
       'string.empty': 'Enter a client name',
       'any.required': 'Enter a client name',
       'string.pattern.base':
-        'Client name must only include letters, numbers, hyphens, underscores and full stops',
+        'Client name must only include letters a to z, numbers, hyphens, underscores and full stops',
       'string.max': 'Client name must be 128 characters or fewer'
     })
 })

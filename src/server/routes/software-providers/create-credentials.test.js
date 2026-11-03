@@ -185,12 +185,12 @@ describe('Create new credentials', () => {
       [
         'using other characters',
         'Waste Tech/2',
-        'Client name must only include letters, numbers, hyphens, underscores and full stops'
+        'Client name must only include letters a to z, numbers, hyphens, underscores and full stops'
       ],
       [
         'using letters other than a to z, which Client Sync rejects',
         'Café_Software',
-        'Client name must only include letters, numbers, hyphens, underscores and full stops'
+        'Client name must only include letters a to z, numbers, hyphens, underscores and full stops'
       ],
       [
         'too long',
