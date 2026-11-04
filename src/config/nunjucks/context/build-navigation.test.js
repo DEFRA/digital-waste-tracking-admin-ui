@@ -23,6 +23,11 @@ describe('#buildNavigation', () => {
         current: false,
         href: '/reporting/waste-organisations',
         text: 'Reporting'
+      },
+      {
+        current: false,
+        href: '/admin/waste-organisations/spreadsheet',
+        text: 'Spreadsheet Administration'
       }
     ])
   })
@@ -43,6 +48,11 @@ describe('#buildNavigation', () => {
         current: false,
         href: '/reporting/waste-organisations',
         text: 'Reporting'
+      },
+      {
+        current: false,
+        href: '/admin/waste-organisations/spreadsheet',
+        text: 'Spreadsheet Administration'
       }
     ])
   })
