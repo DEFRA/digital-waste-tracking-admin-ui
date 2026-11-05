@@ -13,7 +13,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
   async handler(request, h) {
     const credentials = await getClientCredentialsById(request.params.clientId)
 
-    const { clientId, clientName } = credentials
+    const { clientId, clientName, secrets } = credentials
 
     // We also need to get the secret info
     // How do we go about that?
