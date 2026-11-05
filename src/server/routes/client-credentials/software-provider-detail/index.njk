@@ -1,0 +1,47 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - DWT admin portal
+{% endblock %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">Software provider</span>
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-4" data-testid="app-heading-title">{{ clientName }}</h1>
+      <p class="govuk-body govuk-!-margin-bottom-8">
+        <strong class="govuk-tag">{{ environment }}</strong>
+      </p>
+      <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-8">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Client ID
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ clientId }}
+          </dd>
+        </div>
+      </dl>
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-4">Client secrets for {{ environment }}</h2>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          {{ govukTable({
+            head: [
+              {
+                text: "Generated on"
+              },
+              {
+                text: "Client secret"
+              },
+              {
+                text: "Actions"
+              }
+            ]
+          }) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

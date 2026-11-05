@@ -28,6 +28,10 @@ export function getPageName(request) {
     return pageNames.newClientCredentials
   }
 
+  if (request.path.startsWith(`${paths.clientCredentials}/software-provider-detail`)) {
+    return pageNames.clientCredentialsSoftwareProviderDetail
+  }
+
   if (request.path !== wasteOrganisationsPath) {
     return undefined
   }

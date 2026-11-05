@@ -3,6 +3,7 @@ export const pageNames = {
   softwareProviders: 'Software providers',
   createClientCredentials: 'Software providers: Create credentials',
   newClientCredentials: 'Software providers: New credentials',
+  clientCredentialsSoftwareProviderDetail: 'Client credentials: Software provider detail',
   wasteOrganisations: 'Reporting: Waste Organisations',
   wasteOrganisationsResults: 'Reporting: Waste Organisations: Results',
   wasteOrganisationsDownloadCsv: 'Reporting: Waste Organisations: Download CSV'
