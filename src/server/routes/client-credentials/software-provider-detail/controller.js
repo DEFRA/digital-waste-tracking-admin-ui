@@ -13,17 +13,9 @@ export const clientCredentialsSoftwareProviderDetailController = {
   async handler(request, h) {
     const credentials = await getClientCredentialsById(request.params.clientId)
 
-    const { clientId, clientName } = credentials
+    const { clientId, clientName, secrets } = credentials
 
-    // We also need to get the secret info
-    // How do we go about that?
-
-    // Shown once: coming back to the page goes to the Software providers page
-    // if (!credentials) {
-    //   return h.redirect(paths.softwareProviders)
-    // }
-    //
-    console.log('credentials', credentials)
+    console.log('credentials', secrets)
 
     return h.view('client-credentials/software-provider-detail/index', {
       pageTitle: 'Client credentials: Software provider detail',
@@ -31,6 +23,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
       serviceName: 'DWT admin portal',
       clientName,
       clientId,
+      secrets,
       environment: capitalise(`${environmentName()} environment`)
     })
   }

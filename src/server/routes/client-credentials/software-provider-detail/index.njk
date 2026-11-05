@@ -7,6 +7,14 @@
 {% endblock %}
 
 {% block pageContent %}
+  {% set rows = [] %}
+  {% for secret in secrets %}
+    {% set rows = (rows.push([
+      { text: secret.createdAt | formatDate("dd LLLL yyyy 'at' hh:mmaaa") },
+      { text: "[Hidden]" },
+      { text: "Replace secret" }
+    ]), rows) %}
+  {% endfor %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">Software provider</span>
@@ -38,7 +46,8 @@
               {
                 text: "Actions"
               }
-            ]
+            ],
+            rows: rows
           }) }}
         </div>
       </div>
