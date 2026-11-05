@@ -100,7 +100,11 @@ jobs:
           adminUiPassword: local
           # Chrome runs in a container, so reaches the admin UI by its service name
           ADMIN_UI_BASE_URL: http://digital-waste-tracking-admin-ui:3000
-        run: npm run test:admin-tool
+          # Made-up credential for calling dwt-client-sync directly
+          SERVICE_AUTH_PASSWORD: local-external-api
+          # Reach dwt-client-sync by its compose service name
+          DWT_CLIENT_SYNC_SERVICE_URL: http://dwt-client-sync:3005
+        run: npm run test:admin-ui
 
       - name: Generate Test Report
         if: always()
