@@ -28,6 +28,10 @@ export function getPageName(request) {
     return pageNames.newClientCredentials
   }
 
+  if (/^\/software-providers\/[^/]+\/delete$/.test(request.path)) {
+    return pageNames.deleteSoftwareProvider
+  }
+
   if (request.path !== wasteOrganisationsPath) {
     return undefined
   }
