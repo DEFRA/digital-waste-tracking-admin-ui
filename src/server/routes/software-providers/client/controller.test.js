@@ -23,7 +23,7 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
   test('Should show the page title', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/client-credentials/1c847b52-9de6-4a03-b7f8-52c96e1d4a37/software-provider-detail',
+      url: '/software-providers/1c847b52-9de6-4a03-b7f8-52c96e1d4a37',
       headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
     })
 

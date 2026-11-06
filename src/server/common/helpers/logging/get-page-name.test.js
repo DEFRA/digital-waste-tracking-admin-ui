@@ -19,7 +19,7 @@ describe('#getPageName', () => {
     ['/software-providers/client-1/delete', pageNames.deleteSoftwareProvider],
     ['/software-providers/credentials/an-id', pageNames.newClientCredentials],
     [
-      '/client-credentials/client-4/software-provider-detail',
+      '/software-providers/client-4',
       pageNames.clientCredentialsSoftwareProviderDetail
     ]
   ])('Should return the page name for %s', (path, pageName) => {

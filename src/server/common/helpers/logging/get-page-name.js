@@ -33,7 +33,7 @@ export function getPageName(request) {
     return pageNames.deleteSoftwareProvider
   }
 
-  if (request.path.startsWith(`${paths.clientCredentials}/software-provider-detail`)) {
+  if (/^\/software-providers\/[^/]+$/.test(request.path)) {
     return pageNames.clientCredentialsSoftwareProviderDetail
   }
 

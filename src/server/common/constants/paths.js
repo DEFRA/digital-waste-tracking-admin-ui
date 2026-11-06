@@ -5,8 +5,10 @@ export const paths = {
   softwareProvider: '/software-providers/{clientId}',
   deleteSoftwareProvider: '/software-providers/{clientId}/delete',
   clientCredentials: '/client-credentials',
-  clientCredentialsSoftwareProviderDetail:
-    '/client-credentials/{clientId}/software-provider-detail'
+  clientCredentialsDetail:
+    '/software-providers/{clientId}',
+  replaceClientCredentials:
+    '/software-providers/{clientId}/replace'
 }
 
 /**

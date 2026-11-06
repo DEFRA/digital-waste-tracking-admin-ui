@@ -8,7 +8,8 @@ import { reporting } from '../routes/reporting/index.js'
 import { wasteOrganisationsReporting } from '../routes/reporting/waste-organisations/index.js'
 import { login } from '#/server/routes/login/index.js'
 import { softwareProviders } from '#/server/routes/software-providers/index.js'
-import { clientCredentials } from '#/server/routes/client-credentials/software-provider-detail/index.js'
+import { clientCredentials } from '#/server/routes/software-providers/client/index.js'
+import { replaceSecret } from '#/server/routes/software-providers/client/replace/index.js'
 
 export const router = {
   plugin: {
@@ -26,6 +27,7 @@ export const router = {
         wasteOrganisationsReporting,
         softwareProviders,
         clientCredentials,
+        replaceSecret,
         login
       ])
 
