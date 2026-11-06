@@ -80,6 +80,13 @@ body {
   flex: 1;
 }
 
+// Full width, as the flex column would otherwise shrink it to its content.
+// Its margins (GOV.UK's gutters: 15px, then 30px from tablet) are outside its
+// width, so 100% would overflow the page by them
 .govuk-width-container:has(main) {
-  width: 100%;
+  width: calc(100% - 30px);
+
+  @media (min-width: 40.0625em) {
+    width: calc(100% - 60px);
+  }
 }
