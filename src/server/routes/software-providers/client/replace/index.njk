@@ -1,29 +1,18 @@
 {% extends 'layouts/page.njk' %}
 
-{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "interruption-card/macro.njk" import appInterruptionCard %}
 
 {% block pageTitle %}
   {{ pageTitle }} - DWT admin portal
 {% endblock %}
 
 {% block pageContent %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-l">Software provider</span>
-      <h1 class="govuk-heading-l govuk-!-margin-bottom-4" data-testid="app-heading-title">{{ clientName }}</h1>
-      <p class="govuk-body govuk-!-margin-bottom-8">
-        <strong class="govuk-tag">{{ environment }}</strong>
-      </p>
-      <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-8">
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Client ID
-          </dt>
-          <dd class="govuk-summary-list__value">
-            {{ clientId }}
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </div>
+  {% call appInterruptionCard({
+    heading: "Are you sure you want to replace the current secret?",
+    buttonText: "Yes, replace secret",
+    backLink: { text: "Go back to software provider", href: softwareProviderPath }
+  }) %}
+    <p>The current secret for {{ clientName }} will stop working immediately. Make sure the software provider knows before you continue.</p>
+    <p>If credentials have been exposed, email <a class="govuk-link govuk-link--inverse" href="mailto:security.team@defra.gov.uk">security.team@defra.gov.uk</a></p>
+  {% endcall %}
 {% endblock %}
