@@ -6,6 +6,11 @@
   <div class="moj-interruption-card__content">
     <h1 class="moj-interruption-card__heading" data-testid="app-heading-title">{{ params.heading }}</h1>
     <p class="moj-interruption-card__body" data-testid="interruption-card-text">{{ params.text }}</p>
+    {# More for the card's body, such as a link, below the text. It's output
+       as it is, so it must be markup the app builds, never user input #}
+    {% if params.html %}
+      <div class="moj-interruption-card__body" data-testid="interruption-card-html">{{ params.html | safe }}</div>
+    {% endif %}
     <form method="post" novalidate data-module="app-single-submit">
       <div class="govuk-button-group moj-interruption-card__actions">
         {{ govukButton({

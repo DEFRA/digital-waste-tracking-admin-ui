@@ -37,4 +37,28 @@ describe('Interruption card Component', () => {
     expect($link.attr('href')).toBe('/somewhere')
     expect($link.hasClass('govuk-link--inverse')).toBe(true)
   })
+
+  test('Should have nothing below the text unless given more', () => {
+    expect($card('[data-testid="interruption-card-html"]')).toHaveLength(0)
+  })
+
+  test('Should show more for the body, such as a link, below the text', () => {
+    const $withHtml = renderComponent('interruption-card', {
+      heading: 'Are you sure?',
+      text: 'This cannot be undone.',
+      html: '<p>More <a href="/more">here</a>.</p>',
+      buttonText: 'Yes, do it',
+      backLink: { text: 'Go back', href: '/somewhere' }
+    })
+    const $html = $withHtml('[data-testid="interruption-card-html"]')
+
+    expect($html.text().trim()).toBe('More here.')
+    expect($html.find('a').attr('href')).toBe('/more')
+    // Before the buttons, so it's read in order
+    expect(
+      $withHtml('.moj-interruption-card__content > *')
+        .toArray()
+        .map((element) => element.tagName)
+    ).toEqual(['h1', 'p', 'div', 'form'])
+  })
 })
