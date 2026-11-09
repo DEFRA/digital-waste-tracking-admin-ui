@@ -1,7 +1,7 @@
 import { config } from '#/config/config.js'
 import { getClientCredentials } from '#/server/common/helpers/get-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
-import { paths } from '#/server/common/constants/paths.js'
+import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 
 /**
@@ -36,6 +36,10 @@ export const softwareProvidersController = {
       .map(({ clientName, clientId }) => ({
         clientName: clientName ?? '',
         clientId: clientId ?? '',
+        softwareProviderPath: clientPath(
+          paths.clientCredentialsSoftwareProviderDetail,
+          clientId
+        ),
         environment
       }))
       .sort(byClientName)
