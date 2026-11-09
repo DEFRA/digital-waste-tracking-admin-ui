@@ -1,7 +1,37 @@
 {% extends 'layouts/page.njk' %}
 
-{% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{# A date's Day, Month and Year inputs, with a red border on only the wrong ones. Its error message is shown for the whole group, above both dates #}
+{% macro dateInput(id, legend, hint) %}
+  {% set error = dateErrors[id] if dateErrors else undefined %}
+  {% set items = [] %}
+  {% for part in ["Day", "Month", "Year"] %}
+    {% set classes = "govuk-input--width-4" if part == "Year" else "govuk-input--width-2" %}
+    {% if error and part in error.parts %}
+      {% set classes = classes + " govuk-input--error" %}
+    {% endif %}
+    {% set items = (items.push({
+      name: part,
+      classes: classes,
+      value: values[id + "-" + part],
+      attributes: { "data-testid": id + "-" + part | lower }
+    }), items) %}
+  {% endfor %}
+  {{ govukDateInput({
+    id: id,
+    namePrefix: id,
+    fieldset: {
+      legend: { text: legend, classes: "govuk-fieldset__legend--s" },
+      attributes: { "data-testid": id }
+    },
+    hint: { text: hint },
+    items: items
+  }) }}
+{% endmacro %}
 
 {% block pageContent %}
 
@@ -9,93 +39,87 @@
     text: heading
   }) }}
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <div data-testid="app-page-body">
-        <p class="govuk-body">
-          Search waste organisations by DefraID registration date.
-        </p>
-          <form method="get" action="/reporting/waste-organisations">
-          <div class="govuk-grid-row">
-            <div class="govuk-grid-column-one-half">
-              {{ appDateInput({
-                id: "date-from",
-                legend: "From date",
-                hint: "For example, 24 6 2026",
-                dayValue: dateFromDay,
-                monthValue: dateFromMonth,
-                yearValue: dateFromYear,
-                errors: errors
-              }) }}
-            </div>
-            <div class="govuk-grid-column-one-half">
-              {{ appDateInput({
-                id: "date-to",
-                legend: "To date",
-                hint: "For example, 24 7 2027",
-                dayValue: dateToDay,
-                monthValue: dateToMonth,
-                yearValue: dateToYear,
-                errors: errors
-              }) }}
-            </div>
-          </div>
-          {{ govukButton({
-            text: "Show organisations"
+  <form method="get" action="/reporting/waste-organisations" novalidate>
+    <div class="govuk-form-group{% if dateErrors %} govuk-form-group--error{% endif %}">
+      <fieldset class="govuk-fieldset"{% if dateErrors %} aria-describedby="{% for id, error in dateErrors %}{{ id }}-error{% if not loop.last %} {% endif %}{% endfor %}"{% endif %} data-testid="registration-date">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">Registration date</h2>
+        </legend>
+        {% for id, error in dateErrors %}
+          {{ govukErrorMessage({
+            id: id + "-error",
+            text: error.text,
+            attributes: { "data-testid": id + "-error" }
           }) }}
-        </form>
-      </div>
+        {% endfor %}
+        <div class="app-date-range">
+          {{ dateInput("date-from", "From date", "For example, 1 4 2025") }}
+          {{ dateInput("date-to", "To date", "For example, 31 3 2026") }}
+        </div>
+      </fieldset>
     </div>
-  </div>
 
-  {% if dateFrom and dateTo %}
-    <h2 class="govuk-heading-m" data-testid="search-timeframe">
-      Waste organisations registered from {{ dateFrom | formatDate("dd MMMM yyyy") }} to {{ dateTo | formatDate("dd MMMM yyyy") }}
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Search",
+        attributes: { "data-testid": "search-button" }
+      }) }}
+      <a class="govuk-link" href="/reporting/waste-organisations" aria-label="Clear search" data-testid="clear-link">Clear</a>
+    </div>
+  </form>
+
+  {% if wasteOrganisations %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-9" id="results-heading" data-testid="search-timeframe">
+      Waste organisations registered from {{ period.from }} to {{ period.to }}
     </h2>
-    <p class="govuk-body" data-testid="search-results-count">
-      Organisations registered (in period): {{ wasteOrganisations.length }}
-    </p>
-  {% endif %}
 
-  {% if wasteOrganisations | length > 0 %}
-    {% set wasteOrganisationRows = [] %}
-    {% for wasteOrganisation in wasteOrganisations %}
-      {% set wasteOrganisationRows = (wasteOrganisationRows.push([
-        { text: wasteOrganisation.organisationId },
-        { text: wasteOrganisation.dateRegistered  | formatDate("dd LLL yyyy") },
-        { text: wasteOrganisation.activeApiCodeCount }]), wasteOrganisationRows)
-      %}
-    {% endfor %}
+    {% if wasteOrganisations | length > 0 %}
+      <p class="govuk-body" data-testid="search-results-count">
+        Organisations registered in period: {{ wasteOrganisations | length }}
+        <a class="govuk-link govuk-!-margin-left-2" href="/reporting/waste-organisations?{{ csvQuery }}" data-testid="download-csv-link">download CSV</a>
+      </p>
 
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-full">
-        {{ govukTable({
-          head: [
-            {
-              text: "Organisation ID"
-            },
-            {
-              text: "Registered"
-            },
-            {
-              text: "Active API Codes"
-            }
-          ],
-          rows: wasteOrganisationRows,
-          attributes: {
-            "data-testid": "waste-organisations-list"
+      {% set rows = [] %}
+      {% for organisation in wasteOrganisations %}
+        {% set nameHtml %}
+          <span class="govuk-!-font-weight-bold" data-testid="organisation-name">{{ organisation.name if organisation.name else "(Not known)" }}</span>
+          <span class="app-organisation-id" data-testid="organisation-id">{{ organisation.organisationId }}</span>
+        {% endset %}
+        {% set rows = (rows.push([
+          { html: nameHtml, attributes: { "data-sort-value": organisation.name | default("") | lower } },
+          { text: organisation.localAuthority },
+          { text: organisation.activeApiCodeCount, format: "numeric" },
+          {
+            text: organisation.registered,
+            attributes: { "data-sort-value": organisation.dateRegistered }
           }
-        }) }}
-        {{ govukButton({
-          text: "Download CSV",
-          classes: "govuk-button--secondary",
+        ]), rows) %}
+      {% endfor %}
+
+      {# Lets the table scroll on its own when it's wider than the screen, rather than the page #}
+      <div class="app-table-scroll" role="region" aria-labelledby="results-heading" tabindex="0">
+        {{ govukTable({
+          classes: "app-table--compact",
+          firstCellIsHeader: true,
           attributes: {
-            "data-testid": "download-csv-button"
+            "data-module": "moj-sortable-table",
+            "aria-labelledby": "results-heading",
+            "data-testid": "waste-organisations-list"
           },
-          href: "/reporting/waste-organisations?date-from-Day=" + dateFromDay + "&date-from-Month=" + dateFromMonth + "&date-from-Year=" + dateFromYear + "&date-to-Day=" + dateToDay + "&date-to-Month=" + dateToMonth + "&date-to-Year=" + dateToYear + "&download=csv"
+          head: [
+            { text: "Organisation name and ID", classes: "app-table__header--wide", attributes: { "aria-sort": "none" } },
+            { text: "Local authority", classes: "app-table__header--narrow", attributes: { "aria-sort": "none" } },
+            { text: "Active API codes", format: "numeric", classes: "app-table__header--narrow", attributes: { "aria-sort": "none" } },
+            { text: "Registered", classes: "app-table__header--narrow", attributes: { "aria-sort": "ascending" } }
+          ],
+          rows: rows
         }) }}
       </div>
-    </div>
+    {% else %}
+      <p class="govuk-body" data-testid="no-results">
+        No organisations were registered in this period. Try a different date range, or select Clear.
+      </p>
+    {% endif %}
   {% endif %}
 
 {% endblock %}

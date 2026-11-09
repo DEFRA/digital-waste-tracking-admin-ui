@@ -25,7 +25,7 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 24px;
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 12px 15px;
 
@@ -80,13 +80,3 @@ body {
   flex: 1;
 }
 
-// Full width, as the flex column would otherwise shrink it to its content.
-// Its margins (GOV.UK's gutters: 15px, then 30px from tablet) are outside its
-// width, so 100% would overflow the page by them
-.govuk-width-container:has(main) {
-  width: calc(100% - 30px);
-
-  @media (min-width: 40.0625em) {
-    width: calc(100% - 60px);
-  }
-}
