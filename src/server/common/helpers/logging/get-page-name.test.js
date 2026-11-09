@@ -16,7 +16,8 @@ describe('#getPageName', () => {
 
   test.each([
     ['/software-providers/create', pageNames.createClientCredentials],
-    ['/software-providers/credentials/an-id', pageNames.newClientCredentials]
+    ['/software-providers/credentials/an-id', pageNames.newClientCredentials],
+    ['/software-providers/client-1/delete', pageNames.deleteSoftwareProvider]
   ])('Should return the page name for %s', (path, pageName) => {
     expect(getPageName({ path, query: {} })).toEqual(pageName)
   })

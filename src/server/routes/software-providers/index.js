@@ -4,6 +4,10 @@ import {
   createClientCredentialsViewController
 } from './create/controller.js'
 import { newClientCredentialsController } from './credentials/controller.js'
+import {
+  deleteSoftwareProviderSubmitController,
+  deleteSoftwareProviderViewController
+} from './delete/controller.js'
 import { config } from '#/config/config.js'
 import { paths } from '#/server/common/constants/paths.js'
 import { createNewClientCredentialsStore } from '#/server/common/helpers/new-client-credentials-store.js'
@@ -21,6 +25,23 @@ export const softwareProviders = {
         path: paths.softwareProviders,
         ...softwareProvidersController
       })
+
+      // Deleting can be switched off, as it is in production for now. Its
+      // pages then don't exist, so they're "Page not found"
+      if (config.get('clientCredentials.deleteEnabled')) {
+        server.route([
+          {
+            method: 'GET',
+            path: paths.deleteSoftwareProvider,
+            ...deleteSoftwareProviderViewController
+          },
+          {
+            method: 'POST',
+            path: paths.deleteSoftwareProvider,
+            ...deleteSoftwareProviderSubmitController
+          }
+        ])
+      }
 
       // Creating credentials can be switched off, as it is in production for
       // now. Its pages then don't exist, so they're "Page not found"
