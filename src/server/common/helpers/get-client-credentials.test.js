@@ -1,4 +1,7 @@
-import { getClientCredentials, getClientCredentialsById } from './get-client-credentials.js'
+import {
+  getClientCredentials,
+  getClientCredentialsById
+} from './get-client-credentials.js'
 import { config } from '#/config/config.js'
 
 const mockLoggerWarn = vi.fn()

@@ -98,9 +98,7 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
       `/software-providers/${clientId}/replace`
     )
     // The link is in the first row, which is the oldest secret
-    expect(links[0].closest('tr')).toEqual(
-      document.querySelector('tbody tr')
-    )
+    expect(links[0].closest('tr')).toEqual(document.querySelector('tbody tr'))
   })
 
   test.each([
