@@ -8,11 +8,16 @@
 
 {% block pageContent %}
   {% set rows = [] %}
-  {% for secret in secrets %}
+  {# Secrets are listed oldest first, and only the oldest can be replaced #}
+  {% for secret in secrets | sort(attribute="createdAt") %}
+    {% set actions = { text: "" } %}
+    {% if secret.createdAt == oldestSecret.createdAt %}
+      {% set actions = { html: '<a class="govuk-link" href="' + replaceSecretPath + '">Replace secret</a>' | safe } %}
+    {% endif %}
     {% set rows = (rows.push([
-      { text: secret.createdAt | formatDate("dd LLLL yyyy 'at' hh:mmaaa") },
+      { text: secret.createdAt | formatDate("d LLLL yyyy 'at' hh:mmaaa") },
       { text: "[Hidden]" },
-      { text: "Replace secret" }
+      actions
     ]), rows) %}
   {% endfor %}
   <div class="govuk-grid-row">

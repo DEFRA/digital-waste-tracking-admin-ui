@@ -11,19 +11,12 @@ export const replaceClientCredentialsController = {
     }
   },
   async handler(request, h) {
-    // /software-providers/{clientId} must not shadow the /software-providers/create
-    // route, which is not registered when client credential creation is switched off
-    if (request.path === paths.createClientCredentials) {
-      return h.response().code(404)
-    }
-
     const credentials = await getClientCredentialsById(request.params.clientId)
 
     const { clientId, clientName, secrets } = credentials
 
     console.log('credentials', secrets)
 
-    // return h.view('client-credentials/software-provider-detail/index', {
     return h.view('software-providers/client/replace/index', {
       pageTitle: 'Replace the client secret',
       heading: 'Software provider',
