@@ -70,7 +70,7 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect(document.title.trim()).toEqual(
-      'Manage client credentials - DWT admin portal'
+      'Skipflow_Test - DWT admin portal'
     )
     expect(getElementText(document, 'app-heading-title')).toContain(
       'Skipflow_Test'

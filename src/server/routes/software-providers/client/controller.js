@@ -30,7 +30,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
 
     // return h.view('client-credentials/software-provider-detail/index', {
     return h.view('software-providers/client/index', {
-      pageTitle: 'Manage client credentials',
+      pageTitle: clientName,
       heading: 'Software provider',
       serviceName: 'DWT admin portal',
       clientName,
