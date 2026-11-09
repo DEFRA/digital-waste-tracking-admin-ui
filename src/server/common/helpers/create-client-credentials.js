@@ -3,13 +3,12 @@ import { withTraceId } from '@defra/hapi-tracing'
 import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { generateServiceAuthHeader } from '#/server/common/helpers/generate-service-auth-header.js'
+import { outcomeOf } from '#/server/common/helpers/client-sync-outcome.js'
 
 // Client Sync checks for a duplicate name, asks CDP to create the client and
 // saves it before replying. It allows CDP up to 120 seconds for each call, as
 // CDP's docs advise, so a slow CDP can outlast this and lose the secret
 const requestTimeoutMs = 30_000
-
-const outcomes = new Set(['success', 'failure', 'unknown'])
 
 /**
  * A failed create. `outcome` says whether the client was created, as ECS's
@@ -24,32 +23,6 @@ export class CreateClientCredentialsError extends Error {
     this.outcome = outcome
     this.clientId = clientId
   }
-}
-
-/**
- * Client Sync says in a 502 whether the client was created, and which client
- * when it was. Without that, only a refusal (4xx) means it wasn't
- *
- * @param {Response} response - An error response, which never holds a secret
- *
- * @returns {Promise<{ outcome: 'success' | 'failure' | 'unknown', clientId?: String }>}
- */
-async function outcomeOf(response) {
-  let body
-  try {
-    body = await response.json()
-  } catch {
-    // Unreadable, so fall back to the status
-  }
-
-  if (outcomes.has(body?.outcome)) {
-    return {
-      outcome: body.outcome,
-      ...(typeof body.clientId === 'string' && { clientId: body.clientId })
-    }
-  }
-
-  return { outcome: response.status < 500 ? 'failure' : 'unknown' }
 }
 
 /**

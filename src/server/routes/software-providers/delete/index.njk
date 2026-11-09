@@ -1,0 +1,16 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "interruption-card/macro.njk" import appInterruptionCard %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - DWT admin portal
+{% endblock %}
+
+{% block pageContent %}
+  {{ appInterruptionCard({
+    heading: pageTitle,
+    text: "You will delete the entire record for " + clientName + ", including all the credentials, in " + environment + " only.",
+    buttonText: "Yes, delete software provider",
+    backLink: { text: "Go back to software provider", href: softwareProviderPath }
+  }) }}
+{% endblock %}

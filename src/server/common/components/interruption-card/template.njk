@@ -1,0 +1,21 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{# MoJ Frontend's interruption card, styled in _interruption-card.scss. It asks
+   the user to confirm a change before it's made, so its button submits a form #}
+<div class="moj-interruption-card" data-testid="interruption-card">
+  <div class="moj-interruption-card__content">
+    <h1 class="moj-interruption-card__heading" data-testid="app-heading-title">{{ params.heading }}</h1>
+    <p class="moj-interruption-card__body" data-testid="interruption-card-text">{{ params.text }}</p>
+    <form method="post" novalidate data-module="app-single-submit">
+      <div class="govuk-button-group moj-interruption-card__actions">
+        {{ govukButton({
+          text: params.buttonText,
+          classes: "govuk-button--inverse",
+          preventDoubleClick: true,
+          attributes: { "data-testid": "confirm-button" }
+        }) }}
+        <a class="govuk-link govuk-link--inverse" href="{{ params.backLink.href }}" data-testid="back-link">{{ params.backLink.text }}</a>
+      </div>
+    </form>
+  </div>
+</div>
