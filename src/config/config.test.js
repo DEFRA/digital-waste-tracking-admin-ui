@@ -83,4 +83,41 @@ describe('#config', () => {
       )
     })
   })
+
+  describe('securityTeam', () => {
+    test('Should email the security team, copying in the people CDP names', async () => {
+      const config = await loadConfig({
+        SECURITY_TEAM_EMAIL: undefined,
+        SECURITY_TEAM_CC: undefined
+      })
+
+      expect(config.get('securityTeam')).toEqual({
+        email: 'security.team@defra.gov.uk',
+        cc: ['chris.knight@defra.gov.uk', 'steve.wilson@defra.gov.uk']
+      })
+    })
+
+    test('Should ignore spaces and empty entries in who is copied in', async () => {
+      const config = await loadConfig({
+        SECURITY_TEAM_CC: ' one@defra.gov.uk , two@defra.gov.uk,'
+      })
+
+      expect(config.get('securityTeam.cc')).toEqual([
+        'one@defra.gov.uk',
+        'two@defra.gov.uk'
+      ])
+    })
+
+    test.each([
+      ['SECURITY_TEAM_EMAIL', 'security team'],
+      ['SECURITY_TEAM_CC', 'one@defra.gov.uk,not an address']
+    ])(
+      'Should refuse a %s that is not an email address',
+      async (name, value) => {
+        await expect(loadConfig({ [name]: value })).rejects.toThrow(
+          'must be an email address'
+        )
+      }
+    )
+  })
 })

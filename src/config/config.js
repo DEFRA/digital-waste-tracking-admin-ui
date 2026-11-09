@@ -15,6 +15,19 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 convict.addFormats(convictFormatWithValidator)
 
+// Email addresses separated by commas, ignoring spaces around them and empty
+// entries, such as from a trailing comma
+convict.addFormat({
+  name: 'email-list',
+  coerce: (value) =>
+    value
+      .split(',')
+      .map((email) => email.trim())
+      .filter(Boolean),
+  validate: (emails) =>
+    emails.forEach((email) => convictFormatWithValidator.email.validate(email))
+})
+
 export const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
@@ -268,10 +281,26 @@ export const config = convict({
     },
     apiUrl: {
       // Set for each environment below
-      doc: 'The API URL shown with new client credentials, for the software provider to connect to',
+      doc: 'The API URL shown with new client credentials, for the software provider to connect to, and in reports of exposed credentials',
       format: String,
       default: '',
       env: 'CLIENT_CREDENTIALS_API_URL'
+    }
+  },
+  // CDP's process for credentials that may have been exposed: email the
+  // security team, copying in these people
+  securityTeam: {
+    email: {
+      doc: 'Where staff report credentials that may have been exposed',
+      format: 'email',
+      default: 'security.team@defra.gov.uk',
+      env: 'SECURITY_TEAM_EMAIL'
+    },
+    cc: {
+      doc: 'Who is copied in on reports of exposed credentials, separated by commas',
+      format: 'email-list',
+      default: ['chris.knight@defra.gov.uk', 'steve.wilson@defra.gov.uk'],
+      env: 'SECURITY_TEAM_CC'
     }
   },
   serviceAuth: {
