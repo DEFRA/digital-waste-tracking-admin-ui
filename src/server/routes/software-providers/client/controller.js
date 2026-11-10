@@ -3,6 +3,7 @@ import { getClientCredentialsById } from '#/server/common/helpers/get-client-cre
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 
@@ -16,7 +17,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
     // /software-providers/{clientId} must not shadow the /software-providers/create
     // route, which is not registered when client credential creation is switched off
     if (request.path === paths.createClientCredentials) {
-      return h.response().code(404)
+      return h.response().code(statusCodes.notFound)
     }
 
     const credentials = await getClientCredentialsById(request.params.clientId)
