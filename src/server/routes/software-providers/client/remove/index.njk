@@ -1,6 +1,7 @@
 {% extends 'layouts/page.njk' %}
 
 {% from "interruption-card/macro.njk" import appInterruptionCard %}
+{% from "report-exposed-credentials/macro.njk" import appReportExposedCredentials %}
 
 {% block pageTitle %}
   {{ pageTitle }} - DWT admin portal
@@ -14,5 +15,6 @@
   }) %}
     <p>The oldest secret for {{ clientName }} will stop working immediately. Make sure the software provider knows before you continue.</p>
     <p>The newest secret will be kept, so the software provider can keep using it.</p>
+    {{ appReportExposedCredentials(securityTeamEmail) }}
   {% endcall %}
 {% endblock %}

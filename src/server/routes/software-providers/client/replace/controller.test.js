@@ -157,7 +157,11 @@ describe('#replaceClientCredentialsController', () => {
 
     test('Should go back to the client when the secret cannot be replaced', async () => {
       clientSyncRespondsWith({
-        rotate: { ok: false, status: statusCodes.conflict, statusText: 'Conflict' }
+        rotate: {
+          ok: false,
+          status: statusCodes.conflict,
+          statusText: 'Conflict'
+        }
       })
 
       const { statusCode, headers } = await replaceSecret()

@@ -6,6 +6,7 @@ import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
 import { removeClientCredential } from '#/server/common/helpers/remove-client-credential.js'
+import { securityTeamEmail } from '#/server/common/helpers/security-team-email.js'
 
 const removeAction = 'removed old client secret'
 
@@ -70,7 +71,11 @@ export const removeClientCredentialsController = {
       heading: 'Software provider',
       serviceName: 'DWT admin portal',
       clientName: credentials.clientName,
-      softwareProviderPath: clientPath(paths.softwareProvider, client.clientId)
+      softwareProviderPath: clientPath(paths.softwareProvider, client.clientId),
+      securityTeamEmail: securityTeamEmail({
+        clientId: client.clientId,
+        clientName: credentials.clientName
+      })
     })
   }
 }

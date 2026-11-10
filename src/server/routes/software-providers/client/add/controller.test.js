@@ -30,7 +30,11 @@ describe('Add another secret', () => {
       Promise.resolve(
         options?.method === 'POST'
           ? rotate
-          : { ok: true, status: statusCodes.ok, json: () => Promise.resolve(client) }
+          : {
+              ok: true,
+              status: statusCodes.ok,
+              json: () => Promise.resolve(client)
+            }
       )
     )
   }
@@ -47,7 +51,11 @@ describe('Add another secret', () => {
     fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     clientSyncRespondsWith({
-      rotate: { ok: true, status: statusCodes.ok, json: () => Promise.resolve(rotated) }
+      rotate: {
+        ok: true,
+        status: statusCodes.ok,
+        json: () => Promise.resolve(rotated)
+      }
     })
   })
 

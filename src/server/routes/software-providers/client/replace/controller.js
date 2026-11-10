@@ -4,6 +4,7 @@ import { getClientCredentialsById } from '#/server/common/helpers/get-client-cre
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
+import { securityTeamEmail } from '#/server/common/helpers/security-team-email.js'
 import { replaceClientCredential } from '#/server/common/helpers/replace-client-credential.js'
 
 const replaceAction = 'replaced software provider'
@@ -39,7 +40,11 @@ export const replaceClientCredentialsController = {
       heading: 'Software provider',
       serviceName: 'DWT admin portal',
       clientName,
-      softwareProviderPath: clientPath(paths.softwareProvider, client.clientId)
+      softwareProviderPath: clientPath(paths.softwareProvider, client.clientId),
+      securityTeamEmail: securityTeamEmail({
+        clientId: client.clientId,
+        clientName
+      })
     })
   }
 }

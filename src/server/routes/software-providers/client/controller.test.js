@@ -134,9 +134,9 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
       expect(addAnother.textContent.trim()).toEqual('Add another secret')
       // It submits straight to the new secret, as there's nothing to confirm
       expect(addAnother.tagName).toEqual('BUTTON')
-      expect(
-        addAnother.closest('form').getAttribute('action')
-      ).toEqual(`/software-providers/${clientId}/add-secret`)
+      expect(addAnother.closest('form').getAttribute('action')).toEqual(
+        `/software-providers/${clientId}/add-secret`
+      )
       expect(addAnother.closest('form').getAttribute('method')).toEqual('post')
     })
   })
