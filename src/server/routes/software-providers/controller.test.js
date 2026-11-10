@@ -111,14 +111,14 @@ describe('#softwareProvidersController', () => {
       [
         'Greenlane_Digital_Test',
         '2f95e07b-4c86-41d3-9a72-58be6d10c9f4',
-        'local'
+        'Local'
       ],
       [
         'Kerbside_Collect_Test',
         'b3f9c41e-2a7d-4c58-9e10-6d8a5f2b71c4',
-        'local'
+        'Local'
       ],
-      ['Skipflow_Test', '1c847b52-9de6-4a03-b7f8-52c96e1d4a37', 'local']
+      ['Skipflow_Test', '1c847b52-9de6-4a03-b7f8-52c96e1d4a37', 'Local']
     ])
   })
 
@@ -171,7 +171,8 @@ describe('#softwareProvidersController', () => {
     ['perf-test', 'Performance test'],
     ['ext-test', 'External test'],
     ['prod', 'Production'],
-    ['local', 'local']
+    ['local', 'Local'],
+    ['an-unlabelled-one', 'an-unlabelled-one']
   ])('Should show the %s environment as %s', async (cdpEnvironment, label) => {
     const originalEnvironment = config.get('cdpEnvironment')
     config.set('cdpEnvironment', cdpEnvironment)
