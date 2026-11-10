@@ -1,4 +1,6 @@
 import { config } from '#/config/config.js'
+import Joi from 'joi'
+
 import { getClientCredentialsById } from '#/server/common/helpers/get-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
@@ -9,6 +11,15 @@ const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 
 export const clientCredentialsSoftwareProviderDetailController = {
   options: {
+    validate: {
+      params: Joi.object({
+        clientId: Joi.string()
+          .pattern(/^[\w+]+$/)
+          .required()
+      }),
+      failAction: (_request, h) =>
+        h.redirect(paths.softwareProviders).takeover()
+    },
     cache: {
       otherwise: 'no-store'
     }
@@ -22,11 +33,16 @@ export const clientCredentialsSoftwareProviderDetailController = {
 
     const credentials = await getClientCredentialsById(request.params.clientId)
 
+    // Deleted, as by someone else, or never existed
+    if (!credentials) {
+      return h.redirect(paths.softwareProviders)
+    }
+
     // Only straight after a removal: reading the flash clears it
     const [removedSecret] = request.yar.flash(flashKeys.removedClientSecret)
 
-    const { secrets = [] } = credentials ?? {}
-    const { clientId, clientName } = credentials ?? {}
+    const { secrets = [] } = credentials
+    const { clientId, clientName } = credentials
 
     // Youngest first, as the newest secret is the one in use. Only a client
     // with two secrets can have its older one removed, and only a client with

@@ -8,7 +8,7 @@ import {
   userBasicAuthTest1
 } from '#/test-helpers/constants.js'
 
-const clientId = '1c847b52-9de6-4a03-b7f8-52c96e1d4a37'
+const clientId = '1c847b529de64a03b7f852c96e1d4a37'
 
 const clientCredentials = {
   clientId,
@@ -186,6 +186,37 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
     ).toBeNull()
   })
 
+  test('Should go to the list when the client has gone', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: statusCodes.notFound,
+      statusText: 'Not Found'
+    })
+
+    const { statusCode, headers } = await server.inject({
+      method: 'GET',
+      url: `/software-providers/${clientId}`,
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+    })
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual('/software-providers')
+  })
+
+  test.each([
+    ['not a client id', 'not-a-client-id'],
+    ['using other characters', 'client%20id']
+  ])('Should go to the list when the id is %s', async (_, id) => {
+    const { statusCode, headers } = await server.inject({
+      method: 'GET',
+      url: `/software-providers/${id}`,
+      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+    })
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual('/software-providers')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
   test('Should show the error page when the client credentials cannot be fetched', async () => {
     fetchMock.mockResolvedValue({
       ok: false,
