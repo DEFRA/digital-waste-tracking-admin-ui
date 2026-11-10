@@ -1,3 +1,4 @@
+import { config } from '#/config/config.js'
 import { getClientCredentialsById } from '#/server/common/helpers/get-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
@@ -54,6 +55,11 @@ export const clientCredentialsSoftwareProviderDetailController = {
           ? clientPath(paths.removeClientCredentials, clientId)
           : null,
       softwareProvidersPath: paths.softwareProviders,
+      // Deleting can be switched off, as it is in production for now, and its
+      // page then doesn't exist
+      deleteSoftwareProviderPath: config.get('clientCredentials.deleteEnabled')
+        ? clientPath(paths.deleteSoftwareProvider, clientId)
+        : null,
       environment: capitalise(`${environmentName()} environment`)
     })
   }

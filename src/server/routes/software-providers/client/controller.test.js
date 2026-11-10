@@ -141,6 +141,35 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
     })
   })
 
+  describe('Deleting the software provider', () => {
+    test('Should link to the delete page', async () => {
+      const { document } = await getPage(server)
+      const link = document.querySelector(
+        '[data-testid="delete-software-provider"]'
+      )
+
+      expect(link.textContent.trim()).toEqual('Delete software provider')
+      expect(link.getAttribute('href')).toEqual(
+        `/software-providers/${clientId}/delete`
+      )
+    })
+
+    test('Should not offer deleting when it is switched off', async () => {
+      const original = config.get('clientCredentials.deleteEnabled')
+      config.set('clientCredentials.deleteEnabled', false)
+
+      try {
+        const { document } = await getPage(server)
+
+        expect(
+          document.querySelector('[data-testid="delete-software-provider"]')
+        ).toBeNull()
+      } finally {
+        config.set('clientCredentials.deleteEnabled', original)
+      }
+    })
+  })
+
   test('Should not offer a removal when there are no secrets', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
