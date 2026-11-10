@@ -1,6 +1,7 @@
 import { getClientCredentialsById } from '#/server/common/helpers/get-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
+import { flashKeys } from '#/server/common/constants/flash-keys.js'
 
 const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 
@@ -19,14 +20,16 @@ export const clientCredentialsSoftwareProviderDetailController = {
 
     const credentials = await getClientCredentialsById(request.params.clientId)
 
+    // Only straight after a removal: reading the flash clears it
+    const [removedSecret] = request.yar.flash(flashKeys.removedClientSecret)
+
     const { secrets = [] } = credentials ?? {}
     const { clientId, clientName } = credentials ?? {}
 
-    // The oldest secret is the one due for rotation, so it is the only one
-    // that can be replaced
-    const [oldestSecret] = [...secrets].sort((a, b) =>
-      String(a.createdAt).localeCompare(String(b.createdAt))
-    )
+    // Youngest first, as the newest secret is the one in use. Only a client
+    // with two secrets can have its older one removed, and only a client with
+    // one secret can be given another
+    const { length: secretCount } = secrets
 
     // return h.view('client-credentials/software-provider-detail/index', {
     return h.view('software-providers/client/index', {
@@ -36,8 +39,16 @@ export const clientCredentialsSoftwareProviderDetailController = {
       clientName,
       clientId,
       secrets,
-      oldestSecret,
-      replaceSecretPath: clientPath(paths.replaceClientCredentials, clientId),
+      secretCount,
+      removedSecret,
+      replaceSecretPath:
+        secretCount === 1
+          ? clientPath(paths.replaceClientCredentials, clientId)
+          : null,
+      removeSecretPath:
+        secretCount > 1
+          ? clientPath(paths.removeClientCredentials, clientId)
+          : null,
       softwareProvidersPath: paths.softwareProviders,
       environment: capitalise(`${environmentName()} environment`)
     })

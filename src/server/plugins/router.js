@@ -10,6 +10,7 @@ import { login } from '#/server/routes/login/index.js'
 import { softwareProviders } from '#/server/routes/software-providers/index.js'
 import { clientCredentials } from '#/server/routes/software-providers/client/index.js'
 import { replaceSecret } from '#/server/routes/software-providers/client/replace/index.js'
+import { removeSecret } from '#/server/routes/software-providers/client/remove/index.js'
 
 export const router = {
   plugin: {
@@ -28,6 +29,7 @@ export const router = {
         softwareProviders,
         clientCredentials,
         replaceSecret,
+        removeSecret,
         login
       ])
 

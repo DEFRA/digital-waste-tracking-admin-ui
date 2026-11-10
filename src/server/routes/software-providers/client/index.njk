@@ -2,6 +2,8 @@
 
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "alert/macro.njk" import appAlert %}
 
 {% block pageTitle %}
   {{ pageTitle }} - DWT admin portal
@@ -18,12 +20,24 @@
 {% endblock %}
 
 {% block pageContent %}
+  {% if removedSecret %}
+    {{ appAlert({
+      variant: "success",
+      title: "Secret removed",
+      text: "The oldest secret for " + removedSecret.clientName + " has been removed.",
+      classes: "govuk-!-margin-bottom-7",
+      testId: "removed-secret-alert"
+    }) }}
+  {% endif %}
   {% set rows = [] %}
-  {# Secrets are listed oldest first, and only the oldest can be replaced #}
-  {% for secret in secrets | sort(attribute="createdAt") %}
+  {# Youngest first, as the newest secret is the one in use. The older secret,
+     which only a client with two secrets has, is the one that can be removed #}
+  {% for secret in secrets | sort(attribute="createdAt", reverse=true) %}
     {% set actions = { text: "" } %}
-    {% if secret.createdAt == oldestSecret.createdAt %}
+    {% if loop.first and secretCount == 1 %}
       {% set actions = { html: '<a class="govuk-link" href="' + replaceSecretPath + '">Replace secret</a>' | safe } %}
+    {% elif not loop.first and removeSecretPath %}
+      {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret</a>' | safe } %}
     {% endif %}
     {% set rows = (rows.push([
       { text: secret.createdAt | formatDate("d LLLL yyyy 'at' hh:mmaaa") },
@@ -67,6 +81,13 @@
           }) }}
         </div>
       </div>
-    </div>
+      {% if secretCount == 1 %}
+        {{ govukButton({
+          text: "Add another secret",
+          href: replaceSecretPath,
+          classes: "govuk-button--secondary govuk-!-margin-top-6",
+          attributes: { "data-testid": "add-another-secret" }
+        }) }}
+      {% endif %}
   </div>
 {% endblock %}

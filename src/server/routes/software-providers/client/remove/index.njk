@@ -1,0 +1,18 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "interruption-card/macro.njk" import appInterruptionCard %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - DWT admin portal
+{% endblock %}
+
+{% block pageContent %}
+  {% call appInterruptionCard({
+    heading: "Are you sure you want to remove the oldest secret?",
+    buttonText: "Yes, remove secret",
+    backLink: { text: "Go back to software provider", href: softwareProviderPath }
+  }) %}
+    <p>The oldest secret for {{ clientName }} will stop working immediately. Make sure the software provider knows before you continue.</p>
+    <p>The newest secret will be kept, so the software provider can keep using it.</p>
+  {% endcall %}
+{% endblock %}
