@@ -32,7 +32,11 @@ describe('#removeClientCredentialsController', () => {
       Promise.resolve(
         options?.method === 'POST'
           ? purge
-          : { ok: true, status: statusCodes.ok, json: () => Promise.resolve(credentials) }
+          : {
+              ok: true,
+              status: statusCodes.ok,
+              json: () => Promise.resolve(credentials)
+            }
       )
     )
   }

@@ -4,7 +4,7 @@ import { getClientCredentialsById } from '#/server/common/helpers/get-client-cre
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
-import { rotateClientCredential } from '#/server/common/helpers/rotate-client-credential.js'
+import { replaceClientCredential } from '#/server/common/helpers/replace-client-credential.js'
 
 const replaceAction = 'replaced software provider'
 
@@ -61,7 +61,7 @@ export function replaceClientCredentialsSubmitController(store) {
 
       let result
       try {
-        result = await rotateClientCredential(clientId)
+        result = await replaceClientCredential(clientId)
       } catch (err) {
         // Any other error is recorded as unknown, to be safe
         auditWriteAction(request, {
@@ -72,6 +72,7 @@ export function replaceClientCredentialsSubmitController(store) {
         throw err
       }
 
+      // Replaced since it was looked up, as by someone else
       if (result.isNotFound) {
         auditWriteAction(request, {
           action: replaceAction,
@@ -79,6 +80,16 @@ export function replaceClientCredentialsSubmitController(store) {
           client: { clientId, clientName: client.clientName }
         })
         return h.redirect(paths.softwareProviders)
+      }
+
+      // Another client has the name, or this one is out of date: nothing changed
+      if (result.isConflict) {
+        auditWriteAction(request, {
+          action: replaceAction,
+          outcome: 'failure',
+          client: { clientId, clientName: client.clientName }
+        })
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
       }
 
       // Who replaced which client's secret, never the secret

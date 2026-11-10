@@ -127,14 +127,43 @@ describe('#replaceClientCredentialsController', () => {
       expect(headers.location).toMatch(
         /^\/software-providers\/credentials\/[0-9a-f-]{36}$/
       )
-      const [rotateUrl, rotateOptions] = fetchMock.mock.calls.find(
+      const [replaceUrl, replaceOptions] = fetchMock.mock.calls.find(
         ([, options]) => options?.method === 'POST'
       )
 
-      expect(rotateUrl.pathname).toEqual(
-        `/clients/waste-movement-external-api/${clientId}/rotate`
+      expect(replaceUrl.pathname).toEqual(
+        `/clients/waste-movement-external-api/${clientId}/replace`
       )
-      expect(rotateOptions?.method).toEqual('POST')
+      expect(replaceOptions?.method).toEqual('POST')
+    })
+
+    test('Should show the new secret, even when the old one may still work', async () => {
+      clientSyncRespondsWith({
+        rotate: {
+          ok: false,
+          status: 502,
+          statusText: 'Bad Gateway',
+          json: () => Promise.resolve({ ...rotated, outcome: 'failure' })
+        }
+      })
+
+      const { statusCode, headers } = await replaceSecret()
+
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toMatch(
+        /^\/software-providers\/credentials\/[0-9a-f-]{36}$/
+      )
+    })
+
+    test('Should go back to the client when the secret cannot be replaced', async () => {
+      clientSyncRespondsWith({
+        rotate: { ok: false, status: statusCodes.conflict, statusText: 'Conflict' }
+      })
+
+      const { statusCode, headers } = await replaceSecret()
+
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toEqual(`/software-providers/${clientId}`)
     })
 
     test('Should show the new secret, once', async () => {

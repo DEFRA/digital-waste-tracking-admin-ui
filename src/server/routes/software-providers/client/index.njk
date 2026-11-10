@@ -82,12 +82,15 @@
         </div>
       </div>
       {% if secretCount == 1 %}
-        {{ govukButton({
-          text: "Add another secret",
-          href: replaceSecretPath,
-          classes: "govuk-button--secondary govuk-!-margin-top-6",
-          attributes: { "data-testid": "add-another-secret" }
-        }) }}
+        {# Adds the secret straight away, as another can be added without risk #}
+        <form method="post" action="{{ addSecretPath }}">
+          {{ govukButton({
+            text: "Add another secret",
+            classes: "govuk-button--secondary govuk-!-margin-top-6",
+            attributes: { "data-testid": "add-another-secret" }
+          }) }}
+        </form>
       {% endif %}
+    </div>
   </div>
 {% endblock %}

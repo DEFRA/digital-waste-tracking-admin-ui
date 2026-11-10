@@ -68,9 +68,7 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
     const { statusCode, document } = await getPage(server)
 
     expect(statusCode).toBe(statusCodes.ok)
-    expect(document.title.trim()).toEqual(
-      'Skipflow_Test - DWT admin portal'
-    )
+    expect(document.title.trim()).toEqual('Skipflow_Test - DWT admin portal')
     expect(getElementText(document, 'app-heading-title')).toContain(
       'Skipflow_Test'
     )
@@ -134,9 +132,12 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
         '[data-testid="add-another-secret"]'
       )
       expect(addAnother.textContent.trim()).toEqual('Add another secret')
-      expect(addAnother.getAttribute('href')).toEqual(
-        `/software-providers/${clientId}/replace`
-      )
+      // It submits straight to the new secret, as there's nothing to confirm
+      expect(addAnother.tagName).toEqual('BUTTON')
+      expect(
+        addAnother.closest('form').getAttribute('action')
+      ).toEqual(`/software-providers/${clientId}/add-secret`)
+      expect(addAnother.closest('form').getAttribute('method')).toEqual('post')
     })
   })
 

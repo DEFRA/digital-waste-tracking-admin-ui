@@ -45,6 +45,10 @@ export const clientCredentialsSoftwareProviderDetailController = {
         secretCount === 1
           ? clientPath(paths.replaceClientCredentials, clientId)
           : null,
+      addSecretPath:
+        secretCount === 1
+          ? clientPath(paths.addClientCredentials, clientId)
+          : null,
       removeSecretPath:
         secretCount > 1
           ? clientPath(paths.removeClientCredentials, clientId)
