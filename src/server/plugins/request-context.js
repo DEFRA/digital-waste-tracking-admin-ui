@@ -18,7 +18,10 @@ export const requestContext = {
     register(server) {
       server.ext('onPostAuth', async (request, h) => {
         const page = getPageName(request)
-        const user = request.auth.credentials?.username
+        const user =
+          request.auth.credentials?.username ??
+          request.auth.credentials?.displayName ??
+          request.auth.credentials?.oid
 
         // Paths hapi-pino ignores are given a logger without a `child` method,
         // and are all unauthenticated and untracked, so are skipped here too

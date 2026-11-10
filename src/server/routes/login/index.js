@@ -1,4 +1,10 @@
-import { loginSubmitController, loginViewController } from './controller.js'
+import {
+  entraCallbackController,
+  loginSubmitController,
+  loginViewController,
+  logoutController
+} from './controller.js'
+import { config } from '#/config/config.js'
 
 /**
  * Sets up the routes used in the login page.
@@ -8,7 +14,7 @@ export const login = {
   plugin: {
     name: 'login',
     register(server) {
-      server.route([
+      const routes = [
         {
           method: 'GET',
           path: '/login',
@@ -23,7 +29,48 @@ export const login = {
           },
           ...loginSubmitController
         }
-      ])
+      ]
+
+      if (config.get('auth.mode') === 'entra') {
+        routes.push(
+          {
+            method: ['POST'],
+            path: config.get('auth.oidc.loginCallbackUri'),
+            options: {
+              auth: false,
+              plugins: {
+                crumb: false
+              },
+              payload: {
+                parse: true,
+                allow: 'application/x-www-form-urlencoded'
+              }
+            },
+            ...entraCallbackController
+          },
+          {
+            method: ['GET'],
+            path: config.get('auth.oidc.loginCallbackUri'),
+            options: {
+              auth: false
+            },
+            ...entraCallbackController
+          },
+          {
+            method: 'GET',
+            path: '/logout',
+            options: {
+              auth: {
+                mode: 'try',
+                strategy: 'entra-session'
+              }
+            },
+            ...logoutController
+          }
+        )
+      }
+
+      server.route(routes)
     }
   }
 }

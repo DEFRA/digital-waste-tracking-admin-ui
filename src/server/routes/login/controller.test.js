@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { loginViewController, loginSubmitController } from './controller.js'
+import {
+  entraCallbackController,
+  loginViewController,
+  loginSubmitController,
+  logoutController
+} from './controller.js'
+import { config } from '#/config/config.js'
 
 const LOGIN_VIEW_CONTEXT = {
   pageTitle: 'User login',
@@ -21,20 +27,30 @@ const createToolkit = () => {
 
   const responseResult = {
     state: vi.fn(),
-    redirect: vi.fn()
+    redirect: vi.fn(),
+    takeover: vi.fn(),
+    code: vi.fn()
   }
   responseResult.state.mockReturnValue(responseResult)
   responseResult.redirect.mockReturnValue(responseResult)
+  responseResult.takeover.mockReturnValue(responseResult)
+  responseResult.code.mockReturnValue(responseResult)
 
   return {
     view: vi.fn().mockReturnValue(viewResult),
     response: vi.fn().mockReturnValue(responseResult),
+    redirect: vi.fn(),
+    unstate: vi.fn(),
     viewResult,
     responseResult
   }
 }
 
 describe('loginViewController', () => {
+  beforeEach(() => {
+    config.set('auth.mode', 'basic')
+  })
+
   it('renders the login view with the login context', () => {
     const h = createToolkit()
     const request = { query: {} }
@@ -58,6 +74,24 @@ describe('loginViewController', () => {
       redirectTo: '/movements/123'
     })
   })
+
+  it('starts OIDC login when auth mode is entra', async () => {
+    config.set('auth.mode', 'entra')
+
+    const h = createToolkit()
+    const request = {
+      query: { redirectTo: '/movements/123' },
+      yar: { flash: vi.fn() },
+      login: vi.fn()
+    }
+
+    request.login.mockResolvedValue('redirect-response')
+
+    await loginViewController.handler(request, h)
+
+    expect(request.yar.flash).toHaveBeenCalledWith('authReferrer', '/movements/123')
+    expect(request.login).toHaveBeenCalledWith(h)
+  })
 })
 
 describe('loginSubmitController.handler', () => {
@@ -65,6 +99,8 @@ describe('loginSubmitController.handler', () => {
   let h
 
   beforeEach(() => {
+    config.set('auth.mode', 'basic')
+
     h = createToolkit()
     request = {
       payload: {
@@ -77,7 +113,11 @@ describe('loginSubmitController.handler', () => {
         auth: {
           test: vi.fn()
         }
-      }
+      },
+      yar: {
+        flash: vi.fn()
+      },
+      login: vi.fn()
     }
   })
 
@@ -154,5 +194,120 @@ describe('loginSubmitController.handler', () => {
 
     const [, context] = h.view.mock.calls[0]
     expect(context.errors.username).toBe(context.errors.password)
+  })
+
+  it('redirects to Entra when auth mode is entra', async () => {
+    config.set('auth.mode', 'entra')
+
+    request.login.mockResolvedValue('redirect-response')
+
+    await loginSubmitController.handler(request, h)
+
+    expect(request.yar.flash).toHaveBeenCalledWith('authReferrer', '/movements/123')
+    expect(request.login).toHaveBeenCalledWith(h)
+    expect(request.server.auth.test).not.toHaveBeenCalled()
+  })
+})
+
+describe('entraCallbackController.handler', () => {
+  it('stores user session and returns callback takeover response', async () => {
+    const h = createToolkit()
+    const request = {
+      callback: vi.fn().mockResolvedValue({
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        expiresIn: 3600,
+        claims: {
+          oid: 'oid-123',
+          name: 'Test User',
+          email: 'test.user@defra.gov.uk'
+        }
+      }),
+      sessionCookie: {
+        set: vi.fn()
+      },
+      server: {
+        sessionCache: {
+          set: vi.fn()
+        }
+      },
+      yar: {
+        flash: vi.fn().mockReturnValue(['/reporting'])
+      }
+    }
+
+    await entraCallbackController.handler(request, h)
+
+    expect(request.callback).toHaveBeenCalledWith(h)
+    expect(request.server.sessionCache.set).toHaveBeenCalledOnce()
+    expect(request.sessionCookie.set).toHaveBeenCalledOnce()
+    expect(h.responseResult.takeover).toHaveBeenCalled()
+  })
+
+  it('returns a 401 response if callback has no credentials', async () => {
+    const h = createToolkit()
+    const request = {
+      callback: vi.fn().mockResolvedValue(undefined)
+    }
+
+    await entraCallbackController.handler(request, h)
+
+    expect(h.response).toHaveBeenCalledWith(
+      'We could not sign you in with Microsoft Entra ID. Please contact support.'
+    )
+    expect(h.responseResult.code).toHaveBeenCalledWith(401)
+    expect(h.responseResult.takeover).toHaveBeenCalled()
+  })
+
+  it('returns a 401 response if callback throws', async () => {
+    const h = createToolkit()
+    const request = {
+      callback: vi.fn().mockRejectedValue(new Error('oidc failure')),
+      logger: { error: vi.fn() }
+    }
+
+    await entraCallbackController.handler(request, h)
+
+    expect(request.logger.error).toHaveBeenCalled()
+    expect(h.responseResult.code).toHaveBeenCalledWith(401)
+    expect(h.responseResult.takeover).toHaveBeenCalled()
+  })
+})
+
+describe('logoutController.handler', () => {
+  it('clears server session and cookies before redirecting', async () => {
+    const redirect = vi.fn()
+    const request = {
+      state: {
+        userSessionCookie: {
+          sessionId: 'session-123'
+        }
+      },
+      server: {
+        sessionCache: {
+          drop: vi.fn()
+        }
+      },
+      sessionCookie: {
+        clear: vi.fn(),
+        h: {
+          unstate: vi.fn()
+        }
+      },
+      yar: {
+        flash: vi.fn()
+      }
+    }
+    const h = {
+      unstate: vi.fn().mockReturnValue({ redirect })
+    }
+
+    await logoutController.handler(request, h)
+
+    expect(request.server.sessionCache.drop).toHaveBeenCalledWith('session-123')
+    expect(request.sessionCookie.clear).toHaveBeenCalled()
+    expect(request.sessionCookie.h.unstate).toHaveBeenCalledWith('userSessionCookie')
+    expect(h.unstate).toHaveBeenCalledWith('dwtAuth')
+    expect(redirect).toHaveBeenCalledWith('/login')
   })
 })

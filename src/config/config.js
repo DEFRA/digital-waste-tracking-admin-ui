@@ -171,6 +171,112 @@ export const config = convict({
       }
     }
   },
+  auth: {
+    mode: {
+      doc: 'Authentication mode for UI users',
+      format: ['basic', 'entra'],
+      default: 'entra',
+      env: 'AUTH_MODE'
+    },
+    oidc: {
+      clientId: {
+        doc: 'Microsoft Entra app registration client ID',
+        format: String,
+        default: '',
+        env: 'ENTRA_ID_CLIENT_ID'
+      },
+      clientSecret: {
+        doc: 'Microsoft Entra app registration client secret (local/non-production)',
+        format: String,
+        default: '',
+        env: 'OIDC_CLIENT_SECRET',
+        sensitive: true
+      },
+      tokenEndpointAuthMethod: {
+        doc: 'OAuth token endpoint auth method used with OIDC client secret',
+        format: ['client_secret_post', 'client_secret_basic'],
+        default: 'client_secret_post',
+        env: 'OIDC_TOKEN_ENDPOINT_AUTH_METHOD'
+      },
+      discoveryUri: {
+        doc: 'OIDC well-known discovery URI',
+        format: String,
+        default: '',
+        env: 'ENTRA_ID_OIDC_DISCOVERY_URI'
+      },
+      useHttp: {
+        doc: 'Allow insecure HTTP for OIDC discovery',
+        format: Boolean,
+        default: !isProduction,
+        env: 'OIDC_USE_HTTP'
+      },
+      loginCallbackUri: {
+        doc: 'Relative callback path for OIDC login',
+        format: String,
+        default: '/auth',
+        env: 'OIDC_LOGIN_CALLBACK_URI'
+      },
+      externalBaseUrl: {
+        doc: 'Public base URL used to construct callback URL',
+        format: String,
+        default: 'http://localhost:3000',
+        env: 'APP_BASE_URL'
+      },
+      responseMode: {
+        doc: 'OIDC response mode for callback',
+        format: ['query', 'form_post'],
+        default: isProduction ? 'form_post' : 'query',
+        env: 'OIDC_RESPONSE_MODE'
+      },
+      scope: {
+        doc: 'Space-delimited scopes required from Entra ID',
+        format: String,
+        default: 'openid profile email user.read',
+        env: 'ENTRA_ID_SCOPES'
+      }
+    },
+    cookieOptions: {
+      password: {
+        doc: 'OIDC cookie password',
+        format: String,
+        default: 'the-password-must-be-at-least-32-characters-long',
+        env: 'OIDC_COOKIE_PASSWORD',
+        sensitive: true
+      },
+      isSecure: {
+        doc: 'OIDC cookie isSecure',
+        format: Boolean,
+        default: isProduction,
+        env: 'OIDC_COOKIE_IS_SECURE'
+      },
+      isSameSite: {
+        doc: 'OIDC cookie sameSite policy',
+        format: ['Strict', 'Lax', 'None'],
+        default: isProduction ? 'None' : 'Lax',
+        env: 'OIDC_COOKIE_IS_SAME_SITE'
+      }
+    },
+    federatedCredentials: {
+      provider: {
+        doc: 'Token provider for federated credentials',
+        format: ['web-identity', 'cognito'],
+        default: 'web-identity',
+        env: 'FEDERATED_CREDENTIALS_PROVIDER'
+      },
+      enableMocking: {
+        doc: 'Use MockProvider for local/test auth flow',
+        format: Boolean,
+        default: false,
+        env: 'FEDERATED_CREDENTIALS_ENABLE_MOCKING'
+      },
+      audience: {
+        doc: 'Audience configured on federated credential',
+        format: String,
+        default: 'digital-waste-tracking-admin-ui',
+        env: 'FEDERATED_CREDENTIALS_AUDIENCE'
+      }
+    }
+  },
   redis: {
     host: {
       doc: 'Redis cache host',

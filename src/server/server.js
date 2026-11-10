@@ -17,10 +17,17 @@ import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
 import { basicAuth, getEnvVars } from '@defra/waste-movement-utils'
 import { createLogger } from './common/helpers/logging/logger.js'
+import { entraIdAuth } from './plugins/entra-id-auth.js'
 
 const logger = createLogger()
 
 export async function createServer() {
+  const authMode = config.get('auth.mode')
+  const userAuthPlugin =
+    authMode === 'entra'
+      ? entraIdAuth
+      : basicAuth(getEnvVars('USER_BASIC_AUTH_'), logger)
+
   const server = hapi.server({
     host: config.get('host'),
     port: config.get('port'),
@@ -80,21 +87,23 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
-    basicAuth(getEnvVars('USER_BASIC_AUTH_'), logger),
+    userAuthPlugin,
     requestContext,
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
-  // use cookie if there is one.
-  server.ext('onPreAuth', (request, h) => {
-    if (!request.headers.authorization) {
-      const stored = request.state?.dwtAuth
-      if (stored?.authorization) {
-        request.headers.authorization = stored.authorization
+  if (authMode === 'basic') {
+    // use cookie if there is one.
+    server.ext('onPreAuth', (request, h) => {
+      if (!request.headers.authorization) {
+        const stored = request.state?.dwtAuth
+        if (stored?.authorization) {
+          request.headers.authorization = stored.authorization
+        }
       }
-    }
-    return h.continue
-  })
+      return h.continue
+    })
+  }
 
   // Strip WWW-Authenticate (trigger for popup) so the browser never shows its native popup,
   // and send to our own login form instead.
@@ -108,7 +117,7 @@ export async function createServer() {
     return h.continue
   })
 
-  server.auth.default('basic')
+  server.auth.default(authMode === 'entra' ? 'entra-session' : 'basic')
 
   server.ext('onPreResponse', catchAll)
 

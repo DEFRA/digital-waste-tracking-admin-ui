@@ -19,6 +19,7 @@ Core delivery platform Node.js Frontend Template.
   - [Formatting](#formatting)
     - [Windows prettier issue](#windows-prettier-issue)
 - [Docker](#docker)
+ - [Authentication](#authentication)
   - [Development image](#development-image)
   - [Production image](#production-image)
   - [Docker Compose](#docker-compose)
@@ -210,6 +211,36 @@ npm run dev
 ```
 
 Either way, the admin UI is at <http://localhost:3000> and you log in as `local` / `local`.
+
+## Authentication
+
+The app supports two authentication modes:
+
+- `basic` (default): existing username/password login page for local and non-SSO environments.
+- `entra`: Microsoft Entra ID SSO using OAuth2/OIDC.
+
+Set `AUTH_MODE=entra` and configure OIDC + federated credentials:
+
+```bash
+AUTH_MODE=entra
+ENTRA_ID_CLIENT_ID=<client-id>
+ENTRA_ID_OIDC_DISCOVERY_URI=https://login.microsoftonline.com/<tenant-id>/v2.0/.well-known/openid-configuration
+APP_BASE_URL=https://<public-host>
+OIDC_LOGIN_CALLBACK_URI=/auth/callback
+OIDC_RESPONSE_MODE=form_post
+ENTRA_ID_SCOPES="openid profile email user.read"
+FEDERATED_CREDENTIALS_PROVIDER=web-identity
+FEDERATED_CREDENTIALS_AUDIENCE=<federated-credential-audience>
+FEDERATED_CREDENTIALS_ENABLE_MOCKING=false
+```
+
+For local development, mocking can be enabled without live federation:
+
+```bash
+FEDERATED_CREDENTIALS_ENABLE_MOCKING=true
+```
+
+When `AUTH_MODE=entra` is enabled, `/login` starts the OIDC flow and Azure returns to `/auth/callback`.
 
 The Software providers page lists the three test clients the stack seeds. dwt-client-sync
 also starts a fake of the CDP API it manages clients through, so syncing, and creating,
