@@ -38,6 +38,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
       secrets,
       oldestSecret,
       replaceSecretPath: clientPath(paths.replaceClientCredentials, clientId),
+      softwareProvidersPath: paths.softwareProviders,
       environment: capitalise(`${environmentName()} environment`)
     })
   }
