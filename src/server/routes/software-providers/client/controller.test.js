@@ -238,7 +238,7 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
 
       expect(
         document.querySelector('.govuk-heading-m').textContent.trim()
-      ).toEqual('Client secrets for External test environment')
+      ).toEqual('Client secrets for external test environment')
     } finally {
       config.set('cdpEnvironment', originalEnvironment)
     }

@@ -7,8 +7,6 @@ import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
-
 export const clientCredentialsSoftwareProviderDetailController = {
   options: {
     validate: {
@@ -77,7 +75,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
       deleteSoftwareProviderPath: config.get('clientCredentials.deleteEnabled')
         ? clientPath(paths.deleteSoftwareProvider, clientId)
         : null,
-      environment: capitalise(`${environmentName()} environment`)
+      environment: environmentName().toLowerCase()
     })
   }
 }

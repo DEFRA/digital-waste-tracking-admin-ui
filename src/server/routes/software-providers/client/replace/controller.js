@@ -1,6 +1,5 @@
 import Joi from 'joi'
 
-import { getClientCredentialsById } from '#/server/common/helpers/get-client-credentials.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
@@ -35,7 +34,9 @@ export const replaceClientCredentialsController = {
     // Don't allow the 'replace' operation to be run
     // on clients with 0 or 2 secrets
     if (client.secrets?.length !== 1) {
-      return h.redirect(clientPath(paths.softwareProvider, request.params.clientId))
+      return h.redirect(
+        clientPath(paths.softwareProvider, request.params.clientId)
+      )
     }
 
     return h.view('software-providers/client/replace/index', {

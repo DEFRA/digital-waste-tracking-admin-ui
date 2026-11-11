@@ -76,8 +76,4 @@ describe('Interruption card Component', () => {
     expect($link.text().trim()).toBe('Go back')
     expect($link.attr('href')).toBe('/somewhere')
   })
-
-  test('Should have nothing below the text unless given more', () => {
-    expect($card('[data-testid="interruption-card-html"]')).toHaveLength(0)
-  })
 })

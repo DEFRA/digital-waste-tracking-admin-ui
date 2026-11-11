@@ -86,10 +86,10 @@ describe('#removeClientCredentialsController', () => {
 
     expect(statusCode).toEqual(statusCodes.ok)
     expect(document.title.trim()).toEqual(
-      'Remove a client secret - DWT admin portal'
+      'Remove the client secret - DWT admin portal'
     )
     expect(getElementText(document, 'app-heading-title')).toEqual(
-      'Are you sure you want to remove the oldest secret?'
+      'Are you sure you want to remove this secret?'
     )
     expect(getElementText(document, 'interruption-card-text')).toContain(
       'Skipflow_Test'
@@ -97,6 +97,18 @@ describe('#removeClientCredentialsController', () => {
     expect(getElementText(document, 'confirm-button')).toEqual(
       'Yes, remove secret'
     )
+  })
+
+  test('Should name the date of the secret being removed, not the newest one', async () => {
+    const { result } = await getRemovePage()
+    const text = getElementText(
+      new JSDOM(result).window.document,
+      'interruption-card-text'
+    )
+
+    // The older secret is the one removed, so its own date is shown
+    expect(text).toContain('generated on 1 January 2020 at 10:00am')
+    expect(text).not.toContain('1 March 2024')
   })
 
   test('Should send a client with fewer than two secrets back to its page', async () => {

@@ -9,12 +9,14 @@
 
 {% block pageContent %}
   {% call appInterruptionCard({
-    heading: "Are you sure you want to remove the oldest secret?",
+    heading: "Are you sure you want to remove this secret?",
     buttonText: "Yes, remove secret",
     backLink: { text: "Go back to software provider", href: softwareProviderPath }
   }) %}
-    <p>The oldest secret for {{ clientName }} will stop working immediately. Make sure the software provider knows before you continue.</p>
-    <p>The newest secret will be kept, so the software provider can keep using it.</p>
+
+    <p>
+      The secret for {{ clientName }} generated on {{ secretGeneratedOn | formatDate("d LLLL yyyy 'at' h:mmaaa") }} will stop working immediately. Make sure the software provider is using the newer secret before you continue.
+    </p>
     {{ appReportExposedCredentials(securityTeamEmail) }}
   {% endcall %}
 {% endblock %}

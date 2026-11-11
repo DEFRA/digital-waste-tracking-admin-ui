@@ -66,11 +66,17 @@ export const removeClientCredentialsController = {
 
     const { client, credentials } = result
 
+    // The oldest secret, which is the one removed, as the client page lists them
+    const [oldestSecret] = [...credentials.secrets].sort((a, b) =>
+      String(a.createdAt).localeCompare(String(b.createdAt))
+    )
+
     return h.view('software-providers/client/remove/index', {
-      pageTitle: 'Remove a client secret',
+      pageTitle: 'Remove the client secret',
       heading: 'Software provider',
       serviceName: 'DWT admin portal',
       clientName: credentials.clientName,
+      secretGeneratedOn: oldestSecret.createdAt,
       softwareProviderPath: clientPath(paths.softwareProvider, client.clientId),
       securityTeamEmail: securityTeamEmail({
         clientId: client.clientId,

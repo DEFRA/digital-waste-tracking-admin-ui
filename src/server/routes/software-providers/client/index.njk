@@ -49,7 +49,7 @@
       {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret</a>' | safe } %}
     {% endif %}
     {% set rows = (rows.push([
-      { text: secret.createdAt | formatDate("d LLLL yyyy 'at' hh:mmaaa") },
+      { text: secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") },
       { text: "[Hidden]" },
       actions
     ]), rows) %}
@@ -59,7 +59,7 @@
       <span class="govuk-caption-l">Software provider</span>
       <h1 class="govuk-heading-l govuk-!-margin-bottom-4" data-testid="app-heading-title">{{ clientName }}</h1>
       <p class="govuk-body govuk-!-margin-bottom-8">
-        <strong class="govuk-tag">{{ environment }}</strong>
+        <strong class="govuk-tag">{{ environment | capitalize }}</strong>
       </p>
       <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-8">
         <div class="govuk-summary-list__row">
@@ -71,7 +71,7 @@
           </dd>
         </div>
       </dl>
-      <h2 class="govuk-heading-m govuk-!-margin-bottom-4">Client secrets for {{ environment }}</h2>
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-4">Client secrets for {{ environment }} environment</h2>
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
           {{ govukTable({
