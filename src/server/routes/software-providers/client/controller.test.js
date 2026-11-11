@@ -84,6 +84,31 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
     ])
   })
 
+  test('Should name the table with a visually hidden caption', async () => {
+    const { document } = await getPage(server)
+    const caption = document.querySelector('table caption')
+
+    expect(caption.textContent.trim()).toEqual(
+      'Client secrets for local environment'
+    )
+    expect(caption.classList).toContain('govuk-visually-hidden')
+  })
+
+  test('Should give each column heading a column scope', async () => {
+    const { document } = await getPage(server)
+
+    expect(
+      [...document.querySelectorAll('thead th')].map((heading) => ({
+        text: heading.textContent.trim(),
+        scope: heading.getAttribute('scope')
+      }))
+    ).toEqual([
+      { text: 'Generated on', scope: 'col' },
+      { text: 'Client secret', scope: 'col' },
+      { text: 'Actions', scope: 'col' }
+    ])
+  })
+
   describe('With two secrets', () => {
     test('Should only let the older secret be removed, and offer no replacement', async () => {
       const { document } = await getPage(server)
@@ -91,7 +116,10 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
       const links = [...document.querySelectorAll('tbody a')]
 
       expect(links).toHaveLength(1)
-      expect(links[0].textContent.trim()).toEqual('Remove secret')
+      // The hidden date makes the accessible name say which secret it acts on
+      expect(links[0].textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        'Remove secret generated on 1 January 2020 at 10:00am'
+      )
       expect(links[0].getAttribute('href')).toEqual(
         `/software-providers/${clientId}/remove`
       )
@@ -123,7 +151,10 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
       const links = [...document.querySelectorAll('tbody a')]
 
       expect(links).toHaveLength(1)
-      expect(links[0].textContent.trim()).toEqual('Replace secret')
+      // The hidden date makes the accessible name say which secret it acts on
+      expect(links[0].textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        'Replace secret generated on 1 January 2020 at 10:00am'
+      )
       expect(links[0].getAttribute('href')).toEqual(
         `/software-providers/${clientId}/replace`
       )

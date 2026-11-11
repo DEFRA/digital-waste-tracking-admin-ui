@@ -42,14 +42,17 @@
   {# Youngest first, as the newest secret is the one in use. The older secret,
      which only a client with two secrets has, is the one that can be removed #}
   {% for secret in secrets | sort(attribute="createdAt", reverse=true) %}
+    {% set generatedOn = secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") %}
     {% set actions = { text: "" } %}
+    {# The link names its secret's date, as "Replace secret" alone doesn't say
+       which one it acts on when read out of context #}
     {% if loop.first and replaceSecretPath %}
-      {% set actions = { html: '<a class="govuk-link" href="' + replaceSecretPath + '">Replace secret</a>' | safe } %}
+      {% set actions = { html: '<a class="govuk-link" href="' + replaceSecretPath + '">Replace secret<span class="govuk-visually-hidden"> generated on ' + generatedOn + '</span></a>' | safe } %}
     {% elif not loop.first and removeSecretPath %}
-      {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret</a>' | safe } %}
+      {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret<span class="govuk-visually-hidden"> generated on ' + generatedOn + '</span></a>' | safe } %}
     {% endif %}
     {% set rows = (rows.push([
-      { text: secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") },
+      { text: generatedOn },
       { text: "[Hidden]" },
       actions
     ]), rows) %}
@@ -75,15 +78,20 @@
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
           {{ govukTable({
+            caption: "Client secrets for " + environment + " environment",
+            captionClasses: "govuk-visually-hidden",
             head: [
               {
-                text: "Generated on"
+                text: "Generated on",
+                attributes: { scope: "col" }
               },
               {
-                text: "Client secret"
+                text: "Client secret",
+                attributes: { scope: "col" }
               },
               {
-                text: "Actions"
+                text: "Actions",
+                attributes: { scope: "col" }
               }
             ],
             rows: rows
