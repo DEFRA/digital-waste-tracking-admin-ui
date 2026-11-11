@@ -38,8 +38,8 @@ export const clientCredentialsSoftwareProviderDetailController = {
       return h.redirect(paths.softwareProviders)
     }
 
-    // Only straight after a removal: reading the flash clears it
     const [removedSecret] = request.yar.flash(flashKeys.removedClientSecret)
+    const [uncertainChange] = request.yar.flash(flashKeys.uncertainClientChange)
 
     const { secrets = [] } = credentials
     const { clientId, clientName } = credentials
@@ -59,6 +59,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
       secrets,
       secretCount,
       removedSecret,
+      uncertainChange,
       replaceSecretPath:
         secretCount === 1
           ? clientPath(paths.replaceClientCredentials, clientId)
@@ -72,8 +73,6 @@ export const clientCredentialsSoftwareProviderDetailController = {
           ? clientPath(paths.removeClientCredentials, clientId)
           : null,
       softwareProvidersPath: paths.softwareProviders,
-      // Deleting can be switched off, as it is in production for now, and its
-      // page then doesn't exist
       deleteSoftwareProviderPath: config.get('clientCredentials.deleteEnabled')
         ? clientPath(paths.deleteSoftwareProvider, clientId)
         : null,

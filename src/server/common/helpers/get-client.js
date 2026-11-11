@@ -13,8 +13,8 @@ const requestTimeoutMs = 10_000
  *
  * @param {String} clientId
  *
- * @returns {Promise<{ clientId: String, clientName: String } | undefined>}
- * The client, or undefined when Client Sync doesn't have it
+ * @returns {Promise<{ clientId: String, clientName: String, secrets?: Object[] } | undefined>}
+ * The client and its secrets, or undefined if they can't be fetched
  */
 export async function getClient(clientId) {
   const tenantServiceName = config.get('clientCredentials.tenantServiceName')

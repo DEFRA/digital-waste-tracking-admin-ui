@@ -246,17 +246,25 @@ describe('#replaceClientCredentialsController', () => {
       expect(headers['set-cookie'] ?? '').not.toContain(rotated.clientSecret)
     })
 
-    test.each([
-      ['Client Sync refuses', 400],
-      ['the outcome is unknown', 502]
-    ])('Should show the error page when %s', async (_, status) => {
+    test('Should show the error page when Client Sync refuses', async () => {
       clientSyncRespondsWith({
-        rotate: { ok: false, status, statusText: 'Status text' }
+        rotate: { ok: false, status: 400, statusText: 'Bad Request' }
       })
 
       const { statusCode } = await replaceSecret()
 
       expect(statusCode).toEqual(statusCodes.internalServerError)
+    })
+
+    test('Should send the user back to check, when the outcome is unknown', async () => {
+      clientSyncRespondsWith({
+        rotate: { ok: false, status: 502, statusText: 'Bad Gateway' }
+      })
+
+      const { statusCode, headers } = await replaceSecret()
+
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toEqual(`/software-providers/${clientId}`)
     })
   })
 })

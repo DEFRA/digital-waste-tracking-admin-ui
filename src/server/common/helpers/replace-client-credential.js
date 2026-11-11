@@ -75,8 +75,8 @@ export async function replaceClientCredential(clientId) {
   }
 
   if (!response.ok) {
-    // If the error is a 502 it should still contain the new secret
-    const body = await bodyOf(response.clone())
+    // A 502 may still hold the new secret, which is the only chance to keep it.
+    const body = await bodyOf(response.clone?.() ?? response)
     const credentials = credentialsOf(body, clientId)
 
     if (credentials) {
@@ -89,7 +89,7 @@ export async function replaceClientCredential(clientId) {
 
     throw new ReplaceClientCredentialError(
       `Failed to replace client credential: ${response.status} ${response.statusText}`,
-      await outcomeOf(response)
+      body?.outcome ? { outcome: body.outcome } : await outcomeOf(response)
     )
   }
 

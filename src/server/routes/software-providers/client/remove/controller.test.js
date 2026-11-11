@@ -154,16 +154,24 @@ describe('#removeClientCredentialsController', () => {
     expect(headers.location).toEqual(paths.softwareProviders)
   })
 
-  test.each([
-    ['Client Sync refuses', 400],
-    ['the outcome is unknown', 502]
-  ])('Should show the error page when %s', async (_, status) => {
+  test('Should show the error page when Client Sync refuses', async () => {
     clientSyncRespondsWith({
-      purge: { ok: false, status, statusText: 'Status text' }
+      purge: { ok: false, status: 400, statusText: 'Bad Request' }
     })
 
     const { statusCode } = await removeSecret()
 
     expect(statusCode).toEqual(statusCodes.internalServerError)
+  })
+
+  test('Should send the user back to check, when the outcome is unknown', async () => {
+    clientSyncRespondsWith({
+      purge: { ok: false, status: 502, statusText: 'Bad Gateway' }
+    })
+
+    const { statusCode, headers } = await removeSecret()
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual(`/software-providers/${clientId}`)
   })
 })

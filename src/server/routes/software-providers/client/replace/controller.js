@@ -3,6 +3,7 @@ import Joi from 'joi'
 import { getClientCredentialsById } from '#/server/common/helpers/get-client-credentials.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
+import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
 import { securityTeamEmail } from '#/server/common/helpers/security-team-email.js'
 import { replaceClientCredential } from '#/server/common/helpers/replace-client-credential.js'
@@ -68,12 +69,21 @@ export function replaceClientCredentialsSubmitController(store) {
       try {
         result = await replaceClientCredential(clientId)
       } catch (err) {
-        // Any other error is recorded as unknown, to be safe
+        const outcome = err.outcome ?? 'unknown'
         auditWriteAction(request, {
           action: replaceAction,
-          outcome: err.outcome ?? 'unknown',
+          outcome,
           client: { clientId, clientName: client.clientName }
         })
+
+        if (outcome === 'unknown') {
+          request.yar.flash(
+            flashKeys.uncertainClientChange,
+            `Replacing the secret for ${client.clientName} may have worked. Check the client secrets below before trying again.`
+          )
+          return h.redirect(clientPath(paths.softwareProvider, clientId))
+        }
+
         throw err
       }
 

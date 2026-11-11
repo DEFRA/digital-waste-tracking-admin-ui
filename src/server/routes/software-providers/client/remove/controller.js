@@ -97,12 +97,21 @@ export const removeClientCredentialsSubmitController = {
     try {
       removal = await removeClientCredential(clientId)
     } catch (err) {
-      // Any other error is recorded as unknown, to be safe
+      const outcome = err.outcome ?? 'unknown'
       auditWriteAction(request, {
         action: removeAction,
-        outcome: err.outcome ?? 'unknown',
+        outcome,
         client: target
       })
+
+      if (outcome === 'unknown') {
+        request.yar.flash(
+          flashKeys.uncertainClientChange,
+          `Removing the oldest secret for ${client.clientName} may have worked. Check the client secrets below before trying again.`
+        )
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
+      }
+
       throw err
     }
 

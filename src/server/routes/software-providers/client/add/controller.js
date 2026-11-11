@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
-import { paths } from '#/server/common/constants/paths.js'
+import { clientPath, paths } from '#/server/common/constants/paths.js'
+import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
 import { rotateClientCredential } from '#/server/common/helpers/rotate-client-credential.js'
@@ -39,16 +40,30 @@ export function addClientCredentialsSubmitController(store) {
         return h.redirect(paths.softwareProviders)
       }
 
+      // Ensure the secret in use isn't dropped
+      if (client.secrets?.length !== 1) {
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
+      }
+
       let result
       try {
         result = await rotateClientCredential(clientId)
       } catch (err) {
-        // Any other error is recorded as unknown, to be safe
+        const outcome = err.outcome ?? 'unknown'
         auditWriteAction(request, {
           action: addAction,
-          outcome: err.outcome ?? 'unknown',
+          outcome,
           client: { clientId, clientName: client.clientName }
         })
+
+        if (outcome === 'unknown') {
+          request.yar.flash(
+            flashKeys.uncertainClientChange,
+            `Adding another secret for ${client.clientName} may have worked. Check the client secrets below before trying again.`
+          )
+          return h.redirect(clientPath(paths.softwareProvider, clientId))
+        }
+
         throw err
       }
 

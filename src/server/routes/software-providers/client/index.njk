@@ -29,6 +29,15 @@
       testId: "removed-secret-alert"
     }) }}
   {% endif %}
+  {% if uncertainChange %}
+    {{ appAlert({
+      variant: "warning",
+      title: "Check the client secrets",
+      text: uncertainChange,
+      classes: "govuk-!-margin-bottom-7",
+      testId: "uncertain-change-alert"
+    }) }}
+  {% endif %}
   {% set rows = [] %}
   {# Youngest first, as the newest secret is the one in use. The older secret,
      which only a client with two secrets has, is the one that can be removed #}

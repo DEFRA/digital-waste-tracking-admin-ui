@@ -14,7 +14,8 @@ const clientId = '1c847b529de64a03b7f852c96e1d4a37'
 const client = {
   clientId,
   clientName: 'Skipflow_Test',
-  tenantServiceName: 'waste-movement-external-api'
+  tenantServiceName: 'waste-movement-external-api',
+  secrets: [{ createdAt: '2020-01-01T10:00:00.000Z' }]
 }
 
 const rotated = { clientId, clientSecret: 'second-client-secret' }
@@ -25,7 +26,7 @@ describe('Add another secret', () => {
   let server
   let fetchMock
 
-  function clientSyncRespondsWith({ rotate }) {
+  function clientSyncRespondsWith({ rotate, client: fetched = client }) {
     fetchMock.mockImplementation((url, options) =>
       Promise.resolve(
         options?.method === 'POST'
@@ -33,7 +34,7 @@ describe('Add another secret', () => {
           : {
               ok: true,
               status: statusCodes.ok,
-              json: () => Promise.resolve(client)
+              json: () => Promise.resolve(fetched)
             }
       )
     )
@@ -45,6 +46,16 @@ describe('Add another secret', () => {
       url: `/software-providers/${clientId}/add-secret`,
       headers: auth
     })
+  }
+
+  async function getClientPage(headers) {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: `/software-providers/${clientId}`,
+      headers: { ...auth, cookie: headers['set-cookie'].join('; ') }
+    })
+
+    return new JSDOM(result).window.document
   }
 
   beforeEach(() => {
@@ -118,16 +129,50 @@ describe('Add another secret', () => {
     expect(headers.location).toEqual(paths.softwareProviders)
   })
 
-  test.each([
-    ['Client Sync refuses', 400],
-    ['the outcome is unknown', 502]
-  ])('Should show the error page when %s', async (_, status) => {
+  test('Should show the error page when Client Sync refuses', async () => {
     clientSyncRespondsWith({
-      rotate: { ok: false, status, statusText: 'Status text' }
+      rotate: { ok: false, status: 400, statusText: 'Bad Request' }
     })
 
     const { statusCode } = await addAnotherSecret()
 
     expect(statusCode).toEqual(statusCodes.internalServerError)
   })
+
+  test('Should send the user back to check, when the outcome is unknown', async () => {
+    clientSyncRespondsWith({
+      rotate: { ok: false, status: 502, statusText: 'Bad Gateway' }
+    })
+
+    const { statusCode, headers } = await addAnotherSecret()
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual(`/software-providers/${clientId}`)
+
+    const alert = getElementText(
+      await getClientPage(headers),
+      'uncertain-change-alert'
+    )
+    expect(alert).toContain('may have worked')
+    expect(alert).toContain('before trying again')
+  })
+
+  test.each([
+    ['two secrets', [{}, {}]],
+    ['no secrets', []],
+    ['no secret details', undefined]
+  ])(
+    'Should not rotate when the client has %s, as CDP would drop the oldest',
+    async (_, secrets) => {
+      clientSyncRespondsWith({ client: { ...client, secrets } })
+
+      const { statusCode, headers } = await addAnotherSecret()
+
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toEqual(`/software-providers/${clientId}`)
+      expect(
+        fetchMock.mock.calls.filter(([, options]) => options?.method === 'POST')
+      ).toHaveLength(0)
+    }
+  )
 })
