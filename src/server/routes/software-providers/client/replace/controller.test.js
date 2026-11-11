@@ -127,7 +127,10 @@ describe('#replaceClientCredentialsController', () => {
      * Client Sync answers the GET for the client and its secrets, and then the
      * POST that rotates them
      */
-    function clientSyncRespondsWith({ rotate: rotateResponse }) {
+    function clientSyncRespondsWith({
+      rotate: rotateResponse,
+      client = clientCredentials
+    }) {
       fetchMock.mockImplementation((url, options) =>
         Promise.resolve(
           options?.method === 'POST'
@@ -135,7 +138,7 @@ describe('#replaceClientCredentialsController', () => {
             : {
                 ok: true,
                 status: statusCodes.ok,
-                json: () => Promise.resolve(clientCredentials)
+                json: () => Promise.resolve(client)
               }
         )
       )
@@ -223,6 +226,42 @@ describe('#replaceClientCredentialsController', () => {
           .getAttribute('href')
       ).toEqual(`/software-providers/${clientId}/remove`)
     })
+
+    test.each([
+      ['no secrets', []],
+      [
+        'two secrets',
+        [
+          { createdAt: '2024-03-01T10:00:00.000Z' },
+          { createdAt: '2020-01-01T10:00:00.000Z' }
+        ]
+      ]
+    ])(
+      'Should not replace when the client has %s, as the page was left open',
+      async (_, secrets) => {
+        clientSyncRespondsWith({
+          client: { ...clientCredentials, secrets },
+          rotate: {
+            ok: true,
+            status: statusCodes.ok,
+            json: () => Promise.resolve(rotated)
+          }
+        })
+
+        const { statusCode, headers } = await replaceSecret()
+
+        // Replacing is only for a client with its one secret
+        expect(statusCode).toEqual(statusCodes.found)
+        expect(headers.location).toEqual(`/software-providers/${clientId}`)
+        // Nothing was replaced, so no rotation was made or recorded
+        expect(
+          fetchMock.mock.calls.filter(
+            ([, options]) => options?.method === 'POST'
+          )
+        ).toHaveLength(0)
+        expect(mockAuditWriteAction).not.toHaveBeenCalled()
+      }
+    )
 
     test('Should go back to the client when the secret cannot be replaced', async () => {
       clientSyncRespondsWith({

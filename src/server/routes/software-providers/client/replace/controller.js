@@ -68,6 +68,12 @@ export function replaceClientCredentialsSubmitController(store) {
         return h.redirect(paths.softwareProviders)
       }
 
+      // Don't allow the 'replace' operation to be run
+      // on clients with 0 or 2 secrets
+      if (client.secrets?.length !== 1) {
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
+      }
+
       let result
       try {
         result = await replaceClientCredential(clientId)
