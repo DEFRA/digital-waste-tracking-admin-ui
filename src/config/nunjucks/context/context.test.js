@@ -73,7 +73,7 @@ describe('context and cache', () => {
             {
               current: false,
               href: '/reporting/waste-organisations',
-              text: 'Reporting'
+              text: 'Waste organisations'
             }
           ],
           serviceName: 'DWT admin portal',
@@ -167,7 +167,7 @@ describe('context and cache', () => {
             {
               current: false,
               href: '/reporting/waste-organisations',
-              text: 'Reporting'
+              text: 'Waste organisations'
             }
           ],
           serviceName: 'DWT admin portal',
