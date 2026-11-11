@@ -8,6 +8,14 @@ import {
   userBasicAuthTest1
 } from '#/test-helpers/constants.js'
 
+const { mockAuditWriteAction } = vi.hoisted(() => ({
+  mockAuditWriteAction: vi.fn()
+}))
+
+vi.mock('#/server/common/helpers/audit-write-action.js', () => ({
+  auditWriteAction: mockAuditWriteAction
+}))
+
 const clientId = '1c847b529de64a03b7f852c96e1d4a37'
 
 const clientCredentials = {
@@ -135,17 +143,22 @@ describe('#replaceClientCredentialsController', () => {
         `/clients/waste-movement-external-api/${clientId}/replace`
       )
       expect(replaceOptions?.method).toEqual('POST')
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'replaced software provider',
+        outcome: 'success',
+        client: { clientId, clientName: 'Skipflow_Test' }
+      })
     })
 
     test('Should show the new secret, even when the old one may still work', async () => {
-      clientSyncRespondsWith({
-        rotate: {
-          ok: false,
-          status: 502,
-          statusText: 'Bad Gateway',
-          json: () => Promise.resolve({ ...rotated, outcome: 'failure' })
-        }
-      })
+      const response = {
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        json: () => Promise.resolve({ ...rotated, outcome: 'failure' })
+      }
+      response.clone = () => response
+      clientSyncRespondsWith({ rotate: response })
 
       const { statusCode, headers } = await replaceSecret()
 
@@ -153,6 +166,31 @@ describe('#replaceClientCredentialsController', () => {
       expect(headers.location).toMatch(
         /^\/software-providers\/credentials\/[0-9a-f-]{36}$/
       )
+
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'replaced software provider',
+        outcome: 'failure',
+        client: { clientId, clientName: 'Skipflow_Test' }
+      })
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: headers.location,
+        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      })
+      const document = new JSDOM(result).window.document
+
+      expect(
+        document
+          .querySelector('[data-testid="old-secret-warning"]')
+          .textContent.replace(/\s+/g, ' ')
+          .trim()
+      ).toContain('The old client secret may still work')
+      expect(
+        document
+          .querySelector('[data-testid="remove-old-secret"]')
+          .getAttribute('href')
+      ).toEqual(`/software-providers/${clientId}/remove`)
     })
 
     test('Should go back to the client when the secret cannot be replaced', async () => {

@@ -1,5 +1,5 @@
 import { config } from '#/config/config.js'
-import { paths } from '#/server/common/constants/paths.js'
+import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { formatGeneratedOn } from '#/server/common/helpers/format-generated-on.js'
 
@@ -32,7 +32,14 @@ export function newClientCredentialsController(store) {
         apiUrl: config.get('clientCredentials.apiUrl'),
         clientId: credentials.clientId,
         clientSecret: credentials.clientSecret,
-        softwareProvidersPath: paths.softwareProviders
+        softwareProvidersPath: paths.softwareProviders,
+        // Set when replacing a secret whose old one may still work
+        removeOldSecretPath: credentials.isPartialReplace
+          ? clientPath(paths.removeClientCredentials, credentials.clientId)
+          : null,
+        softwareProviderPath: credentials.isPartialReplace
+          ? clientPath(paths.softwareProvider, credentials.clientId)
+          : null
       })
     }
   }

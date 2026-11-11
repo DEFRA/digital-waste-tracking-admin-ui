@@ -97,17 +97,19 @@ export function replaceClientCredentialsSubmitController(store) {
         return h.redirect(clientPath(paths.softwareProvider, clientId))
       }
 
-      // Who replaced which client's secret, never the secret
+      const outcome = result.outcome ?? 'success'
+
       auditWriteAction(request, {
         action: replaceAction,
-        outcome: 'success',
+        outcome,
         client: { clientId, clientName: client.clientName }
       })
 
       const id = await store.save(request, {
         ...result.credentials,
         clientName: client.clientName,
-        generatedOn: new Date().toISOString()
+        generatedOn: new Date().toISOString(),
+        isPartialReplace: outcome !== 'success' // Used to warn when the old secret may still be active
       })
 
       return h.redirect(`${paths.newClientCredentials}/${id}`)

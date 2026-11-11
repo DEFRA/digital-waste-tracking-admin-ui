@@ -23,17 +23,16 @@ export class ReplaceClientCredentialError extends Error {
 }
 
 /**
- * Replaces a client's only secret with the DWT Client Sync backend, for the
- * environment the portal is running in. The old secret stops working, so a
- * client is left with one secret: the new one.
+ * Replace is used when the client only has one secret.
+ * It calls the /replace endpoint in the dwt-client-sync service,
+ * which creates a new secret then deletes the old one.
  *
- * Client Sync issues the new secret before it removes the old one, so when CDP
- * fails to remove it the reply is a 502 that still holds the new secret. That
- * secret can't be fetched again, so it's returned as a partial success and the
- * old secret is purged to finish the replacement.
+ * If dwt-client-sync successfully creates a new secret but fails to remove the old one
+ * 502 is returned.
+ * Since the secret value is only ever returned at creation and can't be fetched again,
+ * dwt-client-sync returns the secret value in the body of the 502 error
  *
- * The response holds the new client secret, which is only available now, so it's
- * never logged, including when the request fails.
+ * This response is never logged, as it contains the secret value.
  *
  * @param {String} clientId - The client whose secret to replace
  *
@@ -52,8 +51,6 @@ export async function replaceClientCredential(clientId) {
     Authorization: generateServiceAuthHeader()
   })
 
-  // Built first, so only fetch's errors are caught: once it's called, the
-  // request may have been sent
   let response
   try {
     response = await fetch(url, {
@@ -78,12 +75,16 @@ export async function replaceClientCredential(clientId) {
   }
 
   if (!response.ok) {
-    // A 502 may still hold the new secret, which is the only chance to keep it
-    const body = await bodyOf(response)
+    // If the error is a 502 it should still contain the new secret
+    const body = await bodyOf(response.clone())
     const credentials = credentialsOf(body, clientId)
 
     if (credentials) {
-      return { isNotFound: false, credentials }
+      return {
+        isNotFound: false,
+        credentials,
+        outcome: body.outcome ?? 'unknown'
+      }
     }
 
     throw new ReplaceClientCredentialError(

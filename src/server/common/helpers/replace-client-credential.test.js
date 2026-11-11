@@ -15,7 +15,7 @@ describe('#replaceClientCredential', () => {
   let fetchMock
 
   function clientSyncRespondsWith(status, body) {
-    fetchMock.mockResolvedValue({
+    const response = {
       ok: status >= 200 && status < 300,
       status,
       statusText: 'Status text',
@@ -23,7 +23,12 @@ describe('#replaceClientCredential', () => {
         body === undefined
           ? Promise.reject(new Error('No body'))
           : Promise.resolve(body)
-    })
+    }
+
+    // A real Response can only be read once, but its clone can be read too
+    response.clone = () => response
+
+    fetchMock.mockResolvedValue(response)
   }
 
   beforeEach(() => {
@@ -61,7 +66,8 @@ describe('#replaceClientCredential', () => {
 
     await expect(replaceClientCredential(clientId)).resolves.toEqual({
       isNotFound: false,
-      credentials: { clientId, clientSecret: 'new-client-secret' }
+      credentials: { clientId, clientSecret: 'new-client-secret' },
+      outcome: 'failure'
     })
   })
 
