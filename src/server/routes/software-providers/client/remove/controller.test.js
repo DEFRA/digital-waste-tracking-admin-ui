@@ -8,6 +8,14 @@ import {
   userBasicAuthTest1
 } from '#/test-helpers/constants.js'
 
+const { mockAuditWriteAction } = vi.hoisted(() => ({
+  mockAuditWriteAction: vi.fn()
+}))
+
+vi.mock('#/server/common/helpers/audit-write-action.js', () => ({
+  auditWriteAction: mockAuditWriteAction
+}))
+
 // Cognito client ids have no hyphens: only [\w+], which the route validates
 const clientId = '1c847b529de64a03b7f852c96e1d4a37'
 
@@ -138,6 +146,62 @@ describe('#removeClientCredentialsController', () => {
       `/clients/waste-movement-external-api/${clientId}/purge`
     )
     expect(purgeOptions?.method).toEqual('POST')
+    expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+      action: 'removed old client secret',
+      outcome: 'success',
+      client: { clientId, clientName: 'Skipflow_Test' }
+    })
+  })
+
+  test('Should record a failed removal when Client Sync refuses', async () => {
+    clientSyncRespondsWith({
+      purge: { ok: false, status: 400, statusText: 'Bad Request' }
+    })
+
+    await removeSecret()
+
+    expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+      action: 'removed old client secret',
+      outcome: 'failure',
+      client: { clientId, clientName: 'Skipflow_Test' }
+    })
+  })
+
+  test.each([
+    [
+      'the client is gone',
+      { ok: false, status: statusCodes.notFound },
+      'failure'
+    ],
+    [
+      'the client cannot be purged',
+      { ok: false, status: statusCodes.conflict },
+      'failure'
+    ],
+    ['the outcome is unknown', { ok: false, status: 502 }, 'unknown']
+  ])('Should record the outcome when %s', async (_, purge, outcome) => {
+    clientSyncRespondsWith({ purge: { ...purge, statusText: 'Status text' } })
+
+    await removeSecret()
+
+    expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+      action: 'removed old client secret',
+      outcome,
+      client: { clientId, clientName: 'Skipflow_Test' }
+    })
+  })
+
+  test('Should not audit a client it refuses to remove from', async () => {
+    clientSyncRespondsWith({
+      credentials: {
+        ...twoSecrets,
+        secrets: [{ createdAt: '2024-03-01T10:00:00.000Z' }]
+      }
+    })
+
+    await removeSecret()
+
+    expect(mockAuditWriteAction).not.toHaveBeenCalled()
   })
 
   test('Should show that the secret was removed, once', async () => {

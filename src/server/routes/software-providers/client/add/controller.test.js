@@ -8,6 +8,14 @@ import {
   userBasicAuthTest1
 } from '#/test-helpers/constants.js'
 
+const { mockAuditWriteAction } = vi.hoisted(() => ({
+  mockAuditWriteAction: vi.fn()
+}))
+
+vi.mock('#/server/common/helpers/audit-write-action.js', () => ({
+  auditWriteAction: mockAuditWriteAction
+}))
+
 // Cognito client ids have no hyphens: only [\w+], which the route validates
 const clientId = '1c847b529de64a03b7f852c96e1d4a37'
 
@@ -101,6 +109,59 @@ describe('Add another secret', () => {
       `/clients/waste-movement-external-api/${clientId}/rotate`
     )
     expect(rotateOptions?.method).toEqual('POST')
+    expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+      action: 'added another client secret',
+      outcome: 'success',
+      client: { clientId, clientName: 'Skipflow_Test' }
+    })
+  })
+
+  test('Should record a failed add when Client Sync refuses', async () => {
+    clientSyncRespondsWith({
+      rotate: { ok: false, status: 400, statusText: 'Bad Request' }
+    })
+
+    await addAnotherSecret()
+
+    expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+      action: 'added another client secret',
+      outcome: 'failure',
+      client: { clientId, clientName: 'Skipflow_Test' }
+    })
+  })
+
+  test.each([
+    [
+      'the client is gone',
+      { ok: false, status: statusCodes.notFound },
+      'failure'
+    ],
+    [
+      'the client cannot be rotated',
+      { ok: false, status: statusCodes.conflict },
+      'failure'
+    ],
+    ['the outcome is unknown', { ok: false, status: 502 }, 'unknown']
+  ])('Should record the outcome when %s', async (_, rotate, outcome) => {
+    clientSyncRespondsWith({
+      rotate: { ...rotate, statusText: 'Status text' }
+    })
+
+    await addAnotherSecret()
+
+    expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+      action: 'added another client secret',
+      outcome,
+      client: { clientId, clientName: 'Skipflow_Test' }
+    })
+  })
+
+  test('Should not audit a client it refuses to rotate', async () => {
+    clientSyncRespondsWith({ client: { ...client, secrets: [{}, {}] } })
+
+    await addAnotherSecret()
+
+    expect(mockAuditWriteAction).not.toHaveBeenCalled()
   })
 
   test('Should show the new secret, once', async () => {
