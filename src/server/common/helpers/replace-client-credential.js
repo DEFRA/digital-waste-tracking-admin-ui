@@ -76,20 +76,24 @@ export async function replaceClientCredential(clientId) {
 
   if (!response.ok) {
     // A 502 may still hold the new secret, which is the only chance to keep it.
-    const body = await bodyOf(response.clone?.() ?? response)
-    const credentials = credentialsOf(body, clientId)
+    // Cloned, as outcomeOf reads the body again. Without a clone, the body is
+    // read once here, and outcomeOf falls back to the status
+    const errorBody = await bodyOf(response.clone?.() ?? response)
+    const keptCredentials = credentialsOf(errorBody, clientId)
 
-    if (credentials) {
+    if (keptCredentials) {
       return {
         isNotFound: false,
-        credentials,
-        outcome: body.outcome ?? 'unknown'
+        credentials: keptCredentials,
+        outcome: errorBody.outcome ?? 'unknown'
       }
     }
 
     throw new ReplaceClientCredentialError(
       `Failed to replace client credential: ${response.status} ${response.statusText}`,
-      body?.outcome ? { outcome: body.outcome } : await outcomeOf(response)
+      errorBody?.outcome
+        ? { outcome: errorBody.outcome }
+        : await outcomeOf(response)
     )
   }
 

@@ -72,14 +72,14 @@ export function replaceClientCredentialsSubmitController(store) {
       try {
         result = await replaceClientCredential(clientId)
       } catch (err) {
-        const outcome = err.outcome ?? 'unknown'
+        const failure = err.outcome ?? 'unknown'
         auditWriteAction(request, {
           action: replaceAction,
-          outcome,
+          outcome: failure,
           client: { clientId, clientName: client.clientName }
         })
 
-        if (outcome === 'unknown') {
+        if (failure === 'unknown') {
           request.yar.flash(
             flashKeys.uncertainClientChange,
             `Replacing the secret for ${client.clientName} may have worked. Check the client secrets below before trying again.`
