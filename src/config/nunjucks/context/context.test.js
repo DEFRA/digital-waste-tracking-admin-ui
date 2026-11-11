@@ -47,8 +47,11 @@ describe('context and cache', () => {
       beforeEach(() => {
         // Return JSON string
         mockReadFileSync.mockReturnValue(`{
-        "application.js": "javascripts/application.js",
-        "stylesheets/application.scss": "stylesheets/application.css"
+        "application.js": { "file": "assets/application-abc123.js" },
+        "stylesheets/application.scss": { "file": "assets/application-def456.css" },
+        "src/client/images/defra-logo.svg": { "file": "assets/defra-logo-xyz789.svg" },
+        "src/client/images/favicon.ico": { "file": "assets/favicon-ghi012.ico" },
+        "src/client/images/favicon.svg": { "file": "assets/favicon-jkl345.svg" }
       }`)
 
         contextResult = contextImport.context(mockRequest)
@@ -84,8 +87,22 @@ describe('context and cache', () => {
       describe('With valid asset path', () => {
         test('Should provide expected asset path', () => {
           expect(contextResult.getAssetPath('application.js')).toBe(
-            '/public/application.js'
+            '/public/assets/application-abc123.js'
           )
+        })
+      })
+
+      describe('With app image assets', () => {
+        test('Should resolve logo and favicon paths from Vite manifest', () => {
+          expect(
+            contextResult.getAssetPath('src/client/images/defra-logo.svg')
+          ).toBe('/public/assets/defra-logo-xyz789.svg')
+          expect(
+            contextResult.getAssetPath('src/client/images/favicon.ico')
+          ).toBe('/public/assets/favicon-ghi012.ico')
+          expect(
+            contextResult.getAssetPath('src/client/images/favicon.svg')
+          ).toBe('/public/assets/favicon-jkl345.svg')
         })
       })
 
@@ -133,8 +150,8 @@ describe('context and cache', () => {
       beforeEach(() => {
         // Return JSON string
         mockReadFileSync.mockReturnValue(`{
-        "application.js": "javascripts/application.js",
-        "stylesheets/application.scss": "stylesheets/application.css"
+        "application.js": { "file": "assets/application-abc123.js" },
+        "stylesheets/application.scss": { "file": "assets/application-def456.css" }
       }`)
 
         contextResult = contextImport.context(mockRequest)
