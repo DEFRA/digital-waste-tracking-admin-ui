@@ -68,6 +68,15 @@ describe('#removeClientCredential', () => {
     }
   )
 
+  test('Should say when the client cannot be purged, as nothing changed', async () => {
+    clientSyncRespondsWith(409, {})
+
+    await expect(removeClientCredential(clientId)).resolves.toEqual({
+      isNotFound: false,
+      isConflict: true
+    })
+  })
+
   test('Should treat a failed request as an unknown outcome', async () => {
     fetchMock.mockRejectedValue(new TypeError('fetch failed'))
 

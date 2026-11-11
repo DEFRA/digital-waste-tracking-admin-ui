@@ -131,6 +131,20 @@ export const removeClientCredentialsSubmitController = {
       return h.redirect(paths.softwareProviders)
     }
 
+    // Nothing changed, so nothing was removed
+    if (removal.isConflict) {
+      auditWriteAction(request, {
+        action: removeAction,
+        outcome: 'failure',
+        client: target
+      })
+      request.yar.flash(
+        flashKeys.conflictedClientChange,
+        `No secret was removed for ${client.clientName}: the client is out of date, or another client has its name. Contact the DWT team before trying again.`
+      )
+      return h.redirect(clientPath(paths.softwareProvider, clientId))
+    }
+
     // Which client's secret was removed, never the secret
     auditWriteAction(request, {
       action: removeAction,

@@ -129,6 +129,28 @@ describe('Add another secret', () => {
     expect(headers.location).toEqual(paths.softwareProviders)
   })
 
+  test('Display an alert when Client Sync reports a conflict', async () => {
+    clientSyncRespondsWith({
+      rotate: {
+        ok: false,
+        status: statusCodes.conflict,
+        statusText: 'Conflict'
+      }
+    })
+
+    const { statusCode, headers } = await addAnotherSecret()
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual(`/software-providers/${clientId}`)
+
+    const alert = getElementText(
+      await getClientPage(headers),
+      'conflicted-change-alert'
+    )
+    expect(alert).toContain('No secret was added for Skipflow_Test')
+    expect(alert).toContain('another client has its name')
+  })
+
   test('Should show the error page when Client Sync refuses', async () => {
     clientSyncRespondsWith({
       rotate: { ok: false, status: 400, statusText: 'Bad Request' }

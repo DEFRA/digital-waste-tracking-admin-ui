@@ -166,6 +166,33 @@ describe('#removeClientCredentialsController', () => {
     expect(headers.location).toEqual(paths.softwareProviders)
   })
 
+  test('Should display an alert when Client Sync reports a conflict', async () => {
+    clientSyncRespondsWith({
+      purge: {
+        ok: false,
+        status: statusCodes.conflict,
+        statusText: 'Conflict'
+      }
+    })
+
+    const { statusCode, headers } = await removeSecret()
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual(`/software-providers/${clientId}`)
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: headers.location,
+      headers: { ...auth, cookie: headers['set-cookie'].join('; ') }
+    })
+    const alert = getElementText(
+      new JSDOM(result).window.document,
+      'conflicted-change-alert'
+    )
+    expect(alert).toContain('No secret was removed for Skipflow_Test')
+    expect(alert).toContain('another client has its name')
+  })
+
   test('Should show the error page when Client Sync refuses', async () => {
     clientSyncRespondsWith({
       purge: { ok: false, status: 400, statusText: 'Bad Request' }

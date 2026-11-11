@@ -237,6 +237,23 @@ describe('#replaceClientCredentialsController', () => {
 
       expect(statusCode).toEqual(statusCodes.found)
       expect(headers.location).toEqual(`/software-providers/${clientId}`)
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: headers.location,
+        headers: {
+          Authorization: `Basic ${requestBasicAuthTest1}`,
+          cookie: headers['set-cookie'].join('; ')
+        }
+      })
+
+      // Nothing changed, so the old secret is still the only one
+      expect(
+        getElementText(
+          new JSDOM(result).window.document,
+          'conflicted-change-alert'
+        )
+      ).toContain('No secret was replaced for Skipflow_Test')
     })
 
     test('Should show the new secret, once', async () => {

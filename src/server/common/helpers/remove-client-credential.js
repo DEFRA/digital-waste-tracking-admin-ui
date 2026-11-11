@@ -64,6 +64,11 @@ export async function removeClientCredential(clientId) {
     return { isNotFound: true }
   }
 
+  // Nothing changed: another client has the name, or the stored client is out of date
+  if (response.status === statusCodes.conflict) {
+    return { isNotFound: false, isConflict: true }
+  }
+
   if (!response.ok) {
     throw new RemoveClientCredentialError(
       `Failed to remove client credential: ${response.status} ${response.statusText}`,

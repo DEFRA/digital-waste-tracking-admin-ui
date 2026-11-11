@@ -76,6 +76,19 @@ export function addClientCredentialsSubmitController(store) {
         return h.redirect(paths.softwareProviders)
       }
 
+      if (result.isConflict) {
+        auditWriteAction(request, {
+          action: addAction,
+          outcome: 'failure',
+          client: { clientId, clientName: client.clientName }
+        })
+        request.yar.flash(
+          flashKeys.conflictedClientChange,
+          `No secret was added for ${client.clientName}: the client is out of date, or another client has its name. Contact the DWT team before trying again.`
+        )
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
+      }
+
       // Who added a secret to which client, never the secret
       auditWriteAction(request, {
         action: addAction,

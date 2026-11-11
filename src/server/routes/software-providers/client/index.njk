@@ -38,6 +38,15 @@
       testId: "uncertain-change-alert"
     }) }}
   {% endif %}
+  {% if conflictedChange %}
+    {{ appAlert({
+      variant: "error",
+      title: "The secret was not changed",
+      text: conflictedChange,
+      classes: "govuk-!-margin-bottom-7",
+      testId: "conflicted-change-alert"
+    }) }}
+  {% endif %}
   {% set rows = [] %}
   {# Youngest first, as the newest secret is the one in use. The older secret,
      which only a client with two secrets has, is the one that can be removed #}

@@ -2,5 +2,8 @@
 export const flashKeys = {
   deletedSoftwareProvider: 'deletedSoftwareProvider',
   removedClientSecret: 'removedClientSecret',
-  uncertainClientChange: 'uncertainClientChange'
+  // The backend didn't report whether the change occured
+  uncertainClientChange: 'uncertainClientChange',
+  // The change was refused because the client is out of date or shares a name
+  conflictedClientChange: 'conflictedClientChange'
 }

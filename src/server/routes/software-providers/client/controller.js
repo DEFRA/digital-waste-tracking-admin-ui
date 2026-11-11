@@ -38,6 +38,9 @@ export const clientCredentialsSoftwareProviderDetailController = {
 
     const [removedSecret] = request.yar.flash(flashKeys.removedClientSecret)
     const [uncertainChange] = request.yar.flash(flashKeys.uncertainClientChange)
+    const [conflictedChange] = request.yar.flash(
+      flashKeys.conflictedClientChange
+    )
 
     const { secrets = [] } = credentials
     const { clientId, clientName } = credentials
@@ -59,6 +62,7 @@ export const clientCredentialsSoftwareProviderDetailController = {
       secretCount,
       removedSecret,
       uncertainChange,
+      conflictedChange,
       replaceSecretPath:
         secretsEnabled && secretCount === 1
           ? clientPath(paths.replaceClientCredentials, clientId)
