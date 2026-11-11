@@ -155,6 +155,26 @@ describe('#softwareProvidersController', () => {
     ])
   })
 
+  test('Should give each linked name a sort value, so it sorts by name', async () => {
+    const { document } = await getPage(server)
+    const nameCells = [
+      ...document.querySelectorAll(
+        '[data-testid="client-credentials"] tbody tr td:first-child'
+      )
+    ]
+
+    expect(
+      nameCells.map((cell) => ({
+        sortValue: cell.getAttribute('data-sort-value'),
+        name: cell.textContent.trim()
+      }))
+    ).toEqual([
+      { sortValue: 'greenlane_digital_test', name: 'Greenlane_Digital_Test' },
+      { sortValue: 'kerbside_collect_test', name: 'Kerbside_Collect_Test' },
+      { sortValue: 'skipflow_test', name: 'Skipflow_Test' }
+    ])
+  })
+
   test('Should put the table in a focusable, named region that scrolls on its own', async () => {
     const { document } = await getPage(server)
     const region = document.querySelector(
