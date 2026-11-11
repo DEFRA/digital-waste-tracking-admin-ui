@@ -73,6 +73,37 @@ describe('#replaceClientCredentialsController', () => {
     )
   })
 
+  test.each([
+    ['no secrets', []],
+    [
+      'two secrets',
+      [
+        { createdAt: '2024-03-01T10:00:00.000Z' },
+        { createdAt: '2020-01-01T10:00:00.000Z' }
+      ]
+    ]
+  ])(
+    'Should send the user back to the client when it has %s',
+    async (_, secrets) => {
+      fetchMock.mockResolvedValue({
+        ok: true,
+        status: statusCodes.ok,
+        json: () => Promise.resolve({ ...clientCredentials, secrets })
+      })
+
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: `/software-providers/${clientId}/replace`,
+        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      })
+
+      // Replacing is only for a client with its one secret
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toEqual(`/software-providers/${clientId}`)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    }
+  )
+
   test('Should show the error page when the client credentials cannot be fetched', async () => {
     fetchMock.mockResolvedValue({
       ok: false,

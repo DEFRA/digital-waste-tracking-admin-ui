@@ -32,19 +32,21 @@ export const replaceClientCredentialsController = {
       return h.redirect(paths.softwareProviders)
     }
 
-    const credentials = await getClientCredentialsById(request.params.clientId)
-
-    const { clientName } = credentials
+    // Don't allow the 'replace' operation to be run
+    // on clients with 0 or 2 secrets
+    if (client.secrets?.length !== 1) {
+      return h.redirect(clientPath(paths.softwareProvider, request.params.clientId))
+    }
 
     return h.view('software-providers/client/replace/index', {
       pageTitle: 'Replace the client secret',
       heading: 'Software provider',
       serviceName: 'DWT admin portal',
-      clientName,
+      clientName: client.clientName,
       softwareProviderPath: clientPath(paths.softwareProvider, client.clientId),
       securityTeamEmail: securityTeamEmail({
         clientId: client.clientId,
-        clientName
+        clientName: client.clientName
       })
     })
   }
