@@ -103,7 +103,7 @@ jobs:
           # Made-up credential for calling dwt-client-sync directly
           SERVICE_AUTH_PASSWORD: local-external-api
           # Reach dwt-client-sync by its compose service name
-          DWT_CLIENT_SYNC_SERVICE_URL: http://dwt-client-sync:3005
+          DWT_CLIENT_SYNC_SERVICE_URL: http://localhost:3005
         run: npm run test:admin-ui
 
       - name: Generate Test Report
