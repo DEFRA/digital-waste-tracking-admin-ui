@@ -22,7 +22,7 @@ describe('#buildNavigation', () => {
       {
         current: false,
         href: '/reporting/waste-organisations',
-        text: 'Reporting'
+        text: 'Waste organisations'
       }
     ])
   })
@@ -42,7 +42,7 @@ describe('#buildNavigation', () => {
       {
         current: false,
         href: '/reporting/waste-organisations',
-        text: 'Reporting'
+        text: 'Waste organisations'
       }
     ])
   })

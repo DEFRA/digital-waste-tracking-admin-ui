@@ -104,7 +104,7 @@ jobs:
           ADMIN_UI_BASE_URL: http://digital-waste-tracking-admin-ui:3000
           # Made-up credential for calling dwt-client-sync directly
           SERVICE_AUTH_PASSWORD: local-external-api
-          # Reach dwt-client-sync by its compose service name
+          # Reach dwt-client-sync through the port the stack publishes, as the tests run on the runner
           DWT_CLIENT_SYNC_SERVICE_URL: http://localhost:3005
         run: npm run test:admin-ui
 
