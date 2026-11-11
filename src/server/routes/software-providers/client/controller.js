@@ -49,7 +49,8 @@ export const clientCredentialsSoftwareProviderDetailController = {
     // one secret can be given another
     const { length: secretCount } = secrets
 
-    // return h.view('client-credentials/software-provider-detail/index', {
+    const secretsEnabled = config.get('clientCredentials.createEnabled')
+
     return h.view('software-providers/client/index', {
       pageTitle: clientName,
       heading: 'Software provider',
@@ -61,15 +62,15 @@ export const clientCredentialsSoftwareProviderDetailController = {
       removedSecret,
       uncertainChange,
       replaceSecretPath:
-        secretCount === 1
+        secretsEnabled && secretCount === 1
           ? clientPath(paths.replaceClientCredentials, clientId)
           : null,
       addSecretPath:
-        secretCount === 1
+        secretsEnabled && secretCount === 1
           ? clientPath(paths.addClientCredentials, clientId)
           : null,
       removeSecretPath:
-        secretCount > 1
+        secretsEnabled && secretCount > 1
           ? clientPath(paths.removeClientCredentials, clientId)
           : null,
       softwareProvidersPath: paths.softwareProviders,

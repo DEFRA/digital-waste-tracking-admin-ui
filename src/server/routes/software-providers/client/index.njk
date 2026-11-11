@@ -43,7 +43,7 @@
      which only a client with two secrets has, is the one that can be removed #}
   {% for secret in secrets | sort(attribute="createdAt", reverse=true) %}
     {% set actions = { text: "" } %}
-    {% if loop.first and secretCount == 1 %}
+    {% if loop.first and replaceSecretPath %}
       {% set actions = { html: '<a class="govuk-link" href="' + replaceSecretPath + '">Replace secret</a>' | safe } %}
     {% elif not loop.first and removeSecretPath %}
       {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret</a>' | safe } %}
@@ -90,7 +90,7 @@
           }) }}
         </div>
       </div>
-      {% if secretCount == 1 %}
+      {% if addSecretPath %}
         {# Adds the secret straight away, as another can be added without risk #}
         <form method="post" action="{{ addSecretPath }}">
           {{ govukButton({

@@ -243,4 +243,65 @@ describe('#clientCredentialsSoftwareProviderDetailController', () => {
       config.set('cdpEnvironment', originalEnvironment)
     }
   })
+
+  describe('When changing secrets is switched off, as in production', () => {
+    let offServer
+
+    beforeAll(async () => {
+      config.set('clientCredentials.createEnabled', false)
+      offServer = await createServer()
+      await offServer.initialize()
+    })
+
+    afterAll(async () => {
+      config.set('clientCredentials.createEnabled', true)
+      await offServer.stop({ timeout: 0 })
+    })
+
+    test.each([
+      ['one secret', [{ createdAt: '2020-01-01T10:00:00.000Z' }]],
+      [
+        'two secrets',
+        [
+          { createdAt: '2024-03-01T10:00:00.000Z' },
+          { createdAt: '2020-01-01T10:00:00.000Z' }
+        ]
+      ]
+    ])(
+      'Should show no controls for changing secrets, with %s',
+      async (_, secrets) => {
+        fetchMock.mockResolvedValue({
+          ok: true,
+          status: statusCodes.ok,
+          json: () => Promise.resolve({ ...clientCredentials, secrets })
+        })
+
+        const { statusCode, document } = await getPage(offServer)
+
+        expect(statusCode).toEqual(statusCodes.ok)
+        expect(document.querySelectorAll('tbody a')).toHaveLength(0)
+        expect(
+          document.querySelector('[data-testid="add-another-secret"]')
+        ).toBeNull()
+        expect(document.body.textContent).not.toContain('Replace secret')
+        expect(document.body.textContent).not.toContain('Remove secret')
+      }
+    )
+
+    test.each([
+      ['GET', `/software-providers/${clientId}/replace`],
+      ['POST', `/software-providers/${clientId}/replace`],
+      ['GET', `/software-providers/${clientId}/remove`],
+      ['POST', `/software-providers/${clientId}/remove`],
+      ['POST', `/software-providers/${clientId}/add-secret`]
+    ])('Should not have %s %s', async (method, url) => {
+      const { statusCode } = await offServer.inject({
+        method,
+        url,
+        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      })
+
+      expect(statusCode).toEqual(statusCodes.notFound)
+    })
+  })
 })
