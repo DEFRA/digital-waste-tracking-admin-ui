@@ -18,8 +18,8 @@
   line-height: normal;
 
   @include govuk-media-query($from: tablet) {
-    &[aria-current="page"]:not(:focus) {
-      background-color: rgb(0, 0, 0, .2);
+    &[aria-current='page']:not(:focus) {
+      background-color: rgb(0, 0, 0, 0.2);
       box-shadow: inset 0 -4px 0 0 $app-white;
       font-weight: 700;
     }
@@ -27,7 +27,7 @@
 
   &:hover {
     text-decoration: none;
-    background-color: rgb(0, 0, 0, .2);
+    background-color: rgb(0, 0, 0, 0.2);
     box-shadow: inset 0 -4px 0 0 $app-white;
   }
 
@@ -118,11 +118,11 @@
       box-shadow: none;
     }
 
-  &:not([hidden]) {
-    display: block;
-  }
+    &:not([hidden]) {
+      display: block;
+    }
 
-  &:focus-visible {
+    &:focus-visible {
       outline: 3px solid $app-yellow;
       outline-offset: 0;
       background-color: $app-yellow;

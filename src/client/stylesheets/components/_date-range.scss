@@ -1,4 +1,4 @@
-@use "pkg:govuk-frontend/base" as *;
+@use 'pkg:govuk-frontend/base' as *;
 
 // Two date inputs side by side, such as a From and To date
 .app-date-range {

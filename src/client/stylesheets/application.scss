@@ -28,12 +28,10 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 12px 15px;
-
 }
 
 .defra-header__brand-group {
   display: contents;
-
 }
 
 .defra-header__logo {
@@ -62,7 +60,7 @@
   span:hover {
     text-decoration: underline;
     text-decoration-thickness: 3px;
-    text-underline-offset: .15em;
+    text-underline-offset: 0.15em;
   }
 }
 
@@ -79,4 +77,3 @@ body {
 .govuk-width-container {
   flex: 1;
 }
-

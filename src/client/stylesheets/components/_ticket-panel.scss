@@ -1,4 +1,4 @@
-@use "pkg:govuk-frontend/base" as *;
+@use 'pkg:govuk-frontend/base' as *;
 
 // Styles for MoJ Frontend's ticket panel, based on
 // @ministryofjustice/frontend/moj/components/ticket-panel. As with the sortable
@@ -11,11 +11,11 @@
 
 .moj-ticket-panel__content {
   padding: govuk-spacing(4);
-  background-color: govuk-colour("black", $variant: "tint-95");
+  background-color: govuk-colour('black', $variant: 'tint-95');
 }
 
 .moj-ticket-panel__content--blue {
-  border-left: 4px solid govuk-colour("blue");
+  border-left: 4px solid govuk-colour('blue');
 }
 
 // The client ID and secret have no spaces, so let them wrap rather than
