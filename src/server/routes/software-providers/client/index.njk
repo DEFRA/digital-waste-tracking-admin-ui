@@ -21,36 +21,42 @@
 
 {% block pageContent %}
   {% if removedSecret %}
-    <div class="govuk-grid-column-two-thirds">
-      {{ appAlert({
-        variant: "success",
-        title: "Secret removed",
-        text: "The oldest secret for " + removedSecret.clientName + " has been removed.",
-        classes: "govuk-!-margin-bottom-7",
-        testId: "removed-secret-alert"
-      }) }}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "success",
+          title: "Secret removed",
+          text: "The oldest secret for " + removedSecret.clientName + " has been removed.",
+          classes: "govuk-!-margin-bottom-7",
+          testId: "removed-secret-alert"
+        }) }}
+      </div>
     </div>
   {% endif %}
   {% if uncertainChange %}
-    <div class="govuk-grid-column-two-thirds">
-      {{ appAlert({
-        variant: "warning",
-        title: "Check the client secrets",
-        text: uncertainChange,
-        classes: "govuk-!-margin-bottom-7",
-        testId: "uncertain-change-alert"
-      }) }}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "warning",
+          title: "Check the client secrets",
+          text: uncertainChange,
+          classes: "govuk-!-margin-bottom-7",
+          testId: "uncertain-change-alert"
+        }) }}
+      </div>
     </div>
   {% endif %}
   {% if conflictedChange %}
-    <div class="govuk-grid-column-two-thirds">
-      {{ appAlert({
-        variant: "error",
-        title: "The secret was not changed",
-        text: conflictedChange,
-        classes: "govuk-!-margin-bottom-7",
-        testId: "conflicted-change-alert"
-      }) }}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "error",
+          title: "The secret was not changed",
+          text: conflictedChange,
+          classes: "govuk-!-margin-bottom-7",
+          testId: "conflicted-change-alert"
+        }) }}
+      </div>
     </div>
   {% endif %}
   {% set rows = [] %}
@@ -118,7 +124,7 @@
         <form method="post" action="{{ addSecretPath }}">
           {{ govukButton({
             text: "Add another secret",
-            classes: "govuk-button--secondary govuk-!-margin-top-6",
+            classes: "govuk-button--secondary",
             attributes: { "data-testid": "add-another-secret" }
           }) }}
         </form>

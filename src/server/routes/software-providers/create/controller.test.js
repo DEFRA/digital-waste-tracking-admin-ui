@@ -401,9 +401,7 @@ describe('Create new credentials', () => {
         url
       )
       const document = documentOf(result)
-      const panel = document.querySelector(
-        '[data-testid="client-credentials-panel"]'
-      )
+      const credentials = document.querySelector('[data-copy-source]')
 
       expect(statusCode).toEqual(200)
       expect(headers['cache-control']).toEqual('no-store')
@@ -411,25 +409,21 @@ describe('Create new credentials', () => {
         'Copy the client credentials - DWT admin portal'
       )
       expect(getElementText(document, 'app-heading-caption')).toEqual(
-        'Manage client credentials'
+        'Waste_Technologies_Software'
       )
       expect(getElementText(document, 'app-heading-title')).toEqual(
         'Copy the client credentials'
       )
-      const warning = document.querySelector('[data-testid="copy-warning"]')
-      expect(
-        warning
-          .querySelector('.govuk-warning-text__icon')
-          .getAttribute('aria-hidden')
-      ).toEqual('true')
-      expect(
-        warning
-          .querySelector('.govuk-warning-text__text')
-          .textContent.replace(/\s+/g, ' ')
-          .trim()
-      ).toEqual(
-        'Warning Copy the client secret before leaving this page. Once you leave this page, you cannot view the client secret again.'
+      expect(getElementText(document, 'alert-heading')).toEqual(
+        'You must copy the credentials'
       )
+      expect(getElementText(document, 'alert-text')).toEqual(
+        'You cannot view the client secret after closing this page.'
+      )
+      // Its own id, not the client page's "Secret removed" alert
+      expect(
+        document.querySelector('[data-testid="copy-warning-alert"]')
+      ).not.toBeNull()
       // So the browser's back/forward cache can't show the secret again
       const showOnce = document.querySelector('[data-module="app-show-once"]')
       expect(showOnce.getAttribute('data-leave-to')).toEqual(
@@ -440,29 +434,22 @@ describe('Create new credentials', () => {
           value.getAttribute('data-testid')
         )
       ).toEqual(['client-id', 'client-secret'])
-      expect(panel.tagName).toEqual('ARTICLE')
-      expect(panel.getAttribute('aria-label')).toEqual(
-        'Client credentials generated on 15 October 2026 at 4:49pm'
-      )
       expect(
-        [...panel.querySelectorAll('dt')].map((label) => [
+        [...credentials.querySelectorAll('dt')].map((label) => [
           label.textContent.trim(),
           label.nextElementSibling.textContent.trim()
         ])
       ).toEqual([
-        ['Generated on', '15 October 2026 at 4:49pm'],
-        ['Local environment', 'http://localhost:3001'],
         ['Client ID', 'new-client-id'],
-        ['Client secret', 'new-client-secret']
+        ['Client secret', 'new-client-secret'],
+        ['Local environment', 'http://localhost:3001'],
+        ['Generated on', '15 October 2026 at 4:49pm']
       ])
-      expect(document.querySelector('.app-copy').hasAttribute('hidden')).toBe(
-        true
-      )
-      expect(
-        document
-          .querySelector('[data-testid="copy-button"]')
-          .getAttribute('aria-label')
-      ).toEqual('Copy client credentials')
+      const copyArea = document.querySelector('[data-module="app-copy"]')
+      expect(copyArea.hasAttribute('hidden')).toBe(true)
+      const copy = document.querySelector('[data-testid="copy-button"]')
+      expect(copy.textContent.trim()).toEqual('Copy credentials')
+      expect(copy.getAttribute('aria-label')).toEqual('Copy client credentials')
       expect(
         document
           .querySelector('[data-testid="copy-status"]')
@@ -472,6 +459,9 @@ describe('Create new credentials', () => {
       const close = document.querySelector('[data-testid="close-button"]')
       expect(close.textContent.trim()).toEqual('Close')
       expect(close.getAttribute('href')).toEqual('/software-providers')
+      // Close stays available without JavaScript, so it's outside the hidden copy area
+      expect(copyArea.contains(close)).toBe(false)
+      expect(close.closest('[hidden]')).toBeNull()
       expect(document.querySelector('.govuk-back-link')).toBeNull()
 
       const again = await getCredentialsPage(cookie, url)

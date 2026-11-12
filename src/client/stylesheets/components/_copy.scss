@@ -14,3 +14,16 @@
 .app-copy__status {
   margin-bottom: 0;
 }
+
+// Keeps Close beside the Copy button, as it was when both shared the copy
+// area, but outside it so it stays available without JavaScript
+.app-copy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: govuk-spacing(3);
+
+  .govuk-button {
+    margin-bottom: 0;
+  }
+}

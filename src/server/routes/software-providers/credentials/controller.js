@@ -32,6 +32,7 @@ export function newClientCredentialsController(store) {
         apiUrl: config.get('clientCredentials.apiUrl'),
         clientId: credentials.clientId,
         clientSecret: credentials.clientSecret,
+        clientName: credentials.clientName,
         softwareProvidersPath: paths.softwareProviders,
         // Set when replacing a secret whose old one may still work
         removeOldSecretPath: credentials.isPartialReplace

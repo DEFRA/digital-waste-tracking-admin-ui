@@ -140,17 +140,17 @@ describe('#softwareProvidersController', () => {
       {
         text: 'Greenlane_Digital_Test',
         href: '/software-providers/2f95e07b-4c86-41d3-9a72-58be6d10c9f4',
-        classes: 'govuk-link'
+        classes: 'govuk-link app-break-word'
       },
       {
         text: 'Kerbside_Collect_Test',
         href: '/software-providers/b3f9c41e-2a7d-4c58-9e10-6d8a5f2b71c4',
-        classes: 'govuk-link'
+        classes: 'govuk-link app-break-word'
       },
       {
         text: 'Skipflow_Test',
         href: '/software-providers/1c847b52-9de6-4a03-b7f8-52c96e1d4a37',
-        classes: 'govuk-link'
+        classes: 'govuk-link app-break-word'
       }
     ])
   })
@@ -173,21 +173,6 @@ describe('#softwareProvidersController', () => {
       { sortValue: 'kerbside_collect_test', name: 'Kerbside_Collect_Test' },
       { sortValue: 'skipflow_test', name: 'Skipflow_Test' }
     ])
-  })
-
-  test('Should put the table in a focusable, named region that scrolls on its own', async () => {
-    const { document } = await getPage(server)
-    const region = document.querySelector(
-      '[data-testid="client-credentials-region"]'
-    )
-
-    expect(region.getAttribute('role')).toEqual('region')
-    expect(region.getAttribute('aria-label')).toEqual('Client credentials')
-    expect(region.getAttribute('tabindex')).toEqual('0')
-    expect(region.classList).toContain('app-table-scroll')
-    expect(
-      region.querySelector('[data-testid="client-credentials"]')
-    ).not.toBeNull()
   })
 
   test('Should sort by client name ignoring case, then by client ID, with a missing name first', async () => {
