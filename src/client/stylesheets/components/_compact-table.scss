@@ -1,13 +1,26 @@
-@use "pkg:govuk-frontend/base" as *;
+@use 'pkg:govuk-frontend/base' as *;
 
-// A data table in smaller text, so more fits on screen and its column headings
-// stay on one line
-.app-table--compact {
+// Data tables in smaller text, so more fits on screen. A compact table's column
+// headings also stay on one line, while a small-text table's can wrap, so it
+// fits a narrow screen
+.app-table--compact,
+.app-table--small-text {
   .govuk-table__header,
   .govuk-table__cell {
     @include govuk-font-size($size: 16);
   }
+}
 
+// A little less space between a small-text table's columns than GOV.UK's 20px,
+// so it fits at 320px with some to spare
+.app-table--small-text {
+  .govuk-table__header:not(:last-child),
+  .govuk-table__cell:not(:last-child) {
+    padding-right: govuk-spacing(3);
+  }
+}
+
+.app-table--compact {
   // The column headings, not the row headers
   thead .govuk-table__header {
     white-space: nowrap;
@@ -22,6 +35,14 @@
 
 .app-table__header--narrow {
   width: 20%;
+}
+
+// Half the table, from tablet up. GOV.UK's govuk-!-width-one-half makes a column
+// the full width on mobile, which squeezes the others
+.app-table__header--half {
+  @include govuk-media-query($from: tablet) {
+    width: 50%;
+  }
 }
 
 // An organisation's ID, on its own line under its name
