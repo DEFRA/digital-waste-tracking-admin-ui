@@ -2,9 +2,9 @@
 
 A spike to find out whether the admin UI's Entra ID sign-in can run locally, and to inform the real
 implementation. It isn't meant to be merged as it is. It walks through how the admin UI could sign
-users in with Entra ID, proving itself to Entra with a
-short-lived token from AWS STS instead of a client secret. This is CDP's preferred approach (see
-[Federated Credentials](https://github.com/DEFRA/cdp-documentation/blob/main/how-to/federated-credentials/overview.md)).
+users in with Entra ID, proving itself to Entra with a short-lived token from AWS STS instead of a
+client secret. This is CDP's preferred approach (see [Federated
+Credentials](https://github.com/DEFRA/cdp-documentation/blob/main/how-to/federated-credentials/overview.md)).
 
 `sign-in.mjs` runs steps 1 to 7 of the sign-in diagram against local emulators, and each step's
 comment names the SDK call that does it:
