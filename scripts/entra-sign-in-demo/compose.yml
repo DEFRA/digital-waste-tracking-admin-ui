@@ -1,0 +1,18 @@
+# Local stand-ins for AWS and Entra ID, for sign-in.mjs
+services:
+  floci:
+    # 2.4.0 or later: earlier versions don't support STS GetWebIdentityToken
+    image: floci/floci:2.4.0-compat
+    ports:
+      - '4599:4566'
+    environment:
+      FLOCI_DEFAULT_REGION: eu-west-2
+
+  floci-az:
+    image: floci/floci-az:latest
+    ports:
+      - '4577:4577'
+    environment:
+      # MSAL only talks to an HTTPS authority. floci-az serves its self-signed
+      # certificate at /_floci/tls-cert, for Node to trust
+      FLOCI_AZ_TLS_ENABLED: 'true'

@@ -1,0 +1,14 @@
+{
+  "name": "entra-sign-in-demo",
+  "private": true,
+  "type": "module",
+  "description": "Entra ID sign-in with an AWS STS web identity token as the client assertion, against local emulators",
+  "scripts": {
+    "start": "curl -sf http://localhost:4577/_floci/tls-cert -o floci-az-cert.pem && NODE_EXTRA_CA_CERTS=floci-az-cert.pem node sign-in.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-iam": "3.1167.0",
+    "@aws-sdk/client-sts": "3.1167.0",
+    "@azure/msal-node": "7.2.1"
+  }
+}
