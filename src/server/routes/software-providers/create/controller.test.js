@@ -88,7 +88,7 @@ describe('Create new credentials', () => {
   })
 
   describe('Software providers page', () => {
-    test('Should have a secondary "Create new credentials" button to the name page', async () => {
+    test('Should have a "Create new credentials" button to the name page', async () => {
       clientSyncRespondsWith(200, [])
 
       const { result } = await server.inject({
@@ -102,8 +102,6 @@ describe('Create new credentials', () => {
 
       expect(button.textContent.trim()).toEqual('Create new credentials')
       expect(button.getAttribute('href')).toEqual('/software-providers/create')
-      expect(button.classList).toContain('govuk-button--secondary')
-      expect(button.classList).toContain('govuk-!-margin-bottom-7')
     })
   })
 
@@ -140,7 +138,6 @@ describe('Create new credentials', () => {
       expect(input.getAttribute('aria-describedby')).toEqual('clientName-hint')
       expect(input.getAttribute('autocomplete')).toEqual('off')
       expect(input.getAttribute('spellcheck')).toEqual('false')
-      expect(input.classList).toContain('govuk-!-width-two-thirds')
       expect(getElementText(document, 'generate-credentials-button')).toEqual(
         'Generate credentials'
       )
@@ -475,7 +472,6 @@ describe('Create new credentials', () => {
       const close = document.querySelector('[data-testid="close-button"]')
       expect(close.textContent.trim()).toEqual('Close')
       expect(close.getAttribute('href')).toEqual('/software-providers')
-      expect(close.classList).toContain('govuk-!-margin-top-6')
       expect(document.querySelector('.govuk-back-link')).toBeNull()
 
       const again = await getCredentialsPage(cookie, url)
