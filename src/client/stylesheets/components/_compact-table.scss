@@ -11,6 +11,15 @@
   }
 }
 
+// A little less space between a small-text table's columns than GOV.UK's 20px,
+// so it fits at 320px with some to spare
+.app-table--small-text {
+  .govuk-table__header:not(:last-child),
+  .govuk-table__cell:not(:last-child) {
+    padding-right: govuk-spacing(3);
+  }
+}
+
 .app-table--compact {
   // The column headings, not the row headers
   thead .govuk-table__header {
