@@ -1,6 +1,8 @@
-# Entra ID sign-in with an AWS STS client assertion
+# Spike: Entra ID sign-in with an AWS STS client assertion, locally in Docker
 
-A walkthrough of how the admin UI could sign users in with Entra ID, proving itself to Entra with a
+A spike to find out whether the admin UI's Entra ID sign-in can run locally, and to inform the real
+implementation. It isn't meant to be merged as it is. It walks through how the admin UI could sign
+users in with Entra ID, proving itself to Entra with a
 short-lived token from AWS STS instead of a client secret. This is CDP's preferred approach (see
 [Federated Credentials](https://github.com/DEFRA/cdp-documentation/blob/main/how-to/federated-credentials/overview.md)).
 

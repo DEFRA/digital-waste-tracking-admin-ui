@@ -1,8 +1,8 @@
 {
-  "name": "entra-sign-in-demo",
+  "name": "entra-sign-in-spike",
   "private": true,
   "type": "module",
-  "description": "Entra ID sign-in with an AWS STS web identity token as the client assertion, against local emulators",
+  "description": "Spike: Entra ID sign-in with an AWS STS client assertion, against local emulators",
   "scripts": {
     "start": "curl -sf http://localhost:4577/_floci/tls-cert -o floci-az-cert.pem && NODE_EXTRA_CA_CERTS=floci-az-cert.pem node sign-in.mjs"
   },
