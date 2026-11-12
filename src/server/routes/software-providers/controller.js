@@ -36,10 +36,7 @@ export const softwareProvidersController = {
       .map(({ clientName, clientId }) => ({
         clientName: clientName ?? '',
         clientId: clientId ?? '',
-        softwareProviderPath: clientPath(
-          paths.clientCredentialsSoftwareProviderDetail,
-          clientId
-        ),
+        softwareProviderPath: clientPath(paths.softwareProvider, clientId),
         environment
       }))
       .sort(byClientName)

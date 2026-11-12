@@ -34,7 +34,7 @@ export function getPageName(request) {
   }
 
   if (/^\/software-providers\/[^/]+$/.test(request.path)) {
-    return pageNames.clientCredentialsSoftwareProviderDetail
+    return pageNames.softwareProvider
   }
 
   if (request.path !== wasteOrganisationsPath) {

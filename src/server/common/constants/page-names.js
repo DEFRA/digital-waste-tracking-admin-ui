@@ -4,7 +4,7 @@ export const pageNames = {
   createClientCredentials: 'Software providers: Create credentials',
   newClientCredentials: 'Software providers: New credentials',
   deleteSoftwareProvider: 'Software providers: Delete software provider',
-  clientCredentialsSoftwareProviderDetail: 'Manage client credentials',
+  softwareProvider: 'Manage client credentials',
   wasteOrganisations: 'Reporting: Waste Organisations',
   wasteOrganisationsResults: 'Reporting: Waste Organisations: Results',
   wasteOrganisationsDownloadCsv: 'Reporting: Waste Organisations: Download CSV'

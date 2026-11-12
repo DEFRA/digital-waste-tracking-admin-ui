@@ -36,7 +36,7 @@ function tableRows(document) {
   )
 }
 
-describe('#clientCredentialsSoftwareProviderDetailController', () => {
+describe('#softwareProviderController', () => {
   let server
   let fetchMock
 

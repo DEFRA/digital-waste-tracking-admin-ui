@@ -1,6 +1,5 @@
 import Joi from 'joi'
 
-import { getClientCredentialsById } from '#/server/common/helpers/get-client-credentials.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
@@ -30,10 +29,11 @@ const options = {
  * @param {import('@hapi/hapi').Request} request
  * @param {import('@hapi/hapi').ResponseToolkit} h
  *
- * @returns {Promise<{ redirect: Object } | { client: Object, credentials: Object }>}
- * A redirect when there's nothing to remove, otherwise the client and its credentials
+ * @returns {Promise<{ redirect: Object } | { client: Object }>}
+ * A redirect when there's nothing to remove, otherwise the client and its secrets
  */
 async function clientToRemove(request, h) {
+  // The client comes with its secrets, so one request is enough
   const client = await getClient(request.params.clientId)
 
   // Deleted since it was last seen, as by someone else
@@ -41,10 +41,8 @@ async function clientToRemove(request, h) {
     return { redirect: h.redirect(paths.softwareProviders) }
   }
 
-  const credentials = await getClientCredentialsById(request.params.clientId)
-
   // The older secret has gone, as it may have after another admin removed it
-  if ((credentials?.secrets?.length ?? 0) < 2) {
+  if ((client.secrets?.length ?? 0) < 2) {
     return {
       redirect: h.redirect(
         clientPath(paths.softwareProvider, request.params.clientId)
@@ -52,7 +50,7 @@ async function clientToRemove(request, h) {
     }
   }
 
-  return { client, credentials }
+  return { client }
 }
 
 export const removeClientCredentialsController = {
@@ -64,10 +62,10 @@ export const removeClientCredentialsController = {
       return result.redirect
     }
 
-    const { client, credentials } = result
+    const { client } = result
 
     // The oldest secret, which is the one removed, as the client page lists them
-    const [oldestSecret] = [...credentials.secrets].sort((a, b) =>
+    const [oldestSecret] = [...client.secrets].sort((a, b) =>
       String(a.createdAt).localeCompare(String(b.createdAt))
     )
 
@@ -75,12 +73,12 @@ export const removeClientCredentialsController = {
       pageTitle: 'Remove the client secret',
       heading: 'Software provider',
       serviceName: 'DWT admin portal',
-      clientName: credentials.clientName,
+      clientName: client.clientName,
       secretGeneratedOn: oldestSecret.createdAt,
       softwareProviderPath: clientPath(paths.softwareProvider, client.clientId),
       securityTeamEmail: securityTeamEmail({
         clientId: client.clientId,
-        clientName: credentials.clientName
+        clientName: client.clientName
       })
     })
   }
@@ -95,7 +93,7 @@ export const removeClientCredentialsSubmitController = {
       return result.redirect
     }
 
-    const { client, credentials } = result
+    const { client } = result
     const { clientId } = request.params
     const target = { clientId, clientName: client.clientName }
 
@@ -154,7 +152,7 @@ export const removeClientCredentialsSubmitController = {
 
     request.yar.flash(flashKeys.removedClientSecret, {
       clientId,
-      clientName: credentials.clientName
+      clientName: client.clientName
     })
 
     return h.redirect(clientPath(paths.softwareProvider, clientId))

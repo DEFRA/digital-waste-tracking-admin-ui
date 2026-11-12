@@ -1,4 +1,4 @@
-import { clientCredentialsSoftwareProviderDetailController } from './controller.js'
+import { softwareProviderController } from './controller.js'
 import { paths } from '#/server/common/constants/paths.js'
 
 /**
@@ -7,12 +7,12 @@ import { paths } from '#/server/common/constants/paths.js'
  */
 export const clientCredentials = {
   plugin: {
-    name: 'client-credentials',
+    name: 'client',
     register(server) {
       server.route({
         method: 'GET',
-        path: paths.clientCredentialsSoftwareProviderDetail,
-        ...clientCredentialsSoftwareProviderDetailController
+        path: paths.softwareProvider,
+        ...softwareProviderController
       })
     }
   }

@@ -7,7 +7,7 @@ import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-export const clientCredentialsSoftwareProviderDetailController = {
+export const softwareProviderController = {
   options: {
     validate: {
       params: Joi.object({

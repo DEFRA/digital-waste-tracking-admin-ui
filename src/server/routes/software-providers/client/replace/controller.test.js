@@ -328,9 +328,15 @@ describe('#replaceClientCredentialsController', () => {
       const { statusCode, headers } = await replaceSecret()
 
       expect(statusCode).toEqual(statusCodes.found)
+      expect(statusCode).toEqual(statusCodes.found)
       expect(headers.location).toEqual(paths.softwareProviders)
       // Nothing was rotated, so there are no new credentials to show
       expect(headers['set-cookie'] ?? '').not.toContain(rotated.clientSecret)
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'replaced software provider',
+        outcome: 'failure',
+        client: { clientId, clientName: 'Skipflow_Test' }
+      })
     })
 
     test('Should show the error page when Client Sync refuses', async () => {
@@ -341,6 +347,12 @@ describe('#replaceClientCredentialsController', () => {
       const { statusCode } = await replaceSecret()
 
       expect(statusCode).toEqual(statusCodes.internalServerError)
+      // The refusal is known, so it's recorded as a failure, not unknown
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'replaced software provider',
+        outcome: 'failure',
+        client: { clientId, clientName: 'Skipflow_Test' }
+      })
     })
 
     test('Should send the user back to check, when the outcome is unknown', async () => {
@@ -352,6 +364,12 @@ describe('#replaceClientCredentialsController', () => {
 
       expect(statusCode).toEqual(statusCodes.found)
       expect(headers.location).toEqual(`/software-providers/${clientId}`)
+      // It may have been replaced, so it's recorded as unknown, not a failure
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'replaced software provider',
+        outcome: 'unknown',
+        client: { clientId, clientName: 'Skipflow_Test' }
+      })
     })
   })
 })
