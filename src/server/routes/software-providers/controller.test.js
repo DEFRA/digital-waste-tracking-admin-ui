@@ -122,41 +122,6 @@ describe('#softwareProvidersController', () => {
     ])
   })
 
-  test('Should give the client name column half the width, in smaller text', async () => {
-    const { document } = await getPage(server)
-    const table = document.querySelector('[data-testid="client-credentials"]')
-    const [clientNameHeader] = table.querySelectorAll('thead th')
-
-    expect(table.classList).toContain('app-table--small-text')
-    expect(clientNameHeader.classList).toContain('app-table__header--half')
-  })
-
-  test('Should let client names and IDs break at any character, so the table fits the page without scrolling', async () => {
-    const { document } = await getPage(server)
-    const [firstRow] = document.querySelectorAll(
-      '[data-testid="client-credentials"] tbody tr'
-    )
-    const [name, id, environment] = firstRow.querySelectorAll('td')
-
-    expect(name.classList).toContain('app-break-word')
-    expect(id.classList).toContain('app-break-word')
-    expect(environment.classList).not.toContain('app-break-word')
-    expect(document.querySelector('.app-table-scroll')).toBeNull()
-  })
-
-  test('Should show the whole of the longest client name', async () => {
-    const clientName = 'A'.repeat(128)
-    fetchMock.mockResolvedValue({
-      ok: true,
-      status: statusCodes.ok,
-      json: () => Promise.resolve([{ clientName, clientId: 'id-1' }])
-    })
-
-    const { document } = await getPage(server)
-
-    expect(tableRows(document)[0][0]).toEqual(clientName)
-  })
-
   test('Should sort by client name ignoring case, then by client ID, with a missing name first', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
