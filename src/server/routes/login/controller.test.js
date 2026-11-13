@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   entraCallbackController,
   loginViewController,
-  loginSubmitController,
-  logoutController
+  loginSubmitController
 } from './controller.js'
 import { config } from '#/config/config.js'
 
@@ -81,6 +80,7 @@ describe('loginViewController', () => {
     const h = createToolkit()
     const request = {
       query: { redirectTo: '/movements/123' },
+      info: { referrer: 'http://localhost:3000/movements/123' },
       yar: { flash: vi.fn() },
       login: vi.fn()
     }
@@ -271,43 +271,5 @@ describe('entraCallbackController.handler', () => {
     expect(request.logger.error).toHaveBeenCalled()
     expect(h.responseResult.code).toHaveBeenCalledWith(401)
     expect(h.responseResult.takeover).toHaveBeenCalled()
-  })
-})
-
-describe('logoutController.handler', () => {
-  it('clears server session and cookies before redirecting', async () => {
-    const redirect = vi.fn()
-    const request = {
-      state: {
-        userSessionCookie: {
-          sessionId: 'session-123'
-        }
-      },
-      server: {
-        sessionCache: {
-          drop: vi.fn()
-        }
-      },
-      sessionCookie: {
-        clear: vi.fn(),
-        h: {
-          unstate: vi.fn()
-        }
-      },
-      yar: {
-        flash: vi.fn()
-      }
-    }
-    const h = {
-      unstate: vi.fn().mockReturnValue({ redirect })
-    }
-
-    await logoutController.handler(request, h)
-
-    expect(request.server.sessionCache.drop).toHaveBeenCalledWith('session-123')
-    expect(request.sessionCookie.clear).toHaveBeenCalled()
-    expect(request.sessionCookie.h.unstate).toHaveBeenCalledWith('userSessionCookie')
-    expect(h.unstate).toHaveBeenCalledWith('dwtAuth')
-    expect(redirect).toHaveBeenCalledWith('/login')
   })
 })

@@ -166,6 +166,12 @@ Run:
 docker run -p 3000:3000 digital-waste-tracking-admin-ui:development
 ```
 
+Entra Test:
+
+```bash
+docker compose -f compose.yml  up --build digital-waste-tracking-admin-ui floci-localhost-4577-forwarder
+```
+
 ### Production image
 
 Build:

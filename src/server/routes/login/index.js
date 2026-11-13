@@ -1,8 +1,7 @@
 import {
   entraCallbackController,
   loginSubmitController,
-  loginViewController,
-  logoutController
+  loginViewController
 } from './controller.js'
 import { config } from '#/config/config.js'
 
@@ -55,17 +54,6 @@ export const login = {
               auth: false
             },
             ...entraCallbackController
-          },
-          {
-            method: 'GET',
-            path: '/logout',
-            options: {
-              auth: {
-                mode: 'try',
-                strategy: 'entra-session'
-              }
-            },
-            ...logoutController
           }
         )
       }

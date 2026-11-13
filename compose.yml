@@ -52,7 +52,7 @@ services:
       - cdp-tenant
 
   # Forwards localhost:4577 inside the admin UI container to floci-az
-  localhost-4577:
+  floci-localhost-4577-forwarder:
     image: alpine/socat
     network_mode: 'service:digital-waste-tracking-admin-ui'
     command: TCP-LISTEN:4577,fork,reuseaddr TCP:floci-az:4577

@@ -5,22 +5,11 @@ import { randomUUID } from 'node:crypto'
 import { saveUserSession } from '#/server/common/helpers/save-user-session.js'
 
 const REFERRER_SESSION_KEY = 'authReferrer'
+const DEFAULT_REDIRECT_PATH = '/'
 const callbackPath = config.get('auth.oidc.loginCallbackUri')
 const OIDC_ERROR_MESSAGE =
   'We could not sign you in with Microsoft Entra ID. Please contact support.'
-
-function getOidcErrorMessage(error) {
-  if (config.get('isProduction')) {
-    return OIDC_ERROR_MESSAGE
-  }
-
-  const detailed =
-    error?.data?.error_description ??
-    error?.data?.error ??
-    error?.message
-
-  return detailed ? `${OIDC_ERROR_MESSAGE}\n\n${detailed}` : OIDC_ERROR_MESSAGE
-}
+const USERNAME_PASSWORD_ERROR_MESSAGE = 'Enter a correct username and password'
 
 function getRefererAsRelativeURL(referer, defaultPath = '/') {
   let relative = defaultPath
@@ -43,6 +32,15 @@ function getRefererAsRelativeURL(referer, defaultPath = '/') {
   return relative
 }
 
+function isEntraAuthMode() {
+  return config.get('auth.mode') === 'entra'
+}
+
+function startEntraLogin(request, h, redirectTo) {
+  request.yar.flash(REFERRER_SESSION_KEY, redirectTo)
+  return request.login(h)
+}
+
 const LOGIN_VIEW_CONTEXT = {
   pageTitle: 'User login',
   heading: 'User login',
@@ -51,29 +49,30 @@ const LOGIN_VIEW_CONTEXT = {
 }
 
 export const loginViewController = {
-  async handler(request, h) {if (config.get('auth.mode') === 'entra') {
+  async handler(request, h) {
+    if (isEntraAuthMode()) {
       const redirectTo =
         request.payload?.redirectTo ??
-        getRefererAsRelativeURL(request.info.referrer, '/')
+        getRefererAsRelativeURL(
+          request.info?.referrer,
+          DEFAULT_REDIRECT_PATH
+        )
 
-      request.yar.flash(REFERRER_SESSION_KEY, redirectTo)
-
-      return request.login(h)
+      return startEntraLogin(request, h, redirectTo)
     }
 
     return h.view('login/index', {
       ...LOGIN_VIEW_CONTEXT,
-      redirectTo: request.query.redirectTo ?? '/'
+      redirectTo: request.query.redirectTo ?? DEFAULT_REDIRECT_PATH
     })
   }
 }
 
 export const loginSubmitController = {
   async handler(request, h) {
-    if (config.get('auth.mode') === 'entra') {
-      const redirectTo = request.payload?.redirectTo || '/'
-      request.yar.flash(REFERRER_SESSION_KEY, redirectTo)
-      return request.login(h)
+    if (isEntraAuthMode()) {
+      const redirectTo = request.payload?.redirectTo || DEFAULT_REDIRECT_PATH
+      return startEntraLogin(request, h, redirectTo)
     }
 
     const { username, password, redirectTo } = request.payload
@@ -85,18 +84,15 @@ export const loginSubmitController = {
       request.headers.authorization = `Basic ${encoded}`
 
       try {
-        // test the authentication with the credentials to verify they are valid, using the hapi
-        // configured auth strategy
         await request.server.auth.test('basic', request)
 
-        // On success set cookie for the user and redirect to the page they were trying to access before being redirected to login
         return h
           .response()
           .state('dwtAuth', { authorization: `Basic ${encoded}` })
-          .redirect(redirectTo || '/')
-      } catch (err) {
+          .redirect(redirectTo || DEFAULT_REDIRECT_PATH)
+      } catch {
         errors = {
-          login: 'Enter a correct username and password'
+          login: USERNAME_PASSWORD_ERROR_MESSAGE
         }
       }
     }
@@ -104,7 +100,7 @@ export const loginSubmitController = {
     return h
       .view('login/index', {
         ...LOGIN_VIEW_CONTEXT,
-        redirectTo: redirectTo || '/',
+        redirectTo: redirectTo || DEFAULT_REDIRECT_PATH,
         errors
       })
       .code(401)
@@ -125,7 +121,8 @@ export const entraCallbackController = {
 
       request.sessionCookie.set({ sessionId })
 
-      const redirectTo = request.yar.flash(REFERRER_SESSION_KEY)?.at(0) ?? '/'
+      const redirectTo =
+        request.yar.flash(REFERRER_SESSION_KEY)?.at(0) ?? DEFAULT_REDIRECT_PATH
       const safeRedirect = redirectTo.replace(/'/g, '%27')
 
       return h
@@ -145,25 +142,18 @@ export const entraCallbackController = {
         },
         'OIDC callback failed'
       )
-      return h.response(getOidcErrorMessage(error)).code(401).takeover()
+      if (config.get('isProduction')) {
+        return OIDC_ERROR_MESSAGE
+      }
+
+      const detailed =
+        error?.data?.error_description ?? error?.data?.error ?? error?.message
+
+      const errMsg =  detailed
+        ? `${OIDC_ERROR_MESSAGE}\n\n${detailed}`
+        : OIDC_ERROR_MESSAGE
+
+      return h.response(errMsg).code(401).takeover()
     }
   }
 }
-
-export const logoutController = {
-  async handler(request, h) {
-    const sessionId = request.state?.userSessionCookie?.sessionId
-
-    if (sessionId) {
-      await request.server.sessionCache.drop(sessionId)
-    }
-
-    if (request.sessionCookie?.h) {
-      request.sessionCookie.clear()
-      request.sessionCookie.h.unstate('userSessionCookie')
-    }
-
-    return h.unstate('dwtAuth').redirect('/login')
-  }
-}
-
