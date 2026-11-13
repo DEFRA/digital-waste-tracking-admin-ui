@@ -8,7 +8,7 @@ import { reporting } from '../routes/reporting/index.js'
 import { wasteOrganisationsReporting } from '../routes/reporting/waste-organisations/index.js'
 import { login } from '#/server/routes/login/index.js'
 import { softwareProviders } from '#/server/routes/software-providers/index.js'
-import { clientCredentials } from '#/server/routes/software-providers/client/index.js'
+import { softwareProvider } from '#/server/routes/software-providers/client/index.js'
 import { replaceSecret } from '#/server/routes/software-providers/client/replace/index.js'
 import { removeSecret } from '#/server/routes/software-providers/client/remove/index.js'
 import { addSecret } from '#/server/routes/software-providers/client/add/index.js'
@@ -28,7 +28,7 @@ export const router = {
         reporting,
         wasteOrganisationsReporting,
         softwareProviders,
-        clientCredentials,
+        softwareProvider,
         replaceSecret,
         removeSecret,
         addSecret,

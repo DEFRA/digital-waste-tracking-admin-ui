@@ -6,11 +6,9 @@
   <div class="moj-interruption-card__content">
     <h1 class="moj-interruption-card__heading" data-testid="app-heading-title">{{ params.heading }}</h1>
     {# Text is escaped. For links and paragraphs, call the macro with a block,
-       which goes in the body itself, or as html, which goes in its own body #}
+       which goes in the body itself #}
     {% if caller %}
       <div class="moj-interruption-card__body" data-testid="interruption-card-text">{{ caller() }}</div>
-    {% elif params.html %}
-      <div class="moj-interruption-card__body" data-testid="interruption-card-text">{{ params.html | safe }}</div>
     {% else %}
       <p class="moj-interruption-card__body" data-testid="interruption-card-text">{{ params.text }}</p>
     {% endif %}

@@ -427,7 +427,7 @@ describe('Create new credentials', () => {
       // So the browser's back/forward cache can't show the secret again
       const showOnce = document.querySelector('[data-module="app-show-once"]')
       expect(showOnce.getAttribute('data-leave-to')).toEqual(
-        '/software-providers'
+        '/software-providers/new-client-id'
       )
       expect(
         [...showOnce.querySelectorAll('[data-show-once]')].map((value) =>
@@ -458,7 +458,9 @@ describe('Create new credentials', () => {
 
       const close = document.querySelector('[data-testid="close-button"]')
       expect(close.textContent.trim()).toEqual('Close')
-      expect(close.getAttribute('href')).toEqual('/software-providers')
+      expect(close.getAttribute('href')).toEqual(
+        '/software-providers/new-client-id'
+      )
       // Close stays available without JavaScript, so it's outside the hidden copy area
       expect(copyArea.contains(close)).toBe(false)
       expect(close.closest('[hidden]')).toBeNull()

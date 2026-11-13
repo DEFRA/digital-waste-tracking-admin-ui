@@ -33,13 +33,14 @@ export function newClientCredentialsController(store) {
         clientId: credentials.clientId,
         clientSecret: credentials.clientSecret,
         clientName: credentials.clientName,
-        softwareProvidersPath: paths.softwareProviders,
+        // Close goes to the client, where its new secret is listed
+        softwareProviderPath: clientPath(
+          paths.softwareProvider,
+          credentials.clientId
+        ),
         // Set when replacing a secret whose old one may still work
         removeOldSecretPath: credentials.isPartialReplace
           ? clientPath(paths.removeClientCredentials, credentials.clientId)
-          : null,
-        softwareProviderPath: credentials.isPartialReplace
-          ? clientPath(paths.softwareProvider, credentials.clientId)
           : null
       })
     }

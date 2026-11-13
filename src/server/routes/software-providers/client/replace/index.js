@@ -7,7 +7,7 @@ import { paths } from '#/server/common/constants/paths.js'
 import { createNewClientCredentialsStore } from '#/server/common/helpers/new-client-credentials-store.js'
 
 /**
- * Sets up the routes used in the /client-credentials pages.
+ * Sets up the routes used in the /software-providers/{clientId}/replace pages.
  * These routes are registered in src/server/router.js.
  */
 export const replaceSecret = {

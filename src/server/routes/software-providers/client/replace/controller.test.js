@@ -276,6 +276,11 @@ describe('#replaceClientCredentialsController', () => {
 
       expect(statusCode).toEqual(statusCodes.found)
       expect(headers.location).toEqual(`/software-providers/${clientId}`)
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+        action: 'replaced software provider',
+        outcome: 'failure',
+        client: { clientId, clientName: 'Skipflow_Test' }
+      })
 
       const { result } = await server.inject({
         method: 'GET',
@@ -306,9 +311,16 @@ describe('#replaceClientCredentialsController', () => {
       })
 
       expect(statusCode).toEqual(statusCodes.ok)
+      const document = new JSDOM(result).window.document
+      expect(getElementText(document, 'client-secret')).toEqual(
+        rotated.clientSecret
+      )
+      // Close goes back to the client, where the new secret is listed
       expect(
-        getElementText(new JSDOM(result).window.document, 'client-secret')
-      ).toEqual(rotated.clientSecret)
+        document
+          .querySelector('[data-testid="close-button"]')
+          .getAttribute('href')
+      ).toEqual(`/software-providers/${clientId}`)
 
       // Shown once: coming back goes to the Software providers page
       const again = await server.inject({
