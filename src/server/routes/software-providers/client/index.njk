@@ -1,0 +1,141 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "alert/macro.njk" import appAlert %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - DWT admin portal
+{% endblock %}
+
+{# Outside the main wrapper, as the prototype has it, but only on this page #}
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: softwareProvidersPath,
+    classes: "govuk-!-margin-bottom-4",
+    attributes: { "data-testid": "back-link" }
+  }) }}
+{% endblock %}
+
+{% block pageContent %}
+  {% if removedSecret %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "success",
+          title: "Secret removed",
+          text: "The oldest secret for " + removedSecret.clientName + " has been removed.",
+          classes: "govuk-!-margin-bottom-7",
+          testId: "removed-secret-alert"
+        }) }}
+      </div>
+    </div>
+  {% endif %}
+  {% if uncertainChange %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "warning",
+          title: "Check the client secrets",
+          text: uncertainChange,
+          classes: "govuk-!-margin-bottom-7",
+          testId: "uncertain-change-alert"
+        }) }}
+      </div>
+    </div>
+  {% endif %}
+  {% if conflictedChange %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "error",
+          title: "The secret was not changed",
+          text: conflictedChange,
+          classes: "govuk-!-margin-bottom-7",
+          testId: "conflicted-change-alert"
+        }) }}
+      </div>
+    </div>
+  {% endif %}
+  {% set rows = [] %}
+  {# Youngest first, as the newest secret is the one in use. The older secret,
+     which only a client with two secrets has, is the one that can be removed #}
+  {% for secret in secrets | sort(attribute="createdAt", reverse=true) %}
+    {% set generatedOn = secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") %}
+    {% set actions = { text: "" } %}
+    {# The link names its secret's date, as "Replace secret" alone doesn't say
+       which one it acts on when read out of context #}
+    {% if loop.first and replaceSecretPath %}
+      {% set actions = { html: '<a class="govuk-link" href="' + replaceSecretPath + '">Replace secret<span class="govuk-visually-hidden"> generated on ' + generatedOn + '</span></a>' | safe } %}
+    {% elif not loop.first and removeSecretPath %}
+      {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret<span class="govuk-visually-hidden"> generated on ' + generatedOn + '</span></a>' | safe } %}
+    {% endif %}
+    {% set rows = (rows.push([
+      { text: generatedOn },
+      { text: "[Hidden]" },
+      actions
+    ]), rows) %}
+  {% endfor %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">Software provider</span>
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-4" data-testid="app-heading-title">{{ clientName }}</h1>
+      <p class="govuk-body govuk-!-margin-bottom-8">
+        <strong class="govuk-tag">{{ environment | capitalize }}</strong>
+      </p>
+      <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-8">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Client ID
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ clientId }}
+          </dd>
+        </div>
+      </dl>
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-4">Client secrets for {{ environment }} environment</h2>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          {{ govukTable({
+            caption: "Client secrets for " + environment + " environment",
+            captionClasses: "govuk-visually-hidden",
+            head: [
+              {
+                text: "Generated on",
+                attributes: { scope: "col" }
+              },
+              {
+                text: "Client secret",
+                attributes: { scope: "col" }
+              },
+              {
+                text: "Actions",
+                attributes: { scope: "col" }
+              }
+            ],
+            rows: rows
+          }) }}
+        </div>
+      </div>
+      {% if addSecretPath %}
+        {# Adds the secret straight away, as another can be added without risk #}
+        <form method="post" action="{{ addSecretPath }}">
+          {{ govukButton({
+            text: "Add another secret",
+            classes: "govuk-button--secondary",
+            attributes: { "data-testid": "add-another-secret" }
+          }) }}
+        </form>
+      {% endif %}
+      {% if deleteSoftwareProviderPath %}
+        <p class="govuk-body govuk-!-margin-top-9">
+          <a class="govuk-link" href="{{ deleteSoftwareProviderPath }}" data-testid="delete-software-provider">
+            Delete software provider
+          </a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

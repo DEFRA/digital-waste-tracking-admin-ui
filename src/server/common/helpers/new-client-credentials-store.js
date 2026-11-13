@@ -12,6 +12,28 @@ const expiresInMs = 5 * 60 * 1000
  */
 const ownerOf = (request) => request.auth.credentials?.username
 
+// hapi refuses to provision a segment twice on one server, and both creating
+// and replacing credentials store what they make, so they share one. The
+// segment belongs to hapi's core, which every server of that core shares
+const segments = new WeakMap()
+
+function cacheFor(server) {
+  const key = server._core ?? server
+
+  if (!segments.has(key)) {
+    segments.set(
+      key,
+      server.cache({
+        cache: config.get('session.cache.name'),
+        segment: 'new-client-credentials',
+        expiresIn: expiresInMs
+      })
+    )
+  }
+
+  return segments.get(key)
+}
+
 /**
  * Holds new client credentials between creating them and showing them, so the
  * credentials page can be reached by a redirect and shown only once.
@@ -25,11 +47,7 @@ const ownerOf = (request) => request.auth.credentials?.username
  * @param {import('@hapi/hapi').Server} server - The server
  */
 export function createNewClientCredentialsStore(server) {
-  const cache = server.cache({
-    cache: config.get('session.cache.name'),
-    segment: 'new-client-credentials',
-    expiresIn: expiresInMs
-  })
+  const cache = cacheFor(server)
 
   return {
     /**

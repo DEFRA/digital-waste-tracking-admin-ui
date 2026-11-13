@@ -23,6 +23,8 @@
   @include govuk-responsive-margin(6, 'bottom');
 }
 
+// Text on the card is white, at one size, whether it's given as text or as a
+// block of paragraphs
 .moj-interruption-card__body {
   margin-top: 0;
   color: govuk-colour('white');
@@ -30,6 +32,17 @@
   overflow-wrap: anywhere;
   @include govuk-font($size: 24);
   @include govuk-responsive-margin(6, 'bottom');
+
+  p {
+    margin-top: 0;
+    color: inherit;
+    @include govuk-font($size: 24);
+    @include govuk-responsive-margin(6, 'bottom');
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .moj-interruption-card__actions:last-child {

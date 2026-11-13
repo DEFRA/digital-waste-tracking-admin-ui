@@ -45,7 +45,10 @@
     {% set rows = [] %}
     {% for credential in clientCredentials %}
       {% set rows = (rows.push([
-        { text: credential.clientName, classes: "app-break-word" },
+        {
+          html: '<a class="govuk-link app-break-word" href="' + credential.softwareProviderPath + '">' + (credential.clientName | escape) + '</a>',
+          attributes: { "data-sort-value": credential.clientName | lower }
+        },
         { text: credential.clientId, classes: "app-break-word" },
         { text: credential.environment }
       ]), rows) %}

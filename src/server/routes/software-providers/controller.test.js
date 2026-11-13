@@ -122,6 +122,59 @@ describe('#softwareProvidersController', () => {
     ])
   })
 
+  test('Should link each client name to its software provider page', async () => {
+    const { document } = await getPage(server)
+    const nameLinks = [
+      ...document.querySelectorAll(
+        '[data-testid="client-credentials"] tbody tr td:first-child a'
+      )
+    ]
+
+    expect(
+      nameLinks.map((link) => ({
+        text: link.textContent.trim(),
+        href: link.getAttribute('href'),
+        classes: link.getAttribute('class')
+      }))
+    ).toEqual([
+      {
+        text: 'Greenlane_Digital_Test',
+        href: '/software-providers/2f95e07b-4c86-41d3-9a72-58be6d10c9f4',
+        classes: 'govuk-link app-break-word'
+      },
+      {
+        text: 'Kerbside_Collect_Test',
+        href: '/software-providers/b3f9c41e-2a7d-4c58-9e10-6d8a5f2b71c4',
+        classes: 'govuk-link app-break-word'
+      },
+      {
+        text: 'Skipflow_Test',
+        href: '/software-providers/1c847b52-9de6-4a03-b7f8-52c96e1d4a37',
+        classes: 'govuk-link app-break-word'
+      }
+    ])
+  })
+
+  test('Should give each linked name a sort value, so it sorts by name', async () => {
+    const { document } = await getPage(server)
+    const nameCells = [
+      ...document.querySelectorAll(
+        '[data-testid="client-credentials"] tbody tr td:first-child'
+      )
+    ]
+
+    expect(
+      nameCells.map((cell) => ({
+        sortValue: cell.getAttribute('data-sort-value'),
+        name: cell.textContent.trim()
+      }))
+    ).toEqual([
+      { sortValue: 'greenlane_digital_test', name: 'Greenlane_Digital_Test' },
+      { sortValue: 'kerbside_collect_test', name: 'Kerbside_Collect_Test' },
+      { sortValue: 'skipflow_test', name: 'Skipflow_Test' }
+    ])
+  })
+
   test('Should sort by client name ignoring case, then by client ID, with a missing name first', async () => {
     fetchMock.mockResolvedValue({
       ok: true,

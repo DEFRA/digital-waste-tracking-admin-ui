@@ -1,0 +1,22 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "interruption-card/macro.njk" import appInterruptionCard %}
+{% from "report-exposed-credentials/macro.njk" import appReportExposedCredentials %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - DWT admin portal
+{% endblock %}
+
+{% block pageContent %}
+  {% call appInterruptionCard({
+    heading: "Are you sure you want to remove this secret?",
+    buttonText: "Yes, remove secret",
+    backLink: { text: "Go back to software provider", href: softwareProviderPath }
+  }) %}
+
+    <p>
+      The secret for {{ clientName }} generated on {{ secretGeneratedOn | formatDate("d LLLL yyyy 'at' h:mmaaa") }} will stop working immediately. Make sure the software provider is using the newer secret before you continue.
+    </p>
+    {{ appReportExposedCredentials(securityTeamEmail) }}
+  {% endcall %}
+{% endblock %}

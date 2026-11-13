@@ -33,6 +33,10 @@ export function getPageName(request) {
     return pageNames.deleteSoftwareProvider
   }
 
+  if (/^\/software-providers\/[^/]+$/.test(request.path)) {
+    return pageNames.softwareProvider
+  }
+
   if (request.path !== wasteOrganisationsPath) {
     return undefined
   }
