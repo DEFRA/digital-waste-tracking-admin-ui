@@ -174,9 +174,16 @@ describe('Add another secret', () => {
     })
 
     expect(statusCode).toEqual(statusCodes.ok)
+    const document = new JSDOM(result).window.document
+    expect(getElementText(document, 'client-secret')).toEqual(
+      rotated.clientSecret
+    )
+    // Close goes back to the client, where the new secret is listed
     expect(
-      getElementText(new JSDOM(result).window.document, 'client-secret')
-    ).toEqual(rotated.clientSecret)
+      document
+        .querySelector('[data-testid="close-button"]')
+        .getAttribute('href')
+    ).toEqual(`/software-providers/${clientId}`)
   })
 
   test('Should go to the list when the client is gone', async () => {

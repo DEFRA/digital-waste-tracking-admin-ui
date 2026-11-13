@@ -2,12 +2,12 @@ import { softwareProviderController } from './controller.js'
 import { paths } from '#/server/common/constants/paths.js'
 
 /**
- * Sets up the routes used in the /client-credentials pages.
+ * Sets up the routes used in the /software-providers/{clientId} pages.
  * These routes are registered in src/server/router.js.
  */
-export const clientCredentials = {
+export const softwareProvider = {
   plugin: {
-    name: 'client',
+    name: 'software-provider',
     register(server) {
       server.route({
         method: 'GET',
