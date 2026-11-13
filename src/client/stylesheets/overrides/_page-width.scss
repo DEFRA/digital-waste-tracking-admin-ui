@@ -1,4 +1,4 @@
-@use "pkg:govuk-frontend/base" as *;
+@use 'pkg:govuk-frontend/base' as *;
 
 // Every page is 1100px wide rather than GOV.UK's 960px, so the data tables fit,
 // as the DWP design system does for its wider internal services
