@@ -5,8 +5,7 @@
 <div class="moj-interruption-card" data-testid="interruption-card">
   <div class="moj-interruption-card__content">
     <h1 class="moj-interruption-card__heading" data-testid="app-heading-title">{{ params.heading }}</h1>
-    {# Text is escaped. For links and paragraphs, call the macro with a block,
-       which goes in the body itself #}
+    {# Text is escaped. For links and paragraphs, call the macro with a block #}
     {% if caller %}
       <div class="moj-interruption-card__body" data-testid="interruption-card-text">{{ caller() }}</div>
     {% else %}

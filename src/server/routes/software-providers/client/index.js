@@ -7,7 +7,7 @@ import { paths } from '#/server/common/constants/paths.js'
  */
 export const softwareProvider = {
   plugin: {
-    name: 'client',
+    name: 'software-provider',
     register(server) {
       server.route({
         method: 'GET',
