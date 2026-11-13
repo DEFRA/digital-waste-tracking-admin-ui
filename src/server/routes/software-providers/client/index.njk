@@ -64,6 +64,10 @@
      which only a client with two secrets has, is the one that can be removed #}
   {% for secret in secrets | sort(attribute="createdAt", reverse=true) %}
     {% set generatedOn = secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") %}
+    {% set generatedOnCell = { text: generatedOn } %}
+    {% if loop.first and hasNewSecret %}
+      {% set generatedOnCell = { html: (generatedOn + '\n<strong class="govuk-tag govuk-tag--green">New</strong>\n') | safe } %}
+    {% endif %}
     {% set actions = { text: "" } %}
     {# The link names its secret's date, as "Replace secret" alone doesn't say
        which one it acts on when read out of context #}
@@ -73,7 +77,7 @@
       {% set actions = { html: '<a class="govuk-link" href="' + removeSecretPath + '">Remove secret<span class="govuk-visually-hidden"> generated on ' + generatedOn + '</span></a>' | safe } %}
     {% endif %}
     {% set rows = (rows.push([
-      { text: generatedOn },
+      generatedOnCell,
       { text: "[Hidden]" },
       actions
     ]), rows) %}

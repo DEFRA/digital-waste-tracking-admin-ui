@@ -524,6 +524,59 @@ describe('Create new credentials', () => {
         'second-client-secret'
       )
     })
+
+    test('Should show a New tag next to the date when closing to the client page, and hide it on subsequent visits', async () => {
+      const newClientId = '1c847b529de64a03b7f852c96e1d4a37'
+      clientSyncRespondsWith(200, {
+        clientId: newClientId,
+        clientName: 'Waste_Technologies_Software',
+        clientSecret: 'new-client-secret'
+      })
+
+      const { response, cookie: createCookie } = await createCredentials()
+      const credentialsResponse = await getCredentialsPage(
+        createCookie,
+        response.headers.location
+      )
+      const closeHref = documentOf(credentialsResponse.result)
+        .querySelector('[data-testid="close-button"]')
+        .getAttribute('href')
+      const credentialsCookie =
+        cookiesFrom(credentialsResponse.headers) || createCookie
+
+      clientSyncRespondsWith(200, {
+        clientId: newClientId,
+        clientName: 'Waste_Technologies_Software',
+        tenantServiceName: 'waste-movement-external-api',
+        secrets: [{ createdAt: '2026-11-13T15:05:00.000Z' }]
+      })
+
+      const firstVisit = await server.inject({
+        method: 'GET',
+        url: closeHref,
+        headers: { ...auth, cookie: credentialsCookie }
+      })
+      const firstDocument = documentOf(firstVisit.result)
+      const firstDateCell = firstDocument.querySelector('tbody tr td')
+
+      expect(firstDateCell.outerHTML).toEqual(
+        '<td class="govuk-table__cell">13 November 2026 at 3:05pm\n<strong class="govuk-tag govuk-tag--green">New</strong>\n</td>'
+      )
+
+      const secondVisitCookie =
+        cookiesFrom(firstVisit.headers) || credentialsCookie
+      const secondVisit = await server.inject({
+        method: 'GET',
+        url: closeHref,
+        headers: { ...auth, cookie: secondVisitCookie }
+      })
+      const secondDocument = documentOf(secondVisit.result)
+      const secondDateCell = secondDocument.querySelector('tbody tr td')
+
+      expect(secondDateCell.outerHTML).toEqual(
+        '<td class="govuk-table__cell">13 November 2026 at 3:05pm</td>'
+      )
+    })
   })
 
   describe('When creating is switched off, as in production', () => {

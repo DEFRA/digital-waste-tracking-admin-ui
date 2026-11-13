@@ -82,6 +82,7 @@ describe('#softwareProviderController', () => {
       '1 March 2024 at 10:00am',
       '1 January 2020 at 10:00am'
     ])
+    expect(document.querySelector('tbody .govuk-tag')).toBeNull()
   })
 
   test('Should name the table with a visually hidden caption', async () => {
