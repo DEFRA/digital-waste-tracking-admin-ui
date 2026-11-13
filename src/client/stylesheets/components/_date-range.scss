@@ -1,0 +1,8 @@
+@use "pkg:govuk-frontend/base" as *;
+
+// Two date inputs side by side, such as a From and To date
+.app-date-range {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: govuk-spacing(6);
+}

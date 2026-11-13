@@ -2,6 +2,7 @@
 
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "alert/macro.njk" import appAlert %}
 
 {% block pageTitle %}
   {{ pageTitle }} - DWT admin portal
@@ -12,6 +13,15 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if deletedClientName %}
+        {{ appAlert({
+          variant: "success",
+          title: "Software provider deleted",
+          text: deletedClientName + " has been deleted.",
+          classes: "govuk-!-margin-bottom-7",
+          testId: "deleted-alert"
+        }) }}
+      {% endif %}
       <h1 class="govuk-heading-l" data-testid="app-heading-title">Software providers</h1>
       <p class="govuk-body govuk-!-margin-bottom-7" data-testid="app-page-body">
         Manage the client credentials that software providers use to connect to the Digital Waste Tracking service.
@@ -35,29 +45,28 @@
     {% set rows = [] %}
     {% for credential in clientCredentials %}
       {% set rows = (rows.push([
-        { text: credential.clientName },
-        { text: credential.clientId },
+        { text: credential.clientName, classes: "app-break-word" },
+        { text: credential.clientId, classes: "app-break-word" },
         { text: credential.environment }
       ]), rows) %}
     {% endfor %}
 
-    {# Lets the table scroll on its own when it's wider than the screen, rather than the page. Focusable and named so keyboard users can scroll it too #}
-    <div class="app-table-scroll" role="region" aria-label="Client credentials" tabindex="0" data-testid="client-credentials-region">
+    {# Long client names and IDs wrap in their cells, and the text is smaller, so the table fits the page from 320px wide #}
     {{ govukTable({
       caption: "Client credentials",
       captionClasses: "govuk-table__caption--m",
+      classes: "app-table--small-text",
       attributes: {
         'data-module': 'moj-sortable-table',
         'data-testid': 'client-credentials'
       },
       head: [
-        { text: "Client name", attributes: { 'aria-sort': 'ascending' } },
+        { text: "Client name", classes: "app-table__header--half", attributes: { 'aria-sort': 'ascending' } },
         { text: "Client ID", attributes: { 'aria-sort': 'none' } },
         { text: "Environment", attributes: { 'aria-sort': 'none' } }
       ],
       rows: rows
     }) }}
-    </div>
   {% endif %}
 
 {% endblock %}

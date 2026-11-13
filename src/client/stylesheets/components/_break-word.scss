@@ -1,0 +1,7 @@
+// Lets text with no spaces, such as a client name or ID, break at any
+// character so it wraps in its table cell. Unlike GOV.UK's
+// govuk-!-text-break-word (overflow-wrap: break-word), this also lets the
+// column narrow, so the table never makes the page scroll sideways
+.app-break-word {
+  overflow-wrap: anywhere;
+}

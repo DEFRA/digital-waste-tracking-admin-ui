@@ -34,18 +34,20 @@ jobs:
           npm run lint
           npm test
 
+      - name: SonarCloud Scan
+        if: github.actor != 'dependabot[bot]'
+        uses: SonarSource/sonarqube-scan-action@v8.4.1 #  (or check latest version on https://github.com/marketplace/actions/official-sonarqube-scan)
+        with:
+          args: -Dsonar.qualitygate.wait=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Test Docker Image Build
         run: |
           set +e
           docker build --no-cache --tag cdp-node-frontend-template .
           exit $?
-
-#      - name: SonarCloud Scan
-#        if: github.actor != 'dependabot[bot]'
-#        uses: SonarSource/sonarqube-scan-action@v5.3.1 #  (or check latest version on https://github.com/marketplace/actions/official-sonarqube-scan)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # Runs the admin tool's browser tests from digital-waste-tracking-fe-uat
   # against the compose stack, with the admin UI built from this PR. Every
@@ -100,7 +102,11 @@ jobs:
           adminUiPassword: local
           # Chrome runs in a container, so reaches the admin UI by its service name
           ADMIN_UI_BASE_URL: http://digital-waste-tracking-admin-ui:3000
-        run: npm run test:admin-tool
+          # Made-up credential for calling dwt-client-sync directly
+          SERVICE_AUTH_PASSWORD: local-external-api
+          # Reach dwt-client-sync through the port the stack publishes, as the tests run on the runner
+          DWT_CLIENT_SYNC_SERVICE_URL: http://localhost:3005
+        run: npm run test:admin-ui
 
       - name: Generate Test Report
         if: always()

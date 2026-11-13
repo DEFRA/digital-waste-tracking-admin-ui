@@ -16,7 +16,7 @@ export function buildNavigation(request) {
         request?.path?.startsWith(`${paths.softwareProviders}/`) === true
     },
     {
-      text: 'Reporting',
+      text: 'Waste organisations',
       href: '/reporting/waste-organisations',
       current: request?.path === '/reporting/waste-organisations'
     }

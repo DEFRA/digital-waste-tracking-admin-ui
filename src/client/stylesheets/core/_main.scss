@@ -2,8 +2,8 @@
 
 // Example namespaced custom element style CSS classes
 
+// The top padding is GOV.UK's: 20px on mobile and 40px from tablet
 .app-main-wrapper {
   display: block;
-  padding-top: govuk-spacing(4);
   padding-bottom: govuk-spacing(3);
 }

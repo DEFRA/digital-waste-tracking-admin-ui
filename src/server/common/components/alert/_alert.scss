@@ -1,0 +1,65 @@
+@use 'pkg:govuk-frontend/base' as *;
+
+// Styles for MoJ Frontend's alert, from
+// @ministryofjustice/frontend/moj/components/alert, without dismissing. As
+// with the ticket panel, its own Sass clashes with our GOV.UK Frontend set-up
+
+.moj-alert {
+  display: grid;
+  margin-bottom: govuk-spacing(6);
+  padding: govuk-spacing(2);
+  border: 5px solid transparent;
+  background: govuk-colour('white');
+  grid-template-columns: min-content fit-content(960px);
+  gap: govuk-spacing(2);
+  @include govuk-font($size: false);
+}
+
+.moj-alert__icon {
+  display: block;
+  width: govuk-px-to-rem(30px);
+  height: govuk-px-to-rem(30px);
+  fill: currentcolor;
+}
+
+.moj-alert__content {
+  display: block;
+  padding-top: govuk-px-to-rem(5px);
+  overflow: hidden;
+  color: govuk-colour('black');
+  // A long client name has no spaces, so let it wrap rather than widen the page
+  overflow-wrap: anywhere;
+  @include govuk-font-size($size: 19);
+
+  @include govuk-media-query($from: tablet) {
+    padding-top: govuk-px-to-rem(2px);
+  }
+}
+
+.moj-alert__heading {
+  display: block;
+  margin-top: 0;
+  margin-bottom: govuk-px-to-rem(5px);
+  color: govuk-functional-colour(text);
+  @include govuk-font-size($size: 24);
+  @include govuk-typography-weight-bold;
+
+  @include govuk-media-query($from: tablet) {
+    margin-bottom: govuk-px-to-rem(3px);
+  }
+}
+
+.moj-alert--success {
+  border-color: govuk-colour('green');
+  color: govuk-colour('green');
+}
+
+.moj-alert--warning {
+  border-color: #eb611c;
+  color: #eb611c;
+}
+
+.moj-alert--error {
+  border-color: govuk-colour('red');
+  color: govuk-colour('red');
+}
