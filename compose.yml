@@ -1,18 +1,3 @@
-# The admin UI with the services it calls - waste-organisation-backend for the
-# Reporting page and dwt-client-sync for the Software providers page - from the
-# shared compose stack in digital-waste-tracking-uat (see shared-compose/README.md
-# there).
-#
-# docker compose up --build -d digital-waste-tracking-admin-ui
-#     The admin UI and the services it needs, with the admin UI built from your
-#     checkout and reloading as you edit. (Without the service name, it starts
-#     the whole shared stack.)
-# npm run dev:deps && npm run dev
-#     Just the backends, with the admin UI run locally (see .env.example)
-#
-# Set SHARED_COMPOSE to a local checkout's shared-compose/compose.yml to try
-# changes to the shared stack.
-
 include:
   - ${SHARED_COMPOSE:-https://github.com/DEFRA/digital-waste-tracking-uat.git#main:shared-compose/compose.yml}
 
@@ -25,9 +10,13 @@ services:
       target: development
     ports:
       - '3000:3000'
+      - '9229:9229'
+    command: npm run dev:debug
     depends_on:
       - waste-organisation-backend
       - dwt-client-sync
+      - floci
+      - floci-az
     environment:
       PORT: 3000
       # Made-up local-only login: username "local", password "local"
@@ -39,9 +28,55 @@ services:
       # File change events don't reach containers through Docker Desktop or Colima
       # mounts, so Vite has to poll to reload styles and scripts
       CHOKIDAR_USEPOLLING: 'true'
+
+      AUTH_MODE: entra
+      ENTRA_ID_CLIENT_ID: ${ENTRA_ID_CLIENT_ID:-00000000-0000-0000-0000-000000000001}
+      # localhost:4577 is forwarded to floci-az by the localhost-4577 sidecar, so the
+      # browser and the container see the same issuer and authorize URLs
+      ENTRA_ID_OIDC_DISCOVERY_URI: ${ENTRA_ID_OIDC_DISCOVERY_URI:-https://localhost:4577/00000000-0000-0000-0000-000000000002/v2.0/.well-known/openid-configuration}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      OIDC_LOGIN_CALLBACK_URI: '/auth'
+      OIDC_RESPONSE_MODE: ${OIDC_RESPONSE_MODE:-query}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-local-secret}
+      OIDC_COOKIE_IS_SECURE: ${OIDC_COOKIE_IS_SECURE:-false}
+      OIDC_COOKIE_IS_SAME_SITE: ${OIDC_COOKIE_IS_SAME_SITE:-Lax}
+      FEDERATED_CREDENTIALS_ENABLE_MOCKING: ${FEDERATED_CREDENTIALS_ENABLE_MOCKING:-true}
+      FEDERATED_CREDENTIALS_AUDIENCE: ${FEDERATED_CREDENTIALS_AUDIENCE:-digital-waste-tracking-admin-ui}
+      # floci-az uses a self-signed cert in local development
+      NODE_TLS_REJECT_UNAUTHORIZED: '0'
     volumes:
       # Run your working copy, reloading as you edit
       - ./src:/home/node/src
       - ./package.json:/home/node/package.json
+    networks:
+      - cdp-tenant
+
+  # Forwards localhost:4577 inside the admin UI container to floci-az
+  localhost-4577:
+    image: alpine/socat
+    network_mode: 'service:digital-waste-tracking-admin-ui'
+    command: TCP-LISTEN:4577,fork,reuseaddr TCP:floci-az:4577
+    depends_on:
+      - digital-waste-tracking-admin-ui
+      - floci-az
+
+  # Local stand-ins for AWS and Entra ID
+  floci:
+    # 2.4.0+ supports STS GetWebIdentityToken
+    image: floci/floci:2.4.0-compat
+    ports:
+      - '4599:4566'
+    environment:
+      FLOCI_DEFAULT_REGION: eu-west-2
+    networks:
+      - cdp-tenant
+
+  floci-az:
+    image: floci/floci-az:latest
+    ports:
+      - '4577:4577'
+    environment:
+      # MSAL talks to an HTTPS authority
+      FLOCI_AZ_TLS_ENABLED: 'true'
     networks:
       - cdp-tenant

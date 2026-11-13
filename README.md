@@ -242,6 +242,17 @@ FEDERATED_CREDENTIALS_ENABLE_MOCKING=true
 
 When `AUTH_MODE=entra` is enabled, `/login` starts the OIDC flow and Azure returns to `/auth/callback`.
 
+### Entra mock via floci/floci-az (Docker Compose)
+
+To run Entra mode locally against mock providers, use the compose override:
+
+```bash
+docker compose -f compose.yml -f compose.entra-mock.yml up --build -d digital-waste-tracking-admin-ui
+```
+
+This enables `AUTH_MODE=entra`, starts `floci` + `floci-az`, points OIDC discovery at `floci-az`,
+and turns on mocked federated credentials.
+
 The Software providers page lists the three test clients the stack seeds. dwt-client-sync
 also starts a fake of the CDP API it manages clients through, so syncing, and creating,
 rotating and deleting clients, work too:

@@ -51,29 +51,6 @@ function createLocalStubProvider() {
   })
 }
 
-function decodeJwtClaims(token) {
-  if (typeof token !== 'string') {
-    return null
-  }
-
-  const [, payload] = token.split('.')
-
-  if (!payload) {
-    return null
-  }
-
-  try {
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/')
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      '='
-    )
-    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8'))
-  } catch {
-    return null
-  }
-}
-
 function createDiagnosticAuthProvider(authProvider, fallbackLogger = console) {
   if (!logFederatedJwtClaims && !logFullFederatedJwt) {
     return authProvider
@@ -149,6 +126,7 @@ export const entraIdAuth = {
     name: 'entra-id-auth',
     async register(server) {
       const { oidc, cookieOptions } = config.get('auth')
+      const federatedCredentials = config.get('auth.federatedCredentials')
       const scope = oidc.scope
       const isProduction = config.get('isProduction')
       const isLocalStub = oidc.discoveryUri.startsWith('http://')
@@ -167,6 +145,8 @@ export const entraIdAuth = {
         oidcOptions.authProvider = createDiagnosticAuthProvider(
           createLocalStubProvider()
         )
+      } else if (federatedCredentials.enableMocking) {
+        oidcOptions.authProvider = createDiagnosticAuthProvider(createAuthProvider())
       } else if (isProduction) {
         oidcOptions.authProvider = createDiagnosticAuthProvider(createAuthProvider())
       } else {
@@ -249,5 +229,3 @@ export const entraIdAuth = {
     }
   }
 }
-
-

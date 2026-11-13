@@ -51,11 +51,10 @@ const LOGIN_VIEW_CONTEXT = {
 }
 
 export const loginViewController = {
-  async handler(request, h) {
-    if (config.get('auth.mode') === 'entra') {
+  async handler(request, h) {if (config.get('auth.mode') === 'entra') {
       const redirectTo =
-        request.query.redirectTo ??
-        getRefererAsRelativeURL(request?.info?.referrer, '/')
+        request.payload?.redirectTo ??
+        getRefererAsRelativeURL(request.info.referrer, '/')
 
       request.yar.flash(REFERRER_SESSION_KEY, redirectTo)
 
