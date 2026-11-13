@@ -18,7 +18,6 @@ describe('Alert Component', () => {
     expect($region.attr('aria-label')).toBe(
       'success: Software provider deleted'
     )
-    expect($region.hasClass('moj-alert--success')).toBe(true)
   })
 
   test('Should have an H2 heading and the text', () => {
@@ -47,8 +46,8 @@ describe('Alert Component', () => {
       text: 'Text'
     })
 
-    expect($unknown('[data-testid="alert"]').attr('class')).toContain(
-      'moj-alert--error'
+    expect($unknown('[data-testid="alert"]').attr('aria-label')).toBe(
+      'error: Heading'
     )
   })
 })

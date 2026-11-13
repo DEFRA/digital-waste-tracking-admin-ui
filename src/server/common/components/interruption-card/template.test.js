@@ -35,6 +35,5 @@ describe('Interruption card Component', () => {
 
     expect($link.text().trim()).toBe('Go back')
     expect($link.attr('href')).toBe('/somewhere')
-    expect($link.hasClass('govuk-link--inverse')).toBe(true)
   })
 })

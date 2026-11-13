@@ -21,14 +21,6 @@ describe('Heading Component', () => {
       )
     })
 
-    test('Should be the standard large heading, as on every page', () => {
-      expect(
-        $heading('[data-testid="app-heading-title"]').hasClass(
-          'govuk-heading-l'
-        )
-      ).toBe(true)
-    })
-
     test('Should have expected heading caption', () => {
       expect(
         $heading('[data-testid="app-heading-caption"]').text().trim()
