@@ -106,7 +106,16 @@ jobs:
           SERVICE_AUTH_PASSWORD: local-external-api
           # Reach dwt-client-sync through the port the stack publishes, as the tests run on the runner
           DWT_CLIENT_SYNC_SERVICE_URL: http://localhost:3005
-        run: npm run test:admin-ui
+        # DEFRA/digital-waste-tracking-fe-uat#134 replaces test:admin-ui with
+        # test:grid:admin-ui (Chrome in a Selenium container, as here). Runs
+        # whichever exists, so this works before and after it merges. Once it
+        # has merged, this can just run test:grid:admin-ui.
+        run: |
+          if node -e "process.exit(require('./package.json').scripts['test:grid:admin-ui'] ? 0 : 1)"; then
+            npm run test:grid:admin-ui
+          else
+            npm run test:admin-ui
+          fi
 
       - name: Generate Test Report
         if: always()
