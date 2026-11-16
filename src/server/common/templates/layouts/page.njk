@@ -25,13 +25,27 @@
 {% block header %}
   <header class="defra-header">
     <div class="defra-header__inner">
-      <a href="/" class="defra-header__service-name defra-header__brand-group">
+      <a href="/">
         <img src="{{ getAssetPath('src/client/images/defra-logo.svg') }}" alt="" role="presentation" class="defra-header__logo">
         <span class="govuk-visually-hidden">
         Department for Environment, Food and Rural Affairs:
         </span>
+      </a>
+      <a href="/" class="defra-header__service-name defra-header__brand-group">
         <span>DWT admin portal</span>
       </a>
+      <div class="defra-header__environment">
+        {% set environmentTagClass = 'govuk-tag--teal'
+          if environment == 'External test'
+          else ('govuk-tag--purple'
+          if environment == 'Production'
+          else ('govuk-tag--red'
+          if environment == 'Local'
+          else '')) %}
+        <strong class="govuk-tag {{ environmentTagClass }}">
+          {{ environment }}
+        </strong>
+      </div>
     </div>
   </header>
 
