@@ -33,7 +33,7 @@ export function newClientCredentialsController(store) {
         )
       }
 
-      request.yar.flash(flashKeys.createdClientSecret, credentials.clientId)
+      request.yar.flash(flashKeys.newSecretClientId, credentials.clientId)
 
       return h.view('software-providers/credentials/index', {
         pageTitle: 'Copy the client credentials',

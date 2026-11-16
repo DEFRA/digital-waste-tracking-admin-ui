@@ -36,9 +36,7 @@ export const softwareProviderController = {
       return h.redirect(paths.softwareProviders)
     }
 
-    const createdSecretClients = request.yar.flash(
-      flashKeys.createdClientSecret
-    )
+    const newSecretClientIds = request.yar.flash(flashKeys.newSecretClientId)
     const [removedSecret] = request.yar.flash(flashKeys.removedClientSecret)
     const [uncertainChange] = request.yar.flash(flashKeys.uncertainClientChange)
     const [conflictedChange] = request.yar.flash(
@@ -63,7 +61,7 @@ export const softwareProviderController = {
       clientId,
       secrets,
       secretCount,
-      hasNewSecret: createdSecretClients.includes(clientId),
+      hasNewSecret: newSecretClientIds.includes(clientId),
       removedSecret,
       uncertainChange,
       conflictedChange,

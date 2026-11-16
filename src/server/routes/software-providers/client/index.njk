@@ -66,7 +66,7 @@
     {% set generatedOn = secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") %}
     {% set generatedOnCell = { text: generatedOn } %}
     {% if loop.first and hasNewSecret %}
-      {% set generatedOnCell = { html: (generatedOn + '\n<strong class="govuk-tag govuk-tag--green">New</strong>\n') | safe } %}
+      {% set generatedOnCell = { html: (generatedOn + ' <strong class="govuk-tag govuk-tag--green">New</strong>') | safe } %}
     {% endif %}
     {% set actions = { text: "" } %}
     {# The link names its secret's date, as "Replace secret" alone doesn't say
