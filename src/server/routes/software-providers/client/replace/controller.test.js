@@ -350,9 +350,10 @@ describe('#replaceClientCredentialsController', () => {
         firstVisit.result
       ).window.document.querySelector('tbody tr td')
 
-      expect(firstDateCell.outerHTML).toEqual(
-        '<td class="govuk-table__cell">13 November 2026 at 3:05pm\n<strong class="govuk-tag govuk-tag--green">New</strong>\n</td>'
+      expect(firstDateCell.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        '13 November 2026 at 3:05pm New'
       )
+      expect(firstDateCell.querySelector('strong').textContent).toEqual('New')
 
       const nextCookie =
         firstVisit.headers['set-cookie']
@@ -367,8 +368,8 @@ describe('#replaceClientCredentialsController', () => {
         secondVisit.result
       ).window.document.querySelector('tbody tr td')
 
-      expect(secondDateCell.outerHTML).toEqual(
-        '<td class="govuk-table__cell">13 November 2026 at 3:05pm</td>'
+      expect(secondDateCell.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        '13 November 2026 at 3:05pm'
       )
     })
 

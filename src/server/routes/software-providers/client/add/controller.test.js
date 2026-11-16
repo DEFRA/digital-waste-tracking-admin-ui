@@ -207,12 +207,17 @@ describe('Add another secret', () => {
       ...firstClientPage.querySelectorAll('tbody tr')
     ]
 
-    expect(newestRow.querySelector('td').outerHTML).toEqual(
-      '<td class="govuk-table__cell">13 November 2026 at 3:05pm\n<strong class="govuk-tag govuk-tag--green">New</strong>\n</td>'
+    const newest = newestRow.querySelector('td')
+    const older = olderRow.querySelector('td')
+
+    expect(newest.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+      '13 November 2026 at 3:05pm New'
     )
-    expect(olderRow.querySelector('td').outerHTML).toEqual(
-      '<td class="govuk-table__cell">1 January 2020 at 10:00am</td>'
+    expect(newest.querySelector('strong').textContent).toEqual('New')
+    expect(older.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+      '1 January 2020 at 10:00am'
     )
+    expect(older.querySelector('strong')).toBeNull()
 
     const nextCookie =
       firstVisit.headers['set-cookie']

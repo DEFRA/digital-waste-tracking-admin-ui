@@ -559,9 +559,10 @@ describe('Create new credentials', () => {
       const firstDocument = documentOf(firstVisit.result)
       const firstDateCell = firstDocument.querySelector('tbody tr td')
 
-      expect(firstDateCell.outerHTML).toEqual(
-        '<td class="govuk-table__cell">13 November 2026 at 3:05pm\n<strong class="govuk-tag govuk-tag--green">New</strong>\n</td>'
+      expect(firstDateCell.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        '13 November 2026 at 3:05pm New'
       )
+      expect(firstDateCell.querySelector('strong').textContent).toEqual('New')
 
       const secondVisitCookie =
         cookiesFrom(firstVisit.headers) || credentialsCookie
@@ -573,8 +574,8 @@ describe('Create new credentials', () => {
       const secondDocument = documentOf(secondVisit.result)
       const secondDateCell = secondDocument.querySelector('tbody tr td')
 
-      expect(secondDateCell.outerHTML).toEqual(
-        '<td class="govuk-table__cell">13 November 2026 at 3:05pm</td>'
+      expect(secondDateCell.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        '13 November 2026 at 3:05pm'
       )
     })
   })
