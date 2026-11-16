@@ -1,4 +1,5 @@
 import { config } from '#/config/config.js'
+import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { formatGeneratedOn } from '#/server/common/helpers/format-generated-on.js'
@@ -24,6 +25,8 @@ export function newClientCredentialsController(store) {
       if (!credentials) {
         return h.redirect(paths.softwareProviders)
       }
+
+      request.yar.flash(flashKeys.createdClientSecret, credentials.clientId)
 
       return h.view('software-providers/credentials/index', {
         pageTitle: 'Copy the client credentials',

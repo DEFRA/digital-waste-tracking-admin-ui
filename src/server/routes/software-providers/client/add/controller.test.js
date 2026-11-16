@@ -164,26 +164,72 @@ describe('Add another secret', () => {
     expect(mockAuditWriteAction).not.toHaveBeenCalled()
   })
 
-  test('Should show the new secret, once', async () => {
+  test('Should show the new secret, once, and mark only the newest secret as New on first visit to the client page', async () => {
     const { headers } = await addAnotherSecret()
 
-    const { statusCode, result } = await server.inject({
+    const credentialsResponse = await server.inject({
       method: 'GET',
       url: headers.location,
       headers: auth
     })
 
-    expect(statusCode).toEqual(statusCodes.ok)
-    const document = new JSDOM(result).window.document
+    expect(credentialsResponse.statusCode).toEqual(statusCodes.ok)
+    const document = new JSDOM(credentialsResponse.result).window.document
     expect(getElementText(document, 'client-secret')).toEqual(
       rotated.clientSecret
     )
+    const closeHref = document
+      .querySelector('[data-testid="close-button"]')
+      .getAttribute('href')
     // Close goes back to the client, where the new secret is listed
-    expect(
-      document
-        .querySelector('[data-testid="close-button"]')
-        .getAttribute('href')
-    ).toEqual(`/software-providers/${clientId}`)
+    expect(closeHref).toEqual(`/software-providers/${clientId}`)
+
+    clientSyncRespondsWith({
+      client: {
+        ...client,
+        secrets: [
+          { createdAt: '2026-11-13T15:05:00.000Z' },
+          { createdAt: '2020-01-01T10:00:00.000Z' }
+        ]
+      }
+    })
+
+    const cookie = credentialsResponse.headers['set-cookie']
+      .map((value) => value.split(';')[0])
+      .join('; ')
+    const firstVisit = await server.inject({
+      method: 'GET',
+      url: closeHref,
+      headers: { ...auth, cookie }
+    })
+    const firstClientPage = new JSDOM(firstVisit.result).window.document
+    const [newestRow, olderRow] = [
+      ...firstClientPage.querySelectorAll('tbody tr')
+    ]
+
+    const newest = newestRow.querySelector('td')
+    const older = olderRow.querySelector('td')
+
+    expect(newest.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+      '13 November 2026 at 3:05pm New'
+    )
+    expect(newest.querySelector('strong').textContent).toEqual('New')
+    expect(older.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+      '1 January 2020 at 10:00am'
+    )
+    expect(older.querySelector('strong')).toBeNull()
+
+    const nextCookie =
+      firstVisit.headers['set-cookie']
+        ?.map((value) => value.split(';')[0])
+        .join('; ') ?? cookie
+    const secondVisit = await server.inject({
+      method: 'GET',
+      url: closeHref,
+      headers: { ...auth, cookie: nextCookie }
+    })
+    const secondClientPage = new JSDOM(secondVisit.result).window.document
+    expect(secondClientPage.querySelector('tbody .govuk-tag')).toBeNull()
   })
 
   test('Should go to the list when the client is gone', async () => {

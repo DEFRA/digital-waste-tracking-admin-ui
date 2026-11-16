@@ -300,27 +300,26 @@ describe('#replaceClientCredentialsController', () => {
       ).toContain('No secret was replaced for Skipflow_Test')
     })
 
-    test('Should show the new secret, once', async () => {
+    test('Should show the new secret, once, and mark it as New on first visit to the client page', async () => {
       const { headers } = await replaceSecret()
       const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
 
-      const { statusCode, result } = await server.inject({
+      const credentialsResponse = await server.inject({
         method: 'GET',
         url: headers.location,
         headers: auth
       })
 
-      expect(statusCode).toEqual(statusCodes.ok)
-      const document = new JSDOM(result).window.document
+      expect(credentialsResponse.statusCode).toEqual(statusCodes.ok)
+      const document = new JSDOM(credentialsResponse.result).window.document
       expect(getElementText(document, 'client-secret')).toEqual(
         rotated.clientSecret
       )
+      const closeHref = document
+        .querySelector('[data-testid="close-button"]')
+        .getAttribute('href')
       // Close goes back to the client, where the new secret is listed
-      expect(
-        document
-          .querySelector('[data-testid="close-button"]')
-          .getAttribute('href')
-      ).toEqual(`/software-providers/${clientId}`)
+      expect(closeHref).toEqual(`/software-providers/${clientId}`)
 
       // Shown once: coming back goes to the Software providers page
       const again = await server.inject({
@@ -330,6 +329,48 @@ describe('#replaceClientCredentialsController', () => {
       })
       expect(again.statusCode).toEqual(statusCodes.found)
       expect(again.headers.location).toEqual(paths.softwareProviders)
+
+      clientSyncRespondsWith({
+        client: {
+          ...clientCredentials,
+          secrets: [{ createdAt: '2026-11-13T15:05:00.000Z' }]
+        }
+      })
+
+      const cookie = credentialsResponse.headers['set-cookie']
+        .map((value) => value.split(';')[0])
+        .join('; ')
+
+      const firstVisit = await server.inject({
+        method: 'GET',
+        url: closeHref,
+        headers: { ...auth, cookie }
+      })
+      const firstDateCell = new JSDOM(
+        firstVisit.result
+      ).window.document.querySelector('tbody tr td')
+
+      expect(firstDateCell.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        '13 November 2026 at 3:05pm New'
+      )
+      expect(firstDateCell.querySelector('strong').textContent).toEqual('New')
+
+      const nextCookie =
+        firstVisit.headers['set-cookie']
+          ?.map((value) => value.split(';')[0])
+          .join('; ') ?? cookie
+      const secondVisit = await server.inject({
+        method: 'GET',
+        url: closeHref,
+        headers: { ...auth, cookie: nextCookie }
+      })
+      const secondDateCell = new JSDOM(
+        secondVisit.result
+      ).window.document.querySelector('tbody tr td')
+
+      expect(secondDateCell.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        '13 November 2026 at 3:05pm'
+      )
     })
 
     test('Should go to the Software providers page when the client is gone', async () => {
