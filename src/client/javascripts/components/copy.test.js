@@ -13,8 +13,10 @@ const panel = `
     <dd>new-client-secret</dd>
   </dl>
   <div class="app-copy" data-module="app-copy" hidden>
-    <button type="button">Copy</button>
-    <span role="status" aria-live="polite"></span>
+    <button type="button">
+      Copy credentials
+    </button>
+    <span class="govuk-visually-hidden" role="status" aria-live="polite"></span>
   </div>
 `
 
@@ -32,6 +34,7 @@ describe('#Copy', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
@@ -57,19 +60,53 @@ describe('#Copy', () => {
     )
   })
 
-  test('Should say the credentials were copied', async () => {
+  test('Should say on the button that the credentials were copied, and tell screen readers', async () => {
     initCopy()
 
     $('button').click()
 
     await vi.waitFor(() =>
-      expect($('[role="status"]').textContent).toEqual(
-        'Client credentials copied'
-      )
+      expect($('button').textContent).toEqual('Credentials copied')
     )
+    expect($('[role="status"]').textContent).toEqual(
+      'Client credentials copied'
+    )
+    expect($('[role="status"]').classList).toContain('govuk-visually-hidden')
+    expect(document.activeElement).not.toBe($('[role="status"]'))
   })
 
-  test('Should say when the credentials could not be copied', async () => {
+  test('Should go back to the button label after four seconds', async () => {
+    vi.useFakeTimers()
+    initCopy()
+
+    $('button').click()
+    await vi.advanceTimersByTimeAsync(0)
+    expect($('button').textContent).toEqual('Credentials copied')
+
+    await vi.advanceTimersByTimeAsync(3999)
+    expect($('button').textContent).toEqual('Credentials copied')
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect($('button').textContent).toEqual('Copy credentials')
+    // So copying again is read out again
+    expect($('[role="status"]').textContent).toEqual('')
+  })
+
+  test('Should start the four seconds again when copied again', async () => {
+    vi.useFakeTimers()
+    initCopy()
+
+    $('button').click()
+    await vi.advanceTimersByTimeAsync(3000)
+    $('button').click()
+    await vi.advanceTimersByTimeAsync(3000)
+    expect($('button').textContent).toEqual('Credentials copied')
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect($('button').textContent).toEqual('Copy credentials')
+  })
+
+  test('Should show, not just read out, that the credentials could not be copied', async () => {
     writeText.mockRejectedValue(new Error('Not allowed'))
     initCopy()
 
@@ -80,6 +117,10 @@ describe('#Copy', () => {
         'The client credentials could not be copied. Select and copy them instead'
       )
     )
+    expect($('[role="status"]').classList).not.toContain(
+      'govuk-visually-hidden'
+    )
+    expect($('button').textContent.trim()).toEqual('Copy credentials')
   })
 
   test('Should stay hidden when the browser cannot copy', () => {
