@@ -221,6 +221,18 @@ describe('#softwareProvidersController', () => {
       expect(
         tableRows(document).map(([_name, _id, environment]) => environment)
       ).toEqual([label, label, label])
+
+      const environmentLink = [...document.querySelectorAll('a')].find((link) =>
+        link.textContent.trim().startsWith('Go to ')
+      )
+      const destination = cdpEnvironment === 'prod' ? 'ext-test' : 'prod'
+
+      expect(environmentLink.textContent.trim()).toEqual(
+        destination === 'prod' ? 'Go to Production' : 'Go to External test'
+      )
+      expect(environmentLink.getAttribute('href')).toEqual(
+        `https://digital-waste-tracking-admin-ui.${destination}.cdp-int.defra.cloud/software-providers`
+      )
     } finally {
       config.set('cdpEnvironment', originalEnvironment)
     }

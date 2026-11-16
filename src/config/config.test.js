@@ -84,6 +84,30 @@ describe('#config', () => {
     })
   })
 
+  describe('environmentLinks', () => {
+    test.each([
+      ['prod', 'ADMIN_UI_PROD_URL', 'prod'],
+      ['extTest', 'ADMIN_UI_EXT_TEST_URL', 'ext-test']
+    ])('Should configure the %s portal URL', async (key, env, environment) => {
+      const config = await loadConfig({ [env]: undefined })
+
+      expect(config.get(`environmentLinks.${key}`)).toEqual(
+        `https://digital-waste-tracking-admin-ui.${environment}.cdp-int.defra.cloud`
+      )
+    })
+
+    test.each([
+      ['prod', 'ADMIN_UI_PROD_URL'],
+      ['extTest', 'ADMIN_UI_EXT_TEST_URL']
+    ])('Should allow overriding the %s portal URL', async (key, env) => {
+      const config = await loadConfig({ [env]: 'https://example.com' })
+
+      expect(config.get(`environmentLinks.${key}`)).toEqual(
+        'https://example.com'
+      )
+    })
+  })
+
   describe('securityTeam', () => {
     test('Should email the security team, copying in the people CDP names', async () => {
       const config = await loadConfig({

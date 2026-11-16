@@ -257,6 +257,22 @@ export const config = convict({
       env: 'DWT_CLIENT_SYNC_SERVICE_URL'
     }
   },
+  environmentLinks: {
+    prod: {
+      doc: 'The production admin portal base URL',
+      format: 'url',
+      default:
+        'https://digital-waste-tracking-admin-ui.prod.cdp-int.defra.cloud',
+      env: 'ADMIN_UI_PROD_URL'
+    },
+    extTest: {
+      doc: 'The external test admin portal base URL',
+      format: 'url',
+      default:
+        'https://digital-waste-tracking-admin-ui.ext-test.cdp-int.defra.cloud',
+      env: 'ADMIN_UI_EXT_TEST_URL'
+    }
+  },
   clientCredentials: {
     tenantServiceName: {
       doc: 'The service whose client credentials the Software providers page lists',

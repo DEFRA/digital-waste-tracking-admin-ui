@@ -30,10 +30,18 @@
       {{ govukButton({
         text: "Create new credentials",
         href: createClientCredentialsPath,
-        classes: "govuk-button--secondary govuk-!-margin-bottom-7",
+        classes: "govuk-button--secondary govuk-!-margin-bottom-8",
         attributes: { "data-testid": "create-credentials-button" }
       }) }}
       {% endif %}
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-3">Change environment</h2>
+      <p class="govuk-body govuk-!-margin-bottom-8">You are in the {{ environment }} environment.
+      {% if currentEnvironment == "Production" %}
+        <a href="{{extTestEnvironment.url}}">Go to {{ extTestEnvironment.label }}</a>
+      {% else %}
+        <a href="{{prodEnvironment.url}}">Go to {{ prodEnvironment.label }}</a>
+      {% endif %}
+      </p>
       {% if not hasCredentials %}
         <h2 class="govuk-heading-m" data-testid="client-credentials-empty-heading">Client credentials</h2>
         <p class="govuk-body" data-testid="client-credentials-empty">New client credentials will be shown here.</p>
