@@ -21,7 +21,10 @@ export class Copy {
     this.$button = $module.querySelector('button')
     this.$status = $module.querySelector('[role="status"]')
     this.$source = document.querySelector('[data-copy-source]')
-    this.label = this.$button?.textContent.trim()
+    // The visible label, without the visually hidden rest of the button's name
+    this.$label =
+      this.$button?.querySelector('[data-copy-label]') ?? this.$button
+    this.label = this.$label?.textContent.trim()
 
     if (
       !this.$button ||
@@ -54,6 +57,10 @@ export class Copy {
     try {
       await navigator.clipboard.writeText(this.text())
     } catch {
+      // Not "Credentials copied" from an earlier copy, beside the error
+      clearTimeout(this.timeout)
+      this.$label.textContent = this.label
+
       // Shown as well as read out, as it asks the user to do something
       this.$status.classList.remove('govuk-visually-hidden')
       this.$status.textContent =
@@ -63,12 +70,12 @@ export class Copy {
 
     this.$status.classList.add('govuk-visually-hidden')
     this.$status.textContent = 'Client credentials copied'
-    this.$button.textContent = 'Credentials copied'
+    this.$label.textContent = 'Credentials copied'
 
     // Copying again starts the few seconds again
     clearTimeout(this.timeout)
     this.timeout = setTimeout(() => {
-      this.$button.textContent = this.label
+      this.$label.textContent = this.label
       // Cleared, so copying again is read out again
       this.$status.textContent = ''
     }, copiedForMs)

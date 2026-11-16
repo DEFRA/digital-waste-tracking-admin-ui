@@ -1,3 +1,4 @@
+import { config } from '#/config/config.js'
 import { createNewClientCredentialsStore } from './new-client-credentials-store.js'
 
 describe('#createNewClientCredentialsStore', () => {
@@ -56,10 +57,12 @@ describe('#createNewClientCredentialsStore', () => {
     expect(await store.shownClientId(request, id)).toBeNull()
     expect(await store.take(request, id)).toEqual(credentials)
     expect(await store.take(request, id)).toBeNull()
-    expect(cache.set).toHaveBeenLastCalledWith(id, {
-      owner: 'test1',
-      shownClientId: 'new-client-id'
-    })
+    // Without the secret, and for as long as a session
+    expect(cache.set).toHaveBeenLastCalledWith(
+      id,
+      { owner: 'test1', shownClientId: 'new-client-id' },
+      config.get('session.cache.ttl')
+    )
     expect(await store.shownClientId(request, id)).toEqual('new-client-id')
   })
 

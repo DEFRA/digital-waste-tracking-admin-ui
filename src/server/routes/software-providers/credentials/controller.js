@@ -22,7 +22,7 @@ export function newClientCredentialsController(store) {
       const credentials = await store.take(request, request.params.id)
 
       // Shown once: coming back to the page goes to the client, or to the
-      // Software providers page once the store has forgotten which client
+      // Software providers page if it's not known which client
       if (!credentials) {
         const clientId = await store.shownClientId(request, request.params.id)
 

@@ -82,7 +82,12 @@ export function createNewClientCredentialsStore(server) {
         return null
       }
 
-      await cache.set(id, { owner, shownClientId: saved.credentials.clientId })
+      // Kept as long as a session, as it no longer holds the secret
+      await cache.set(
+        id,
+        { owner, shownClientId: saved.credentials.clientId },
+        config.get('session.cache.ttl')
+      )
 
       return saved.credentials
     },
@@ -92,7 +97,7 @@ export function createNewClientCredentialsStore(server) {
      * @param {String} id - The id they were saved with
      *
      * @returns {Promise<String|null>} The client whose credentials this user
-     * has already been shown, or null if there's none (or it has expired)
+     * has already been shown, or null if there's none
      */
     async shownClientId(request, id) {
       const owner = ownerOf(request)
