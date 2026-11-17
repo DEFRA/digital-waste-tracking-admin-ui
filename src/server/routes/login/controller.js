@@ -48,7 +48,7 @@ export const signInCallbackController = {
     request.yar.set(signedInUserKey, {
       id: claims.oid,
       // Logged as the user in audit lines and metrics
-      username: claims.preferred_username ?? claims.email,
+      username: claims.preferred_username ?? claims.email ?? claims.oid,
       name: claims.name
     })
 

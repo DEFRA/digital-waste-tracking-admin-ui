@@ -13,6 +13,8 @@ describe('#safeRedirectPath', () => {
     ['another site', 'https://example.com/'],
     ['a protocol-relative address', '//example.com/'],
     ['a backslash, which browsers read as a slash', '/\\example.com/'],
+    ['a tab, which browsers ignore', '/\t/example.com/'],
+    ['a newline, which browsers ignore', '/\n/example.com/'],
     ['a relative path', 'software-providers'],
     ['a script', 'javascript:alert(1)'],
     ['nothing', undefined],

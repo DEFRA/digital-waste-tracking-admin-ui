@@ -225,6 +225,10 @@ both call it `floci-az`. For your browser to find it, add this line to `/etc/hos
 127.0.0.1 floci-az
 ```
 
+Who can sign in is set in Entra ID, not here: the admin UI lets in anyone Entra ID signs in for
+it. Its Enterprise Application should have "Assignment required" on, with only the admin UI's
+group assigned.
+
 On CDP, set `ENTRA_CLIENT_ID`, `ENTRA_DISCOVERY_URI`
 (`https://login.microsoftonline.com/<tenant ID>/v2.0/.well-known/openid-configuration`) and
 `APP_BASE_URL` for each environment. The app registration needs a redirect URI of

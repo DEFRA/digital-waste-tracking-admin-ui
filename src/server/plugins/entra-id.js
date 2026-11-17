@@ -20,8 +20,9 @@ export const signedInUserKey = 'signedInUser'
  * than a client secret. Locally, Floci stands in for STS and floci-az for
  * Entra ID (see compose.yml).
  *
- * Once signed in, the user is kept in the session, so Entra ID's tokens aren't
- * kept or refreshed: the sign-in lasts as long as the session does.
+ * Once signed in, the user is kept in the session (server-side, see
+ * session-cache.js), so Entra ID's tokens aren't kept or refreshed: the
+ * sign-in lasts as long as the session does.
  *
  * @satisfies {import('@hapi/hapi').Plugin}
  */
@@ -37,8 +38,10 @@ export const entraId = {
         federatedCredentialAudience
       } = config.get('entra')
 
-      if (!clientId || !discoveryUri) {
-        throw new Error('ENTRA_CLIENT_ID and ENTRA_DISCOVERY_URI must be set')
+      if (!clientId || !discoveryUri || !externalBaseUrl) {
+        throw new Error(
+          'ENTRA_CLIENT_ID, ENTRA_DISCOVERY_URI and APP_BASE_URL must be set'
+        )
       }
 
       const { password, secure } = config.get('session.cookie')

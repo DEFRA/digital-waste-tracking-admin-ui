@@ -22,4 +22,17 @@ describe('#contentSecurityPolicy', () => {
 
     expect(resp.headers['content-security-policy']).toBeDefined()
   })
+
+  test('Should let a form be redirected to Entra ID to sign in again', async () => {
+    const resp = await server.inject({
+      method: 'GET',
+      url: '/',
+      auth: signedInAs()
+    })
+
+    // floci-az, which stands in for Entra ID outside production
+    expect(resp.headers['content-security-policy']).toContain(
+      "form-action 'self' http://floci-az:4577"
+    )
+  })
 })

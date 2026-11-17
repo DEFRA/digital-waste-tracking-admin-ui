@@ -99,14 +99,17 @@ describe('Signing in with Entra ID', () => {
     })
   })
 
-  test('Should start a new session when they sign in', async () => {
+  test('Should start a new session when they sign in, so the one before stays signed out', async () => {
     await get('/login')
     const before = jar.session
 
     await get('/auth?code=a-code&state=a-state')
+    expect((await get('/')).statusCode).toEqual(statusCodes.ok)
 
-    expect(jar.session).toBeDefined()
-    expect(jar.session).not.toEqual(before)
+    // As someone holding the cookie from before signing in would
+    jar = { session: before }
+    const { headers } = await get('/')
+    expect(headers.location).toMatch(/^\/login/)
   })
 
   test.each([

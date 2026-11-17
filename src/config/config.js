@@ -209,7 +209,7 @@ export const config = convict({
     externalBaseUrl: {
       doc: "The admin UI's address as the browser sees it, for Entra ID to send the user back to",
       format: String,
-      default: 'http://localhost:3000',
+      default: isProduction ? '' : 'http://localhost:3000',
       env: 'APP_BASE_URL'
     },
     federatedCredentialAudience: {
