@@ -2,7 +2,7 @@ import { getPageName } from '#/server/common/helpers/logging/get-page-name.js'
 import { metricNames } from '#/server/common/constants/metric-names.js'
 
 /**
- * Records a page view against the Basic Auth user, so usage can be broken down
+ * Records a page view against the signed-in user, so usage can be broken down
  * per user in the metrics dashboard, and adds the same context to the request
  * logger.
  *

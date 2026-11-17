@@ -3,10 +3,7 @@ import { paths } from '#/server/common/constants/paths.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
   mockAuditWriteAction: vi.fn()
@@ -28,7 +25,7 @@ const client = {
 
 const rotated = { clientId, clientSecret: 'second-client-secret' }
 
-const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
+const auth = signedInAs()
 
 describe('Add another secret', () => {
   let server
@@ -52,7 +49,7 @@ describe('Add another secret', () => {
     return server.inject({
       method: 'POST',
       url: `/software-providers/${clientId}/add-secret`,
-      headers: auth
+      auth
     })
   }
 
@@ -60,7 +57,8 @@ describe('Add another secret', () => {
     const { result } = await server.inject({
       method: 'GET',
       url: `/software-providers/${clientId}`,
-      headers: { ...auth, cookie: headers['set-cookie'].join('; ') }
+      auth,
+      headers: { cookie: headers['set-cookie'].join('; ') }
     })
 
     return new JSDOM(result).window.document
@@ -83,8 +81,6 @@ describe('Add another secret', () => {
   })
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })
@@ -170,7 +166,7 @@ describe('Add another secret', () => {
     const credentialsResponse = await server.inject({
       method: 'GET',
       url: headers.location,
-      headers: auth
+      auth
     })
 
     expect(credentialsResponse.statusCode).toEqual(statusCodes.ok)
@@ -200,7 +196,8 @@ describe('Add another secret', () => {
     const firstVisit = await server.inject({
       method: 'GET',
       url: closeHref,
-      headers: { ...auth, cookie }
+      auth,
+      headers: { cookie }
     })
     const firstClientPage = new JSDOM(firstVisit.result).window.document
     const [newestRow, olderRow] = [
@@ -226,7 +223,8 @@ describe('Add another secret', () => {
     const secondVisit = await server.inject({
       method: 'GET',
       url: closeHref,
-      headers: { ...auth, cookie: nextCookie }
+      auth,
+      headers: { cookie: nextCookie }
     })
     const secondClientPage = new JSDOM(secondVisit.result).window.document
     expect(secondClientPage.querySelector('tbody .govuk-tag')).toBeNull()

@@ -1,15 +1,10 @@
 import { createServer } from '#/server/server.js'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 describe('#contentSecurityPolicy', () => {
   let server
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })
@@ -22,7 +17,7 @@ describe('#contentSecurityPolicy', () => {
     const resp = await server.inject({
       method: 'GET',
       url: '/',
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     expect(resp.headers['content-security-policy']).toBeDefined()

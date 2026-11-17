@@ -15,10 +15,8 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
-import { basicAuth, getEnvVars } from '@defra/waste-movement-utils'
-import { createLogger } from './common/helpers/logging/logger.js'
-
-const logger = createLogger()
+import { entraId, entraStrategy } from './plugins/entra-id.js'
+import { paths } from '#/server/common/constants/paths.js'
 
 export async function createServer() {
   const server = hapi.server({
@@ -58,18 +56,6 @@ export async function createServer() {
     }
   })
 
-  // Defines how the dwtAuth cookie is encoded/secured.
-  server.state('dwtAuth', {
-    // Like the session cookie: secure in production, and off locally so login
-    // works over plain HTTP, e.g. in the compose stack's browser tests
-    isSecure: config.get('session.cookie.secure'),
-    isHttpOnly: true,
-    encoding: 'iron',
-    password: config.get('session.cookie.password'),
-    clearInvalid: true,
-    strictHeader: false
-  })
-
   await server.register([
     requestLogger,
     requestTracing,
@@ -80,35 +66,25 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
-    basicAuth(getEnvVars('USER_BASIC_AUTH_'), logger),
+    entraId,
     requestContext,
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
-  // use cookie if there is one.
-  server.ext('onPreAuth', (request, h) => {
-    if (!request.headers.authorization) {
-      const stored = request.state?.dwtAuth
-      if (stored?.authorization) {
-        request.headers.authorization = stored.authorization
-      }
-    }
-    return h.continue
-  })
-
-  // Strip WWW-Authenticate (trigger for popup) so the browser never shows its native popup,
-  // and send to our own login form instead.
+  // Not signed in: sign in with Entra ID, then come back to the page
   server.ext('onPreResponse', (request, h) => {
     const response = request.response
 
     if (response.isBoom && response.output.statusCode === 401) {
-      return h.redirect(`/login?redirectTo=${encodeURIComponent(request.path)}`)
+      return h.redirect(
+        `${paths.signIn}?redirectTo=${encodeURIComponent(request.path)}`
+      )
     }
 
     return h.continue
   })
 
-  server.auth.default('basic')
+  server.auth.default(entraStrategy)
 
   server.ext('onPreResponse', catchAll)
 

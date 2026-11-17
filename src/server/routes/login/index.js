@@ -1,7 +1,8 @@
-import { loginSubmitController, loginViewController } from './controller.js'
+import { signInCallbackController, signInController } from './controller.js'
+import { paths } from '#/server/common/constants/paths.js'
 
 /**
- * Sets up the routes used in the login page.
+ * Sets up the routes used to sign in with Entra ID.
  * These routes are registered in src/server/router.js.
  */
 export const login = {
@@ -11,17 +12,15 @@ export const login = {
       server.route([
         {
           method: 'GET',
-          path: '/login',
+          path: paths.signIn,
           options: { auth: false },
-          ...loginViewController
+          ...signInController
         },
         {
-          method: 'POST',
-          path: '/login',
-          options: {
-            auth: false
-          },
-          ...loginSubmitController
+          method: 'GET',
+          path: paths.signInCallback,
+          options: { auth: false },
+          ...signInCallbackController
         }
       ])
     }

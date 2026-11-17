@@ -3,10 +3,7 @@ import { paths } from '#/server/common/constants/paths.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
   mockAuditWriteAction: vi.fn()
@@ -29,7 +26,7 @@ const twoSecrets = {
   ]
 }
 
-const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
+const auth = signedInAs()
 
 describe('#removeClientCredentialsController', () => {
   let server
@@ -53,7 +50,7 @@ describe('#removeClientCredentialsController', () => {
     return server.inject({
       method: 'GET',
       url: `/software-providers/${clientId}/remove`,
-      headers: auth
+      auth
     })
   }
 
@@ -61,7 +58,7 @@ describe('#removeClientCredentialsController', () => {
     return server.inject({
       method: 'POST',
       url: `/software-providers/${clientId}/remove`,
-      headers: auth
+      auth
     })
   }
 
@@ -78,8 +75,6 @@ describe('#removeClientCredentialsController', () => {
   })
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })
@@ -209,7 +204,8 @@ describe('#removeClientCredentialsController', () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
       url: headers.location,
-      headers: { ...auth, cookie: headers['set-cookie'].join('; ') }
+      auth,
+      headers: { cookie: headers['set-cookie'].join('; ') }
     })
     const document = new JSDOM(result).window.document
 
@@ -247,7 +243,8 @@ describe('#removeClientCredentialsController', () => {
     const { result } = await server.inject({
       method: 'GET',
       url: headers.location,
-      headers: { ...auth, cookie: headers['set-cookie'].join('; ') }
+      auth,
+      headers: { cookie: headers['set-cookie'].join('; ') }
     })
     const alert = getElementText(
       new JSDOM(result).window.document,

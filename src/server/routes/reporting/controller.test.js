@@ -1,16 +1,11 @@
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '../../../../test-helpers/constants.js'
+import { signedInAs } from '../../../../test-helpers/signed-in.js'
 
 describe('#reportingController', () => {
   let server
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })
@@ -23,7 +18,7 @@ describe('#reportingController', () => {
     const { statusCode } = await server.inject({
       method: 'GET',
       url: '/reporting',
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     expect(statusCode).toBe(302)

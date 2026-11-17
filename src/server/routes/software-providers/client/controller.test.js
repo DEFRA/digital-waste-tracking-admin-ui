@@ -3,10 +3,7 @@ import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const clientId = '1c847b529de64a03b7f852c96e1d4a37'
 
@@ -24,7 +21,7 @@ async function getPage(server) {
   const { result, statusCode } = await server.inject({
     method: 'GET',
     url: `/software-providers/${clientId}`,
-    headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+    auth: signedInAs()
   })
 
   return { statusCode, document: new JSDOM(result).window.document }
@@ -41,8 +38,6 @@ describe('#softwareProviderController', () => {
   let fetchMock
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })
@@ -228,7 +223,7 @@ describe('#softwareProviderController', () => {
     const { statusCode, headers } = await server.inject({
       method: 'GET',
       url: `/software-providers/${clientId}`,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     expect(statusCode).toEqual(statusCodes.found)
@@ -242,7 +237,7 @@ describe('#softwareProviderController', () => {
     const { statusCode, headers } = await server.inject({
       method: 'GET',
       url: `/software-providers/${id}`,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     expect(statusCode).toEqual(statusCodes.found)
@@ -330,7 +325,7 @@ describe('#softwareProviderController', () => {
       const { statusCode } = await offServer.inject({
         method,
         url,
-        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+        auth: signedInAs()
       })
 
       expect(statusCode).toEqual(statusCodes.notFound)

@@ -26,12 +26,25 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - waste-organisation-backend
-      - dwt-client-sync
+      waste-organisation-backend:
+        condition: service_started
+      dwt-client-sync:
+        condition: service_started
+      floci-az:
+        condition: service_started
+      floci-sts-setup:
+        condition: service_completed_successfully
     environment:
       PORT: 3000
-      # Made-up local-only login: username "local", password "local"
-      USER_BASIC_AUTH_LOCAL: bG9jYWw9bG9jYWw=
+      # Sign in with floci-az's dev user, proving the admin UI with a token
+      # from Floci's STS, as it would with Entra ID and AWS STS on CDP. The
+      # Entra ID settings' defaults point at floci-az (see src/config/config.js)
+      AWS_REGION: eu-west-2
+      AWS_ENDPOINT_URL_STS: http://floci-sts:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      # CDP's task credentials expire, and the token provider expects that
+      AWS_CREDENTIAL_EXPIRATION: '2099-01-01T00:00:00Z'
       WASTE_ORGANISATION_SERVICE_URL: http://waste-organisation-backend:3001
       DWT_CLIENT_SYNC_SERVICE_URL: http://dwt-client-sync:3001
       # Made-up, and accepted by the shared stack's organisation backend and client sync
@@ -43,5 +56,50 @@ services:
       # Run your working copy, reloading as you edit
       - ./src:/home/node/src
       - ./package.json:/home/node/package.json
+    networks:
+      - cdp-tenant
+
+  # Stands in for Entra ID. It signs in its dev user without a form, and
+  # accepts any client assertion. It builds its addresses from the host name
+  # it's called by, so the browser and the admin UI must both call it
+  # floci-az: from a browser outside Docker, add "127.0.0.1 floci-az" to
+  # /etc/hosts
+  floci-az:
+    image: floci/floci-az:0.17.0
+    ports:
+      - '4577:4577'
+    networks:
+      - cdp-tenant
+
+  # Stands in for AWS STS, issuing the token the admin UI proves itself with.
+  # The shared stack's Floci is too old for STS GetWebIdentityToken (2.4.0+)
+  floci-sts:
+    image: floci/floci:2.4.0-compat
+    ports:
+      # For npm run dev (see .env.example)
+      - '4599:4566'
+    environment:
+      FLOCI_DEFAULT_REGION: eu-west-2
+    networks:
+      - cdp-tenant
+
+  # Switches STS tokens on, which CDP has done for real AWS accounts.
+  # EnableOutboundWebIdentityFederation fails once it's on, so either is fine
+  floci-sts-setup:
+    image: curlimages/curl:8.17.0
+    depends_on:
+      - floci-sts
+    command:
+      - sh
+      - -c
+      - >-
+        for attempt in $$(seq 30); do
+        response=$$(curl -s -X POST http://floci-sts:4566/
+        -H 'Authorization: AWS4-HMAC-SHA256 Credential=test/20260101/us-east-1/iam/aws4_request, SignedHeaders=host, Signature=local'
+        -d 'Action=EnableOutboundWebIdentityFederation&Version=2010-05-08');
+        case "$$response" in *IssuerIdentifier*|*FeatureEnabled*) echo "STS tokens are on"; exit 0;; esac;
+        sleep 1;
+        done;
+        echo "Floci didn't switch STS tokens on: $$response"; exit 1
     networks:
       - cdp-tenant

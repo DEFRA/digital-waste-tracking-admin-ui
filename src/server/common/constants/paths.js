@@ -1,4 +1,8 @@
 export const paths = {
+  signIn: '/login',
+  // Where Entra ID sends the user back to after they sign in. It must match a
+  // redirect URI on the app registration exactly
+  signInCallback: '/auth',
   softwareProviders: '/software-providers',
   createClientCredentials: '/software-providers/create',
   newClientCredentials: '/software-providers/credentials',
