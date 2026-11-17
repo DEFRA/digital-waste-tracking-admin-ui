@@ -37,14 +37,16 @@ services:
     environment:
       PORT: 3000
       # Sign in with floci-az's dev user, proving the admin UI with a token
-      # from Floci's STS, as it would with Entra ID and AWS STS on CDP. The
-      # Entra ID settings' defaults point at floci-az (see src/config/config.js)
+      # from Floci's STS, as it would with Entra ID and AWS STS on CDP
       AWS_REGION: eu-west-2
       AWS_ENDPOINT_URL_STS: http://floci-sts:4566
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       # CDP's task credentials expire, and the token provider expects that
       AWS_CREDENTIAL_EXPIRATION: '2099-01-01T00:00:00Z'
+      # floci-az's dev app and tenant
+      ENTRA_CLIENT_ID: 11111111-1111-1111-1111-111111111111
+      ENTRA_DISCOVERY_URI: http://floci-az:4577/00000000-0000-0000-0000-000000000002/v2.0/.well-known/openid-configuration
       WASTE_ORGANISATION_SERVICE_URL: http://waste-organisation-backend:3001
       DWT_CLIENT_SYNC_SERVICE_URL: http://dwt-client-sync:3001
       # Made-up, and accepted by the shared stack's organisation backend and client sync

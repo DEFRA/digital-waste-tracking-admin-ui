@@ -30,9 +30,9 @@ describe('#contentSecurityPolicy', () => {
       auth: signedInAs()
     })
 
-    // floci-az, which stands in for Entra ID outside production
+    // The tests' made-up Entra ID (see vitest.config.js)
     expect(resp.headers['content-security-policy']).toContain(
-      "form-action 'self' http://floci-az:4577"
+      "form-action 'self' https://entra.example"
     )
   })
 })

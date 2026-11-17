@@ -185,19 +185,18 @@ export const config = convict({
     }
   },
   entra: {
-    // Locally, floci-az stands in for Entra ID: see compose.yml
+    // Required. Locally, floci-az stands in for Entra ID: see compose.yml
+    // and .env.example
     clientId: {
       doc: "The admin UI's app registration client ID in Microsoft Entra ID",
       format: String,
-      default: isProduction ? '' : '11111111-1111-1111-1111-111111111111',
+      default: '',
       env: 'ENTRA_CLIENT_ID'
     },
     discoveryUri: {
       doc: "Entra ID's OpenID Connect discovery document, for the tenant",
       format: String,
-      default: isProduction
-        ? ''
-        : 'http://floci-az:4577/00000000-0000-0000-0000-000000000002/v2.0/.well-known/openid-configuration',
+      default: '',
       env: 'ENTRA_DISCOVERY_URI'
     },
     useHttp: {

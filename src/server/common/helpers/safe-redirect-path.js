@@ -1,5 +1,5 @@
 // Any origin will do, as only whether the path stays on it matters
-const thisSite = 'http://this-site.invalid'
+const thisSite = 'https://this-site.invalid'
 
 /**
  * Where to send the user after signing in, as long as it's a page on this
