@@ -60,6 +60,14 @@ describe('Signing in with Entra ID', () => {
     expect(headers.location).toEqual('/login?redirectTo=%2Fsoftware-providers')
   })
 
+  test("Should keep the page's query, so it comes back to the same page", async () => {
+    const { headers } = await get('/software-providers?sort=name')
+
+    expect(headers.location).toEqual(
+      '/login?redirectTo=%2Fsoftware-providers%3Fsort%3Dname'
+    )
+  })
+
   test('Should send them to Entra ID to sign in', async () => {
     const { statusCode, headers } = await get('/login?redirectTo=%2F')
 

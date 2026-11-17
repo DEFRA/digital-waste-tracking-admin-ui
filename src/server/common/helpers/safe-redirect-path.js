@@ -18,5 +18,8 @@ export function safeRedirectPath(path, fallback = '/') {
 
   const url = URL.parse(path, thisSite)
 
-  return url?.origin === thisSite ? `${url.pathname}${url.search}` : fallback
+  // Resolving "." and ".." can leave "//" at the start, as in "/.//example.com"
+  return url?.origin === thisSite && !url.pathname.startsWith('//')
+    ? `${url.pathname}${url.search}`
+    : fallback
 }

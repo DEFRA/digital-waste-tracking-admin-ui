@@ -98,8 +98,6 @@ jobs:
         working-directory: integration-tests
         env:
           ENVIRONMENT: local
-          # The made-up login in compose.yml
-          adminUiPassword: local
           # Chrome runs in a container, so reaches the admin UI by its service name
           ADMIN_UI_BASE_URL: http://digital-waste-tracking-admin-ui:3000
           # Made-up credential for calling dwt-client-sync directly

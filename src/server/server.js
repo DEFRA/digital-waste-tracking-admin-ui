@@ -76,8 +76,10 @@ export async function createServer() {
     const response = request.response
 
     if (response.isBoom && response.output.statusCode === 401) {
+      // With its query, so a report comes back with its dates
+      const page = `${request.path}${request.url.search}`
       return h.redirect(
-        `${paths.signIn}?redirectTo=${encodeURIComponent(request.path)}`
+        `${paths.signIn}?redirectTo=${encodeURIComponent(page)}`
       )
     }
 
