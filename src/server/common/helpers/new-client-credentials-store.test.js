@@ -1,3 +1,4 @@
+import { config } from '#/config/config.js'
 import { createNewClientCredentialsStore } from './new-client-credentials-store.js'
 
 describe('#createNewClientCredentialsStore', () => {
@@ -18,8 +19,7 @@ describe('#createNewClientCredentialsStore', () => {
     const stored = new Map()
     cache = {
       set: vi.fn(async (key, value) => stored.set(key, value)),
-      get: vi.fn(async (key) => stored.get(key) ?? null),
-      drop: vi.fn(async (key) => stored.delete(key))
+      get: vi.fn(async (key) => stored.get(key) ?? null)
     }
     server = { cache: vi.fn(() => cache) }
   })
@@ -49,14 +49,33 @@ describe('#createNewClientCredentialsStore', () => {
     expect(request.yar.set).not.toHaveBeenCalled()
   })
 
-  test('Should give the credentials back once', async () => {
+  test('Should give the credentials back once, keeping only the client ID', async () => {
     const store = createNewClientCredentialsStore(server)
     const request = requestFrom('test1')
     const id = await store.save(request, credentials)
 
+    expect(await store.shownClientId(request, id)).toBeNull()
     expect(await store.take(request, id)).toEqual(credentials)
     expect(await store.take(request, id)).toBeNull()
-    expect(cache.drop).toHaveBeenCalledWith(id)
+    // Without the secret, and for as long as a session
+    expect(cache.set).toHaveBeenLastCalledWith(
+      id,
+      { owner: 'test1', shownClientId: 'new-client-id' },
+      config.get('session.cache.ttl')
+    )
+    expect(await store.shownClientId(request, id)).toEqual('new-client-id')
+  })
+
+  test('Should not say whose credentials another user was shown', async () => {
+    const store = createNewClientCredentialsStore(server)
+    const id = await store.save(requestFrom('test1'), credentials)
+    await store.take(requestFrom('test1'), id)
+
+    expect(await store.shownClientId(requestFrom('test2'), id)).toBeNull()
+    expect(await store.shownClientId(requestFrom(undefined), id)).toBeNull()
+    expect(
+      await store.shownClientId(requestFrom('test1'), 'unknown-id')
+    ).toBeNull()
   })
 
   test('Should keep each of two creates separate, as from two tabs', async () => {
@@ -71,12 +90,12 @@ describe('#createNewClientCredentialsStore', () => {
     expect(await store.take(request, firstId)).toEqual(credentials)
   })
 
-  test("Should not give another user's credentials back, or drop them", async () => {
+  test("Should not give another user's credentials back, or remove them", async () => {
     const store = createNewClientCredentialsStore(server)
     const id = await store.save(requestFrom('test1'), credentials)
 
     expect(await store.take(requestFrom('test2'), id)).toBeNull()
-    expect(cache.drop).not.toHaveBeenCalled()
+    expect(cache.set).toHaveBeenCalledTimes(1)
     expect(await store.take(requestFrom('test1'), id)).toEqual(credentials)
   })
 

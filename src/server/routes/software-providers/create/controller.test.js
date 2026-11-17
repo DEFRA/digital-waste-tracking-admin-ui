@@ -448,13 +448,17 @@ describe('Create new credentials', () => {
       const copyArea = document.querySelector('[data-module="app-copy"]')
       expect(copyArea.hasAttribute('hidden')).toBe(true)
       const copy = document.querySelector('[data-testid="copy-button"]')
-      expect(copy.textContent.trim()).toEqual('Copy credentials')
-      expect(copy.getAttribute('aria-label')).toEqual('Copy client credentials')
-      expect(
-        document
-          .querySelector('[data-testid="copy-status"]')
-          .getAttribute('role')
-      ).toEqual('status')
+      // Its name starts with the visible label, so speech users can say it
+      expect(copy.querySelector('[data-copy-label]').textContent).toEqual(
+        'Copy credentials'
+      )
+      expect(copy.textContent.replace(/\s+/g, ' ').trim()).toEqual(
+        'Copy credentials client ID and client secret'
+      )
+      expect(copy.hasAttribute('aria-label')).toBe(false)
+      const status = document.querySelector('[data-testid="copy-status"]')
+      expect(status.getAttribute('role')).toEqual('status')
+      expect(status.classList.contains('govuk-visually-hidden')).toBe(true)
 
       const close = document.querySelector('[data-testid="close-button"]')
       expect(close.textContent.trim()).toEqual('Close')
@@ -466,9 +470,12 @@ describe('Create new credentials', () => {
       expect(close.closest('[hidden]')).toBeNull()
       expect(document.querySelector('.govuk-back-link')).toBeNull()
 
+      // Shown once: coming back goes to the client
       const again = await getCredentialsPage(cookie, url)
       expect(again.statusCode).toEqual(302)
-      expect(again.headers.location).toEqual('/software-providers')
+      expect(again.headers.location).toEqual(
+        '/software-providers/new-client-id'
+      )
       expect(again.payload).not.toContain(created.clientSecret)
     })
 

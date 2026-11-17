@@ -21,12 +21,19 @@ export function newClientCredentialsController(store) {
     async handler(request, h) {
       const credentials = await store.take(request, request.params.id)
 
-      // Shown once: coming back to the page goes to the Software providers page
+      // Shown once: coming back to the page goes to the client, or to the
+      // Software providers page if it's not known which client
       if (!credentials) {
-        return h.redirect(paths.softwareProviders)
+        const clientId = await store.shownClientId(request, request.params.id)
+
+        return h.redirect(
+          clientId
+            ? clientPath(paths.softwareProvider, clientId)
+            : paths.softwareProviders
+        )
       }
 
-      request.yar.flash(flashKeys.createdClientSecret, credentials.clientId)
+      request.yar.flash(flashKeys.newSecretClientId, credentials.clientId)
 
       return h.view('software-providers/credentials/index', {
         pageTitle: 'Copy the client credentials',

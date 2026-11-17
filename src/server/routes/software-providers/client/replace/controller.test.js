@@ -321,14 +321,14 @@ describe('#replaceClientCredentialsController', () => {
       // Close goes back to the client, where the new secret is listed
       expect(closeHref).toEqual(`/software-providers/${clientId}`)
 
-      // Shown once: coming back goes to the Software providers page
+      // Shown once: coming back goes to the client
       const again = await server.inject({
         method: 'GET',
         url: headers.location,
         headers: auth
       })
       expect(again.statusCode).toEqual(statusCodes.found)
-      expect(again.headers.location).toEqual(paths.softwareProviders)
+      expect(again.headers.location).toEqual(`/software-providers/${clientId}`)
 
       clientSyncRespondsWith({
         client: {

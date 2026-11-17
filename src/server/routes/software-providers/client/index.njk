@@ -66,7 +66,7 @@
     {% set generatedOn = secret.createdAt | formatDate("d LLLL yyyy 'at' h:mmaaa") %}
     {% set generatedOnCell = { text: generatedOn } %}
     {% if loop.first and hasNewSecret %}
-      {% set generatedOnCell = { html: (generatedOn + '\n<strong class="govuk-tag govuk-tag--green">New</strong>\n') | safe } %}
+      {% set generatedOnCell = { html: (generatedOn + ' <strong class="govuk-tag govuk-tag--green">New</strong>') | safe } %}
     {% endif %}
     {% set actions = { text: "" } %}
     {# The link names its secret's date, as "Replace secret" alone doesn't say
@@ -85,7 +85,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">Software provider</span>
-      <h1 class="govuk-heading-l govuk-!-margin-bottom-4" data-testid="app-heading-title">{{ clientName }}</h1>
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-4 app-break-word" data-testid="app-heading-title">{{ clientName }}</h1>
       <p class="govuk-body govuk-!-margin-bottom-8">
         <strong class="govuk-tag">{{ environment | capitalize }}</strong>
       </p>

@@ -66,6 +66,7 @@ export function createNewClientCredentialsStore(server) {
 
     /**
      * Gets the new credentials and removes them, so they can only be shown once.
+     * Only the client ID is kept, so coming back can go to that client.
      *
      * @param {import('@hapi/hapi').Request} request - The request
      * @param {String} id - The id they were saved with
@@ -77,13 +78,36 @@ export function createNewClientCredentialsStore(server) {
       const owner = ownerOf(request)
       const saved = await cache.get(id)
 
+      if (!owner || saved?.owner !== owner || !saved.credentials) {
+        return null
+      }
+
+      // Kept as long as a session, as it no longer holds the secret
+      await cache.set(
+        id,
+        { owner, shownClientId: saved.credentials.clientId },
+        config.get('session.cache.ttl')
+      )
+
+      return saved.credentials
+    },
+
+    /**
+     * @param {import('@hapi/hapi').Request} request - The request
+     * @param {String} id - The id they were saved with
+     *
+     * @returns {Promise<String|null>} The client whose credentials this user
+     * has already been shown, or null if there's none
+     */
+    async shownClientId(request, id) {
+      const owner = ownerOf(request)
+      const saved = await cache.get(id)
+
       if (!owner || saved?.owner !== owner) {
         return null
       }
 
-      await cache.drop(id)
-
-      return saved.credentials
+      return saved.shownClientId ?? null
     }
   }
 }
