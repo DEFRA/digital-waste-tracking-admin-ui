@@ -63,7 +63,9 @@ describe('#softwareProviderController', () => {
     const { statusCode, document } = await getPage(server)
 
     expect(statusCode).toBe(statusCodes.ok)
-    expect(document.title.trim()).toEqual('Skipflow_Test - DWT admin portal')
+    expect(document.title.trim()).toEqual(
+      'Skipflow_Test - Local - DWT admin portal'
+    )
     expect(getElementText(document, 'app-heading-title')).toContain(
       'Skipflow_Test'
     )

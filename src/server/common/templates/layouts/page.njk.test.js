@@ -1,6 +1,21 @@
 import { renderTemplate } from '#/test-helpers/component-helpers.js'
 
 describe('Page Layout', () => {
+  describe('Page title', () => {
+    test('Should name the page, the environment and the service', () => {
+      const $page = renderTemplate('layouts/page.njk', {
+        pageTitle: 'Software providers',
+        environmentName: 'Production',
+        serviceName: 'DWT admin portal',
+        getAssetPath: () => 'assets'
+      })
+
+      expect($page('title').text().trim()).toEqual(
+        'Software providers - Production - DWT admin portal'
+      )
+    })
+  })
+
   describe('Header environment tag', () => {
     test('Should have the red tag for Local environment', () => {
       const $page = renderTemplate('layouts/page.njk', {

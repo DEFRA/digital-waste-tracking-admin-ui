@@ -4,7 +4,7 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block pageTitle %}
-  {{ "Error: " if errors }}{{ pageTitle }} - DWT admin portal
+  {{ "Error: " if errors }}{{ pageTitle }} - {{ environmentName }} - {{ serviceName }}
 {% endblock %}
 
 {% block pageContent %}

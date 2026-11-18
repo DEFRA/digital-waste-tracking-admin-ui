@@ -5,10 +5,6 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "alert/macro.njk" import appAlert %}
 
-{% block pageTitle %}
-  {{ pageTitle }} - DWT admin portal
-{% endblock %}
-
 {# Outside the main wrapper, as the prototype has it, but only on this page #}
 {% block beforeContent %}
   {{ govukBackLink({

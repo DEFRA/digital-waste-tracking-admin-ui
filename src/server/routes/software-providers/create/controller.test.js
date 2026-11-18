@@ -109,7 +109,7 @@ describe('Create new credentials', () => {
 
       expect(statusCode).toEqual(200)
       expect(document.title.trim()).toEqual(
-        'What is the name of the software provider and package? - DWT admin portal'
+        'What is the name of the software provider and package? - Local - DWT admin portal'
       )
       expect(getElementText(document, 'app-heading-caption')).toEqual(
         'Create local environment credentials'
@@ -194,7 +194,7 @@ describe('Create new credentials', () => {
 
         expect(statusCode).toEqual(400)
         expect(document.title.trim()).toEqual(
-          'Error: What is the name of the software provider and package? - DWT admin portal'
+          'Error: What is the name of the software provider and package? - Local - DWT admin portal'
         )
         expect(
           document
@@ -399,7 +399,7 @@ describe('Create new credentials', () => {
       expect(statusCode).toEqual(200)
       expect(headers['cache-control']).toEqual('no-store')
       expect(document.title.trim()).toEqual(
-        'Copy the client credentials - DWT admin portal'
+        'Copy the client credentials - Local - DWT admin portal'
       )
       expect(getElementText(document, 'app-heading-caption')).toEqual(
         'Waste_Technologies_Software'

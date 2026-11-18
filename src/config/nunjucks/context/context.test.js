@@ -69,6 +69,7 @@ describe('context and cache', () => {
           breadcrumbs: [],
           getAssetPath: expect.any(Function),
           environment: 'ENVIRONMENT_NAME',
+          environmentName: 'ENVIRONMENT_NAME',
           navigation: [
             {
               current: true,
@@ -178,6 +179,7 @@ describe('context and cache', () => {
           breadcrumbs: [],
           getAssetPath: expect.any(Function),
           environment: 'ENVIRONMENT_NAME',
+          environmentName: 'ENVIRONMENT_NAME',
           navigation: [
             {
               current: true,

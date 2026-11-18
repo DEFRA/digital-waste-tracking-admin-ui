@@ -3,10 +3,6 @@
 {% from "interruption-card/macro.njk" import appInterruptionCard %}
 {% from "report-exposed-credentials/macro.njk" import appReportExposedCredentials %}
 
-{% block pageTitle %}
-  {{ pageTitle }} - DWT admin portal
-{% endblock %}
-
 {% block pageContent %}
   {% call appInterruptionCard({
     heading: "Are you sure you want to replace the current secret?",

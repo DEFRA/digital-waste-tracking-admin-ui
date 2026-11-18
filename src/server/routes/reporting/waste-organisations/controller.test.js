@@ -82,7 +82,9 @@ describe('#wasteOrganisationsReportingController', () => {
       const { document, statusCode } = await documentOf()
 
       expect(statusCode).toBe(statusCodes.ok)
-      expect(document.title).toEqual('Waste organisations - DWT admin portal')
+      expect(document.title).toEqual(
+        'Waste organisations - Local - DWT admin portal'
+      )
       expect(getElementText(document, 'app-heading-title')).toEqual(
         'Waste organisations'
       )
@@ -235,7 +237,7 @@ describe('#wasteOrganisationsReportingController', () => {
 
       expect(statusCode).toBe(statusCodes.ok)
       expect(document.title).toEqual(
-        'Error: Waste organisations - DWT admin portal'
+        'Error: Waste organisations - Local - DWT admin portal'
       )
       expect(fetchMock).not.toHaveBeenCalled()
       expect(document.querySelector('#results-heading')).toBeNull()

@@ -2,10 +2,6 @@
 
 {% from "interruption-card/macro.njk" import appInterruptionCard %}
 
-{% block pageTitle %}
-  {{ pageTitle }} - DWT admin portal
-{% endblock %}
-
 {% block pageContent %}
   {{ appInterruptionCard({
     heading: pageTitle,

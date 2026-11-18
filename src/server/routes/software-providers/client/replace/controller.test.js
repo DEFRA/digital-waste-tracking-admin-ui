@@ -58,7 +58,7 @@ describe('#replaceClientCredentialsController', () => {
     expect(statusCode).toBe(statusCodes.ok)
     const document = new JSDOM(result).window.document
     expect(document.title.trim()).toEqual(
-      'Replace the client secret - DWT admin portal'
+      'Replace the client secret - Local - DWT admin portal'
     )
     expect(getElementText(document, 'app-heading-title')).toEqual(
       'Are you sure you want to replace the current secret?'

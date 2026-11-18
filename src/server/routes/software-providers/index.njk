@@ -4,10 +4,6 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "alert/macro.njk" import appAlert %}
 
-{% block pageTitle %}
-  {{ pageTitle }} - DWT admin portal
-{% endblock %}
-
 {% block pageContent %}
   {% set hasCredentials = clientCredentials | length > 0 %}
 

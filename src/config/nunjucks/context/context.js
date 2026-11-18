@@ -24,13 +24,16 @@ export function context(request) {
     }
   }
 
+  const environment = environmentName()
+
   return {
     assetPath: `${assetPath}/assets`,
     serviceName: config.get('serviceName'),
     serviceUrl: '/',
     breadcrumbs: [],
     navigation: buildNavigation(request),
-    environment: environmentName(),
+    environment,
+    environmentName: environment,
     getAssetPath(asset) {
       if (!config.get('isProduction')) {
         return `${assetPath}/${asset}`
