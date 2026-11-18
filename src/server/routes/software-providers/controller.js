@@ -25,9 +25,24 @@ function byClientName(a, b) {
   )
 }
 
+// The environment to switch to from each environment, and the config key for
+// its base URL
+const otherEnvironments = {
+  local: { environment: 'dev', urlConfig: 'environmentLinks.dev' },
+  dev: { environment: 'test', urlConfig: 'environmentLinks.test' },
+  test: { environment: 'perf-test', urlConfig: 'environmentLinks.perfTest' },
+  'perf-test': {
+    environment: 'ext-test',
+    urlConfig: 'environmentLinks.extTest'
+  },
+  'ext-test': { environment: 'prod', urlConfig: 'environmentLinks.prod' },
+  prod: { environment: 'ext-test', urlConfig: 'environmentLinks.extTest' }
+}
+
 export const softwareProvidersController = {
   async handler(request, h) {
     const environment = environmentName()
+    const otherEnvironment = otherEnvironments[config.get('cdpEnvironment')]
     // Only straight after a deletion: reading the flash clears it
     const [deletedClientName] = request.yar.flash(
       flashKeys.deletedSoftwareProvider
@@ -51,42 +66,15 @@ export const softwareProvidersController = {
         : null,
       clientCredentials,
       deletedClientName,
-      currentEnvironment: environment,
-      prodEnvironment: {
-        label: environmentLabels['prod'],
-        url: new URL(
-          paths.softwareProviders,
-          config.get('environmentLinks.prod')
-        ).href
-      },
-      extTestEnvironment: {
-        label: environmentLabels['ext-test'],
-        url: new URL(
-          paths.softwareProviders,
-          config.get('environmentLinks.extTest')
-        ).href
-      },
-      perfTestEnvironment: {
-        label: environmentLabels['perf-test'],
-        url: new URL(
-          paths.softwareProviders,
-          config.get('environmentLinks.perfTest')
-        ).href
-      },
-      testEnvironment: {
-        label: environmentLabels['test'],
-        url: new URL(
-          paths.softwareProviders,
-          config.get('environmentLinks.test')
-        ).href
-      },
-      devEnvironment: {
-        label: environmentLabels['dev'],
-        url: new URL(
-          paths.softwareProviders,
-          config.get('environmentLinks.dev')
-        ).href
-      }
+      otherEnvironment: otherEnvironment
+        ? {
+            label: environmentLabels[otherEnvironment.environment],
+            url: new URL(
+              paths.softwareProviders,
+              config.get(otherEnvironment.urlConfig)
+            ).href
+          }
+        : null
     })
   }
 }
