@@ -34,15 +34,15 @@
       <p class="govuk-body govuk-!-margin-bottom-8">You are in the {{ environment }} environment.
       {% if currentEnvironment == "Production" %}
         <a href="{{extTestEnvironment.url}}">Go to {{ extTestEnvironment.label }}</a>
-      {% elif currentEnvironment === "External test"%}
+      {% elif currentEnvironment == "External test" %}
         <a href="{{prodEnvironment.url}}">Go to {{ prodEnvironment.label }}</a>
-      {% elif currentEnvironment === "Performance test"%}
+      {% elif currentEnvironment == "Performance test" %}
         <a href="{{extTestEnvironment.url}}">Go to {{ extTestEnvironment.label }}</a>
-      {% elif currentEnvironment === "Test"%}
+      {% elif currentEnvironment == "Test" %}
         <a href="{{perfTestEnvironment.url}}">Go to {{ perfTestEnvironment.label }}</a>
-      {% elif currentEnvironment === "Dev"%}
+      {% elif currentEnvironment == "Dev" %}
         <a href="{{testEnvironment.url}}">Go to {{ testEnvironment.label }}</a>
-      {% elif currentEnvironment === "Local"%}
+      {% elif currentEnvironment == "Local" %}
         <a href="{{devEnvironment.url}}">Go to {{ devEnvironment.label }}</a>
       {% endif %}
       </p>
