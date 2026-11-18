@@ -1,3 +1,11 @@
+import { config } from '#/config/config.js'
+
+// Where signing in with Entra ID happens, e.g. https://login.microsoftonline.com
+const entraOrigin = () => {
+  const discoveryUri = config.get('entra.discoveryUri')
+  return discoveryUri ? new URL(discoveryUri).origin : ''
+}
+
 const contentSecurityPolicy = {
   name: 'content-security-policy',
   register: (server) => {
@@ -12,7 +20,9 @@ const contentSecurityPolicy = {
       "frame-src 'self' data:",
       "object-src 'none'",
       "frame-ancestors 'none'",
-      "form-action 'self'",
+      // A form sent after the session ends is redirected to sign in again,
+      // and form-action covers where a form's response redirects to
+      `form-action 'self' ${entraOrigin()}`.trim(),
       "manifest-src 'self'"
     ].join('; ')
 

@@ -3,10 +3,7 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
 import { format } from 'date-fns'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const path = '/reporting/waste-organisations'
 
@@ -44,7 +41,7 @@ describe('#wasteOrganisationsReportingController', () => {
     return server.inject({
       method: 'GET',
       url: `${path}${query}`,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
   }
 
@@ -55,8 +52,6 @@ describe('#wasteOrganisationsReportingController', () => {
   }
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })

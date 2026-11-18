@@ -209,7 +209,31 @@ npm run dev:deps
 npm run dev
 ```
 
-Either way, the admin UI is at <http://localhost:3000> and you log in as `local` / `local`.
+Either way, the admin UI is at <http://localhost:3000>.
+
+#### Signing in
+
+You sign in with Microsoft Entra ID. Locally, floci-az stands in for Entra ID and signs in its
+dev user, `dev-user@floci-az.local`, without asking anything. The admin UI proves who it is to
+Entra ID with a federated credential, a token from AWS STS for its role rather than a client
+secret, and locally Floci (`floci-sts`) issues that token, as AWS STS does on CDP.
+
+floci-az builds its addresses from the host name it's called by, so the admin UI and your browser
+both call it `floci-az`. For your browser to find it, add this line to `/etc/hosts` once:
+
+```text
+127.0.0.1 floci-az
+```
+
+Who can sign in is set in Entra ID, not here: the admin UI lets in anyone Entra ID signs in for
+it. Its Enterprise Application should have "Assignment required" on, with only the admin UI's
+group assigned.
+
+On CDP, set `ENTRA_CLIENT_ID`, `ENTRA_DISCOVERY_URI`
+(`https://login.microsoftonline.com/<tenant ID>/v2.0/.well-known/openid-configuration`) and
+`APP_BASE_URL` for each environment. The app registration needs a redirect URI of
+`<APP_BASE_URL>/auth`, and a federated credential trusting that environment's admin UI
+role, with the audience `digital-waste-tracking-admin-ui`.
 
 The Software providers page lists the three test clients the stack seeds. dwt-client-sync
 also starts a fake of the CDP API it manages clients through, so syncing, and creating,
@@ -246,13 +270,14 @@ docker compose exec -T mongodb mongosh waste-organisation-backend --quiet < ../d
 Then, in your fe-uat checkout:
 
 ```bash
-ENVIRONMENT=local adminUiPassword=local ADMIN_UI_BASE_URL=http://digital-waste-tracking-admin-ui:3000 SERVICE_AUTH_PASSWORD=local-external-api DWT_CLIENT_SYNC_SERVICE_URL=http://localhost:3005 npm run test:grid:admin-ui
+ENVIRONMENT=local ADMIN_UI_BASE_URL=http://digital-waste-tracking-admin-ui:3000 SERVICE_AUTH_PASSWORD=local-external-api DWT_CLIENT_SYNC_SERVICE_URL=http://localhost:3005 npm run test:grid:admin-ui
 ```
 
 Until DEFRA/digital-waste-tracking-fe-uat#134 merges, the script is `test:admin-ui`.
 
 The browser reaches the admin UI by its service name, `digital-waste-tracking-admin-ui`, so `vite.config.js`
-allows that host, and the login cookie isn't `Secure` outside production.
+allows that host, and the session cookie isn't `Secure` outside production. floci-az signs the tests
+in, as it does you.
 
 ### Dependabot
 

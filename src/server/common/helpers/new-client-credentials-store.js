@@ -38,8 +38,8 @@ function cacheFor(server) {
  * Holds new client credentials between creating them and showing them, so the
  * credentials page can be reached by a redirect and shown only once.
  *
- * The credentials are kept in the server-side cache, never in the session,
- * as small sessions are stored in the browser's cookie. Each set gets a random
+ * The credentials are kept in their own server-side cache, never in the
+ * session. Each set gets a random
  * id for the redirect and records the user who created it, so only they can
  * read it. Nothing is written to the session, so two tabs creating at once
  * can't overwrite each other.

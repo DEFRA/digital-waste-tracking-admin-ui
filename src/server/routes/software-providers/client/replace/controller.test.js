@@ -3,10 +3,7 @@ import { paths } from '#/server/common/constants/paths.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
   mockAuditWriteAction: vi.fn()
@@ -30,8 +27,6 @@ describe('#replaceClientCredentialsController', () => {
   let fetchMock
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })
@@ -57,7 +52,7 @@ describe('#replaceClientCredentialsController', () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
       url: `/software-providers/${clientId}/replace`,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     expect(statusCode).toBe(statusCodes.ok)
@@ -94,7 +89,7 @@ describe('#replaceClientCredentialsController', () => {
       const { statusCode, headers } = await server.inject({
         method: 'GET',
         url: `/software-providers/${clientId}/replace`,
-        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+        auth: signedInAs()
       })
 
       // Replacing is only for a client with its one secret
@@ -114,7 +109,7 @@ describe('#replaceClientCredentialsController', () => {
     const { statusCode } = await server.inject({
       method: 'GET',
       url: `/software-providers/${clientId}/replace`,
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     expect(statusCode).toBe(statusCodes.internalServerError)
@@ -148,7 +143,7 @@ describe('#replaceClientCredentialsController', () => {
       return server.inject({
         method: 'POST',
         url: `/software-providers/${clientId}/replace`,
-        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+        auth: signedInAs()
       })
     }
 
@@ -210,7 +205,7 @@ describe('#replaceClientCredentialsController', () => {
       const { result } = await server.inject({
         method: 'GET',
         url: headers.location,
-        headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+        auth: signedInAs()
       })
       const document = new JSDOM(result).window.document
 
@@ -285,10 +280,8 @@ describe('#replaceClientCredentialsController', () => {
       const { result } = await server.inject({
         method: 'GET',
         url: headers.location,
-        headers: {
-          Authorization: `Basic ${requestBasicAuthTest1}`,
-          cookie: headers['set-cookie'].join('; ')
-        }
+        auth: signedInAs(),
+        headers: { cookie: headers['set-cookie'].join('; ') }
       })
 
       // Nothing changed, so the old secret is still the only one
@@ -302,12 +295,12 @@ describe('#replaceClientCredentialsController', () => {
 
     test('Should show the new secret, once, and mark it as New on first visit to the client page', async () => {
       const { headers } = await replaceSecret()
-      const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
+      const auth = signedInAs()
 
       const credentialsResponse = await server.inject({
         method: 'GET',
         url: headers.location,
-        headers: auth
+        auth
       })
 
       expect(credentialsResponse.statusCode).toEqual(statusCodes.ok)
@@ -325,7 +318,7 @@ describe('#replaceClientCredentialsController', () => {
       const again = await server.inject({
         method: 'GET',
         url: headers.location,
-        headers: auth
+        auth
       })
       expect(again.statusCode).toEqual(statusCodes.found)
       expect(again.headers.location).toEqual(`/software-providers/${clientId}`)
@@ -344,7 +337,8 @@ describe('#replaceClientCredentialsController', () => {
       const firstVisit = await server.inject({
         method: 'GET',
         url: closeHref,
-        headers: { ...auth, cookie }
+        auth,
+        headers: { cookie }
       })
       const firstDateCell = new JSDOM(
         firstVisit.result
@@ -362,7 +356,8 @@ describe('#replaceClientCredentialsController', () => {
       const secondVisit = await server.inject({
         method: 'GET',
         url: closeHref,
-        headers: { ...auth, cookie: nextCookie }
+        auth,
+        headers: { cookie: nextCookie }
       })
       const secondDateCell = new JSDOM(
         secondVisit.result

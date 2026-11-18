@@ -1,26 +1,16 @@
 import { createServer } from '#/server/server.js'
 import { pageNames } from '#/server/common/constants/page-names.js'
 import { metricNames } from '#/server/common/constants/metric-names.js'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 describe('#requestContext', () => {
   let server
   let bindings
   let counter
 
-  const inject = (url, headers = {}) =>
-    server.inject({ method: 'GET', url, headers })
-
-  const authHeaders = {
-    Authorization: `Basic ${requestBasicAuthTest1}`
-  }
+  const inject = (url, auth) => server.inject({ method: 'GET', url, auth })
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
 
     // Capture the request logger bindings the same way hapi-pino reads them
@@ -35,6 +25,11 @@ describe('#requestContext', () => {
     counter = vi.spyOn(server.metrics, 'counter').mockResolvedValue()
 
     await server.initialize()
+
+    // Signing in redirects to Entra ID, without looking it up first
+    vi.spyOn(server.plugins['hapi-auth-oidc'].oidc, 'login').mockImplementation(
+      (_request, h) => h.redirect('https://entra.example/authorize').takeover()
+    )
   })
 
   afterAll(async () => {
@@ -45,8 +40,8 @@ describe('#requestContext', () => {
     bindings = undefined
   })
 
-  test('Should add the Basic Auth user and page name to the request logger', async () => {
-    await inject('/', authHeaders)
+  test('Should add the signed-in user and page name to the request logger', async () => {
+    await inject('/', signedInAs())
 
     expect(bindings).toEqual(
       expect.objectContaining({
@@ -59,7 +54,7 @@ describe('#requestContext', () => {
   test('Should add the download CSV page name when downloading the results', async () => {
     await inject(
       '/reporting/waste-organisations?date-from-Day=09&date-from-Month=06&date-from-Year=2026&date-to-Day=10&date-to-Month=06&date-to-Year=2026&download=csv',
-      authHeaders
+      signedInAs()
     )
 
     expect(bindings).toEqual(
@@ -70,31 +65,8 @@ describe('#requestContext', () => {
     )
   })
 
-  test('Should add the Basic Auth user when authenticated by the dwtAuth cookie', async () => {
-    const [username, password] = Buffer.from(requestBasicAuthTest1, 'base64')
-      .toString()
-      .split(':')
-
-    const login = await server.inject({
-      method: 'POST',
-      url: '/login',
-      payload: { username, password, redirectTo: '/' }
-    })
-
-    const [dwtAuth] = login.headers['set-cookie']
-
-    await inject('/', { Cookie: dwtAuth.split(';')[0] })
-
-    expect(bindings).toEqual(
-      expect.objectContaining({
-        page: { name: pageNames.home },
-        user: { id: 'test1', name: 'test1' }
-      })
-    )
-  })
-
-  test('Should record a page view against the Basic Auth user', async () => {
-    await inject('/', authHeaders)
+  test('Should record a page view against the signed-in user', async () => {
+    await inject('/', signedInAs())
 
     expect(counter).toHaveBeenCalledWith(metricNames.pageViews, 1, {
       page: pageNames.home,
@@ -105,7 +77,7 @@ describe('#requestContext', () => {
   test('Should record a page view when the CSV is downloaded', async () => {
     await inject(
       '/reporting/waste-organisations?date-from-Day=09&date-from-Month=06&date-from-Year=2026&date-to-Day=10&date-to-Month=06&date-to-Year=2026&download=csv',
-      authHeaders
+      signedInAs()
     )
 
     expect(counter).toHaveBeenCalledWith(metricNames.pageViews, 1, {

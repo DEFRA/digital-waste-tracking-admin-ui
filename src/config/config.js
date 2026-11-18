@@ -184,6 +184,40 @@ export const config = convict({
       }
     }
   },
+  entra: {
+    // Required. Locally, floci-az stands in for Entra ID: see compose.yml
+    // and .env.example
+    clientId: {
+      doc: "The admin UI's app registration client ID in Microsoft Entra ID",
+      format: String,
+      default: '',
+      env: 'ENTRA_CLIENT_ID'
+    },
+    discoveryUri: {
+      doc: "Entra ID's OpenID Connect discovery document, for the tenant",
+      format: String,
+      default: '',
+      env: 'ENTRA_DISCOVERY_URI'
+    },
+    useHttp: {
+      doc: 'Allow plain HTTP to Entra ID, for floci-az locally',
+      format: Boolean,
+      default: !isProduction,
+      env: 'ENTRA_USE_HTTP'
+    },
+    externalBaseUrl: {
+      doc: "The admin UI's address as the browser sees it, for Entra ID to send the user back to",
+      format: String,
+      default: isProduction ? '' : 'http://localhost:3000',
+      env: 'APP_BASE_URL'
+    },
+    federatedCredentialAudience: {
+      doc: "The audience of the federated credential on the app registration, which trusts the admin UI's AWS role",
+      format: String,
+      default: 'digital-waste-tracking-admin-ui',
+      env: 'ENTRA_FEDERATED_CREDENTIAL_AUDIENCE'
+    }
+  },
   redis: {
     host: {
       doc: 'Redis cache host',

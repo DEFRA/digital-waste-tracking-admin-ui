@@ -3,12 +3,7 @@ import { JSDOM } from 'jsdom'
 import { createServer } from '#/server/server.js'
 import { config } from '#/config/config.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
-import {
-  requestBasicAuthTest1,
-  requestBasicAuthTest2,
-  userBasicAuthTest1,
-  userBasicAuthTest2
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
   mockAuditWriteAction: vi.fn()
@@ -18,7 +13,7 @@ vi.mock('#/server/common/helpers/audit-write-action.js', () => ({
   auditWriteAction: mockAuditWriteAction
 }))
 
-const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
+const auth = signedInAs()
 
 const created = {
   clientId: 'new-client-id',
@@ -60,15 +55,12 @@ describe('Create new credentials', () => {
     return server.inject({
       method: 'POST',
       url: '/software-providers/create',
-      headers: auth,
+      auth,
       payload: { clientName }
     })
   }
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-    process.env.USER_BASIC_AUTH_TEST2 = userBasicAuthTest2
-
     server = await createServer()
     await server.initialize()
   })
@@ -94,7 +86,7 @@ describe('Create new credentials', () => {
       const { result } = await server.inject({
         method: 'GET',
         url: '/software-providers',
-        headers: auth
+        auth
       })
       const button = documentOf(result).querySelector(
         '[data-testid="create-credentials-button"]'
@@ -110,7 +102,7 @@ describe('Create new credentials', () => {
       const { statusCode, result } = await server.inject({
         method: 'GET',
         url: '/software-providers/create',
-        headers: auth
+        auth
       })
       const document = documentOf(result)
       const input = document.querySelector('#clientName')
@@ -165,7 +157,7 @@ describe('Create new credentials', () => {
         const { result } = await server.inject({
           method: 'GET',
           url: '/software-providers/create',
-          headers: auth
+          auth
         })
 
         expect(
@@ -329,7 +321,8 @@ describe('Create new credentials', () => {
       return server.inject({
         method: 'GET',
         url,
-        headers: { ...auth, cookie }
+        auth,
+        headers: { cookie }
       })
     }
 
@@ -485,7 +478,7 @@ describe('Create new credentials', () => {
       const otherUser = await server.inject({
         method: 'GET',
         url: response.headers.location,
-        headers: { Authorization: `Basic ${requestBasicAuthTest2}` }
+        auth: signedInAs('test2')
       })
 
       expect(otherUser.statusCode).toEqual(302)
@@ -513,7 +506,8 @@ describe('Create new credentials', () => {
       const second = await server.inject({
         method: 'POST',
         url: '/software-providers/create',
-        headers: { ...auth, cookie: first.cookie },
+        auth,
+        headers: { cookie: first.cookie },
         payload: { clientName: 'Second_Client' }
       })
       const cookie = cookiesFrom(second.headers) || first.cookie
@@ -561,7 +555,8 @@ describe('Create new credentials', () => {
       const firstVisit = await server.inject({
         method: 'GET',
         url: closeHref,
-        headers: { ...auth, cookie: credentialsCookie }
+        auth,
+        headers: { cookie: credentialsCookie }
       })
       const firstDocument = documentOf(firstVisit.result)
       const firstDateCell = firstDocument.querySelector('tbody tr td')
@@ -576,7 +571,8 @@ describe('Create new credentials', () => {
       const secondVisit = await server.inject({
         method: 'GET',
         url: closeHref,
-        headers: { ...auth, cookie: secondVisitCookie }
+        auth,
+        headers: { cookie: secondVisitCookie }
       })
       const secondDocument = documentOf(secondVisit.result)
       const secondDateCell = secondDocument.querySelector('tbody tr td')
@@ -607,7 +603,7 @@ describe('Create new credentials', () => {
       const { result } = await offServer.inject({
         method: 'GET',
         url: '/software-providers',
-        headers: auth
+        auth
       })
 
       expect(
@@ -625,7 +621,7 @@ describe('Create new credentials', () => {
       const { statusCode } = await offServer.inject({
         method,
         url,
-        headers: auth,
+        auth,
         payload: method === 'POST' ? { clientName: 'Any_Name' } : undefined
       })
 

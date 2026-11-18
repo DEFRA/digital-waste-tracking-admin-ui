@@ -2,20 +2,12 @@ import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1,
-  requestBasicAuthTest2,
-  userBasicAuthTest2
-} from '../../../../test-helpers/constants.js'
+import { signedInAs } from '../../../../test-helpers/signed-in.js'
 
 describe('#homeController', () => {
   let server
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-    process.env.USER_BASIC_AUTH_TEST2 = userBasicAuthTest2
-
     server = await createServer()
     await server.initialize()
   })
@@ -28,7 +20,7 @@ describe('#homeController', () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
       url: '/',
-      headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+      auth: signedInAs()
     })
 
     const { document } = new JSDOM(result).window
@@ -47,7 +39,7 @@ describe('#homeController', () => {
     const { statusCode } = await server.inject({
       method: 'GET',
       url: '/',
-      headers: { Authorization: `Basic ${requestBasicAuthTest2}` }
+      auth: signedInAs('test2')
     })
 
     expect(statusCode).toBe(statusCodes.ok)

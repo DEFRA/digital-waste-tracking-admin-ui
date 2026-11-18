@@ -3,10 +3,7 @@ import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const clientCredentials = [
   {
@@ -33,7 +30,7 @@ async function getPage(server) {
   const { result, statusCode } = await server.inject({
     method: 'GET',
     url: '/software-providers',
-    headers: { Authorization: `Basic ${requestBasicAuthTest1}` }
+    auth: signedInAs()
   })
 
   return { statusCode, document: new JSDOM(result).window.document }
@@ -52,8 +49,6 @@ describe('#softwareProvidersController', () => {
   let fetchMock
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
-
     server = await createServer()
     await server.initialize()
   })

@@ -1,55 +1,57 @@
-import { validateData } from '#/server/common/helpers/validate-data.js'
-import { loginPayloadSchema } from '#/server/routes/login/schema.js'
+import Boom from '@hapi/boom'
 
-const LOGIN_VIEW_CONTEXT = {
-  pageTitle: 'User login',
-  heading: 'User login',
-  serviceName: 'DWT admin portal',
-  breadcrumbs: [{ text: 'Login', href: '/login' }]
-}
+import { signedInUserKey } from '#/server/plugins/entra-id.js'
+import { safeRedirectPath } from '#/server/common/helpers/safe-redirect-path.js'
 
-export const loginViewController = {
-  handler(request, h) {
-    return h.view('login/index', {
-      ...LOGIN_VIEW_CONTEXT,
-      redirectTo: request.query.redirectTo ?? '/'
-    })
+// Where the user was going, kept in the session while they sign in
+const redirectToKey = 'signInRedirectTo'
+
+/**
+ * Sends the user to Entra ID to sign in, remembering where they were going.
+ */
+export const signInController = {
+  async handler(request, h) {
+    request.yar.set(redirectToKey, safeRedirectPath(request.query.redirectTo))
+
+    try {
+      return await request.login(h)
+    } catch (err) {
+      // Such as Entra ID being unreachable. Not a 401, which would send them
+      // back here to sign in, and round again
+      request.logger.error({ err }, 'Could not start signing in with Entra ID')
+      throw Boom.badGateway()
+    }
   }
 }
 
-export const loginSubmitController = {
+/**
+ * Entra ID sends the user back here once they've signed in. Exchanges its code
+ * for who they are, keeps that in a new session and sends them on to where
+ * they were going.
+ */
+export const signInCallbackController = {
   async handler(request, h) {
-    const { username, password, redirectTo } = request.payload
+    let claims
 
-    let errors = validateData(request.payload, loginPayloadSchema)
-
-    if (!errors) {
-      const encoded = Buffer.from(`${username}:${password}`).toString('base64')
-      request.headers.authorization = `Basic ${encoded}`
-
-      try {
-        // test the authentication with the credentials to verify they are valid, using the hapi
-        // configured auth strategy
-        await request.server.auth.test('basic', request)
-
-        // On success set cookie for the user and redirect to the page they were trying to access before being redirected to login
-        return h
-          .response()
-          .state('dwtAuth', { authorization: `Basic ${encoded}` })
-          .redirect(redirectTo || '/')
-      } catch (err) {
-        errors = {
-          login: 'Enter a correct username and password'
-        }
-      }
+    try {
+      ;({ claims } = await request.callback(h))
+    } catch (err) {
+      // Not a 401, which would send them back to sign in, and round again
+      request.logger.warn({ err }, 'Signing in with Entra ID failed')
+      throw Boom.forbidden()
     }
 
-    return h
-      .view('login/index', {
-        ...LOGIN_VIEW_CONTEXT,
-        redirectTo: redirectTo || '/',
-        errors
-      })
-      .code(401)
+    const redirectTo = safeRedirectPath(request.yar.get(redirectToKey))
+
+    // A new session, so one from before they signed in can't be reused
+    request.yar.reset()
+    request.yar.set(signedInUserKey, {
+      id: claims.oid,
+      // Logged as the user in audit lines and metrics
+      username: claims.preferred_username ?? claims.email ?? claims.oid,
+      name: claims.name
+    })
+
+    return h.redirect(redirectTo)
   }
 }

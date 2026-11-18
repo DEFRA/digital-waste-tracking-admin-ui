@@ -5,6 +5,12 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     clearMocks: true,
+    // Made up: the tests never reach Entra ID
+    env: {
+      ENTRA_CLIENT_ID: 'test-client-id',
+      ENTRA_DISCOVERY_URI:
+        'https://entra.example/test-tenant/v2.0/.well-known/openid-configuration'
+    },
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',

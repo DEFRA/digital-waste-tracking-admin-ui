@@ -3,10 +3,7 @@ import { JSDOM } from 'jsdom'
 import { createServer } from '#/server/server.js'
 import { config } from '#/config/config.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
-import {
-  requestBasicAuthTest1,
-  userBasicAuthTest1
-} from '#/test-helpers/constants.js'
+import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
   mockAuditWriteAction: vi.fn()
@@ -16,7 +13,7 @@ vi.mock('#/server/common/helpers/audit-write-action.js', () => ({
   auditWriteAction: mockAuditWriteAction
 }))
 
-const auth = { Authorization: `Basic ${requestBasicAuthTest1}` }
+const auth = signedInAs()
 
 const client = {
   clientId: '1234567890abcdef1234567890',
@@ -57,7 +54,6 @@ describe('Delete a software provider', () => {
   let clientSync
 
   beforeAll(async () => {
-    process.env.USER_BASIC_AUTH_TEST1 = userBasicAuthTest1
     server = await createServer()
     await server.initialize()
   })
@@ -100,7 +96,7 @@ describe('Delete a software provider', () => {
         const { statusCode, result } = await server.inject({
           method: 'GET',
           url: deletePath,
-          headers: auth
+          auth
         })
         const document = documentOf(result)
 
@@ -135,7 +131,7 @@ describe('Delete a software provider', () => {
       const { statusCode, headers } = await server.inject({
         method: 'GET',
         url: deletePath,
-        headers: auth
+        auth
       })
 
       expect(statusCode).toEqual(302)
@@ -148,7 +144,7 @@ describe('Delete a software provider', () => {
         const { statusCode, headers } = await server.inject({
           method,
           url: '/software-providers/not-an-id/delete',
-          headers: auth
+          auth
         })
 
         expect(statusCode).toEqual(302)
@@ -163,7 +159,8 @@ describe('Delete a software provider', () => {
       return server.inject({
         method: 'POST',
         url: deletePath,
-        headers: { ...auth, ...(cookie && { cookie }) }
+        auth,
+        headers: { ...(cookie && { cookie }) }
       })
     }
 
@@ -171,7 +168,8 @@ describe('Delete a software provider', () => {
       return server.inject({
         method: 'GET',
         url: '/software-providers',
-        headers: { ...auth, cookie }
+        auth,
+        headers: { cookie }
       })
     }
 
@@ -304,7 +302,7 @@ describe('Delete a software provider', () => {
         const { statusCode } = await offServer.inject({
           method,
           url: deletePath,
-          headers: auth
+          auth
         })
 
         expect(statusCode).toEqual(404)

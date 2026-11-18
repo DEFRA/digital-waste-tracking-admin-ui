@@ -1,158 +1,158 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { loginViewController, loginSubmitController } from './controller.js'
+import { createServer } from '#/server/server.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const LOGIN_VIEW_CONTEXT = {
-  pageTitle: 'User login',
-  heading: 'User login',
-  serviceName: 'DWT admin portal',
-  breadcrumbs: [{ text: 'Login', href: '/login' }]
-}
+describe('Signing in with Entra ID', () => {
+  let server
+  let oidc
 
-const USERNAME_PASSWORD_ERROR_MESSAGE = 'Enter a correct username and password'
-
-/**
- * Builds a fake Hapi toolkit (`h`) with chainable `.view()` / `.response()`
- * methods, matching how the controller uses them.
- */
-const createToolkit = () => {
-  const viewResult = { code: vi.fn(), takeover: vi.fn() }
-  viewResult.code.mockReturnValue(viewResult)
-  viewResult.takeover.mockReturnValue(viewResult)
-
-  const responseResult = {
-    state: vi.fn(),
-    redirect: vi.fn()
+  const claims = {
+    oid: 'user-object-id',
+    preferred_username: 'jo.bloggs@defra.gov.uk',
+    email: 'jo.bloggs@example.com',
+    name: 'Jo Bloggs'
   }
-  responseResult.state.mockReturnValue(responseResult)
-  responseResult.redirect.mockReturnValue(responseResult)
 
-  return {
-    view: vi.fn().mockReturnValue(viewResult),
-    response: vi.fn().mockReturnValue(responseResult),
-    viewResult,
-    responseResult
-  }
-}
-
-describe('loginViewController', () => {
-  it('renders the login view with the login context', () => {
-    const h = createToolkit()
-    const request = { query: {} }
-
-    loginViewController.handler(request, h)
-
-    expect(h.view).toHaveBeenCalledWith('login/index', {
-      ...LOGIN_VIEW_CONTEXT,
-      redirectTo: '/'
+  // The cookies a browser would send back, by name, latest first
+  let jar
+  const cookie = () =>
+    Object.entries(jar)
+      .map(([name, value]) => `${name}=${value}`)
+      .join('; ')
+  const keepCookies = (response) => {
+    ;(response.headers['set-cookie'] ?? []).forEach((setCookie) => {
+      const [nameValue] = setCookie.split(';')
+      const [name, ...value] = nameValue.split('=')
+      jar[name] = value.join('=')
     })
+    return response
+  }
+  const get = async (url) =>
+    keepCookies(
+      await server.inject({ method: 'GET', url, headers: { cookie: cookie() } })
+    )
+
+  beforeAll(async () => {
+    server = await createServer()
+    await server.initialize()
+    oidc = server.plugins['hapi-auth-oidc'].oidc
   })
 
-  it('carries through a redirectTo query param', () => {
-    const h = createToolkit()
-    const request = { query: { redirectTo: '/movements/123' } }
-
-    loginViewController.handler(request, h)
-
-    expect(h.view).toHaveBeenCalledWith('login/index', {
-      ...LOGIN_VIEW_CONTEXT,
-      redirectTo: '/movements/123'
-    })
+  afterAll(async () => {
+    await server.stop({ timeout: 0 })
   })
-})
-
-describe('loginSubmitController.handler', () => {
-  let request
-  let h
 
   beforeEach(() => {
-    h = createToolkit()
-    request = {
-      payload: {
-        username: 'alice',
-        password: 'secret',
-        redirectTo: '/movements/123'
-      },
-      headers: {},
-      server: {
-        auth: {
-          test: vi.fn()
-        }
-      }
-    }
+    jar = {}
+    vi.spyOn(oidc, 'login').mockImplementation((_request, h) =>
+      h.redirect('https://entra.example/authorize').takeover()
+    )
+    vi.spyOn(oidc, 'callback').mockResolvedValue({ claims })
   })
 
-  it('sets a Basic authorization header from the submitted credentials', async () => {
-    request.server.auth.test.mockResolvedValue({})
-
-    await loginSubmitController.handler(request, h)
-
-    const expected = `Basic ${Buffer.from('alice:secret').toString('base64')}`
-    expect(request.headers.authorization).toBe(expected)
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('validates the credentials against the basic auth strategy', async () => {
-    request.server.auth.test.mockResolvedValue({})
+  test('Should send someone who is not signed in to sign in, then back to the page', async () => {
+    const { statusCode, headers } = await get('/software-providers')
 
-    await loginSubmitController.handler(request, h)
-
-    expect(request.server.auth.test).toHaveBeenCalledWith('basic', request)
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual('/login?redirectTo=%2Fsoftware-providers')
   })
 
-  it('on success, stashes the credentials in a cookie and redirects to redirectTo', async () => {
-    request.server.auth.test.mockResolvedValue({})
+  test("Should keep the page's query, so it comes back to the same page", async () => {
+    const { headers } = await get('/software-providers?sort=name')
 
-    await loginSubmitController.handler(request, h)
-
-    const expectedAuthorization = `Basic ${Buffer.from('alice:secret').toString('base64')}`
-    expect(h.response).toHaveBeenCalled()
-    expect(h.responseResult.state).toHaveBeenCalledWith('dwtAuth', {
-      authorization: expectedAuthorization
-    })
-    expect(h.responseResult.redirect).toHaveBeenCalledWith('/movements/123')
-  })
-
-  it('on success with no redirectTo, redirects to /', async () => {
-    request.payload.redirectTo = undefined
-    request.server.auth.test.mockResolvedValue({})
-
-    await loginSubmitController.handler(request, h)
-
-    expect(h.responseResult.redirect).toHaveBeenCalledWith('/')
-  })
-
-  it('on failed auth, renders the login view with a generic credentials error', async () => {
-    request.server.auth.test.mockRejectedValue(new Error('Invalid credentials'))
-
-    await loginSubmitController.handler(request, h)
-
-    expect(h.view).toHaveBeenCalledWith('login/index', {
-      ...LOGIN_VIEW_CONTEXT,
-      redirectTo: '/movements/123',
-      errors: {
-        login: USERNAME_PASSWORD_ERROR_MESSAGE
-      }
-    })
-    expect(h.viewResult.code).toHaveBeenCalledWith(401)
-  })
-
-  it('on failed auth with no redirectTo, defaults redirectTo to /', async () => {
-    request.payload.redirectTo = undefined
-    request.server.auth.test.mockRejectedValue(new Error('Invalid credentials'))
-
-    await loginSubmitController.handler(request, h)
-
-    expect(h.view).toHaveBeenCalledWith(
-      'login/index',
-      expect.objectContaining({ redirectTo: '/' })
+    expect(headers.location).toEqual(
+      '/login?redirectTo=%2Fsoftware-providers%3Fsort%3Dname'
     )
   })
 
-  it('does not distinguish between a bad username and a bad password in the error message', async () => {
-    request.server.auth.test.mockRejectedValue(new Error('Invalid credentials'))
+  test('Should send them to Entra ID to sign in', async () => {
+    const { statusCode, headers } = await get('/login?redirectTo=%2F')
 
-    await loginSubmitController.handler(request, h)
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual('https://entra.example/authorize')
+  })
 
-    const [, context] = h.view.mock.calls[0]
-    expect(context.errors.username).toBe(context.errors.password)
+  test('Should sign them in when Entra ID sends them back, and take them to where they were going', async () => {
+    await get('/login?redirectTo=%2Fsoftware-providers%2Fcreate')
+
+    const { statusCode, headers } = await get('/auth?code=a-code&state=a-state')
+
+    expect(statusCode).toEqual(statusCodes.found)
+    expect(headers.location).toEqual('/software-providers/create')
+
+    const home = await get('/')
+    expect(home.statusCode).toEqual(statusCodes.ok)
+  })
+
+  test('Should know them by their Entra ID username', async () => {
+    let credentials
+    server.ext('onPreResponse', (request, h) => {
+      if (request.path === '/') {
+        credentials = request.auth.credentials
+      }
+      return h.continue
+    })
+
+    await get('/login')
+    await get('/auth?code=a-code&state=a-state')
+    await get('/')
+
+    expect(credentials).toEqual({
+      id: 'user-object-id',
+      username: 'jo.bloggs@defra.gov.uk',
+      name: 'Jo Bloggs'
+    })
+  })
+
+  test('Should start a new session when they sign in, so the one before stays signed out', async () => {
+    await get('/login')
+    const before = jar.session
+
+    await get('/auth?code=a-code&state=a-state')
+    expect((await get('/')).statusCode).toEqual(statusCodes.ok)
+
+    // As someone holding the cookie from before signing in would
+    jar = { session: before }
+    const { headers } = await get('/')
+    expect(headers.location).toMatch(/^\/login/)
+  })
+
+  test.each([
+    ['another site', 'https://example.com/'],
+    ['a protocol-relative address', '//example.com/']
+  ])(
+    'Should not send them on to %s after signing in',
+    async (_, redirectTo) => {
+      await get(`/login?redirectTo=${encodeURIComponent(redirectTo)}`)
+
+      const { headers } = await get('/auth?code=a-code&state=a-state')
+
+      expect(headers.location).toEqual('/')
+    }
+  )
+
+  test('Should show an error, not start signing in again, when signing in fails', async () => {
+    oidc.callback.mockRejectedValue(new Error('state mismatch'))
+
+    await get('/login')
+    const { statusCode, headers } = await get('/auth?code=a-code&state=wrong')
+
+    expect(statusCode).toEqual(statusCodes.forbidden)
+    expect(headers.location).toBeUndefined()
+
+    const home = await get('/')
+    expect(home.headers.location).toMatch(/^\/login/)
+  })
+
+  test('Should show an error, not try to sign in again, when Entra ID cannot be reached', async () => {
+    oidc.login.mockRejectedValue(new Error('fetch failed'))
+
+    const { statusCode, headers } = await get('/login')
+
+    expect(statusCode).toEqual(statusCodes.badGateway)
+    expect(headers.location).toBeUndefined()
   })
 })

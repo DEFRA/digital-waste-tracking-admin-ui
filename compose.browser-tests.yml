@@ -7,6 +7,11 @@
 #   docker compose -f compose.yml -f compose.browser-tests.yml up --build -d digital-waste-tracking-admin-ui selenium-chrome
 
 services:
+  digital-waste-tracking-admin-ui:
+    environment:
+      # Chrome is in a container, so Entra ID sends it back by the service name
+      APP_BASE_URL: http://digital-waste-tracking-admin-ui:3000
+
   selenium-chrome:
     # Chromium rather than Chrome, as the Chrome image only runs on Intel/AMD and
     # this one runs on Apple silicon Macs too

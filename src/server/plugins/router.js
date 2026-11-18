@@ -45,7 +45,7 @@ export const router = {
           })
 
           server.ext('onPreAuth', (request, h) => {
-            // Exclude assets from 'basic' auth strategy (the default)
+            // Assets don't need the user to be signed in
             if (request.path.startsWith('/public/')) {
               request.route.settings.auth = {
                 mode: 'try',

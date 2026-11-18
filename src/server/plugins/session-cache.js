@@ -5,11 +5,14 @@ import { config } from '#/config/config.js'
 const sessionConfig = config.get('session')
 
 /**
- * Set options.maxCookieSize to 0 to always use server-side storage
+ * Always kept server-side, with only the session's id in the cookie, as it
+ * holds who's signed in. A session kept in the cookie couldn't be ended by the
+ * server, and a copy of the cookie would keep working
  */
 export const sessionCache = {
   plugin: yar,
   options: {
+    maxCookieSize: 0,
     name: sessionConfig.cache.name,
     cache: {
       cache: sessionConfig.cache.name,
