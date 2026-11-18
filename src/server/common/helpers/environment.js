@@ -1,7 +1,7 @@
 import { config } from '#/config/config.js'
 
 // The label for each CDP environment
-const environmentLabels = {
+export const environmentLabels = {
   local: 'Local',
   dev: 'Dev',
   test: 'Test',

@@ -1,6 +1,9 @@
 import { config } from '#/config/config.js'
 import { getClientCredentials } from '#/server/common/helpers/get-client-credentials.js'
-import { environmentName } from '#/server/common/helpers/environment.js'
+import {
+  environmentName,
+  environmentLabels
+} from '#/server/common/helpers/environment.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 
@@ -47,7 +50,43 @@ export const softwareProvidersController = {
         ? paths.createClientCredentials
         : null,
       clientCredentials,
-      deletedClientName
+      deletedClientName,
+      currentEnvironment: environment,
+      prodEnvironment: {
+        label: environmentLabels['prod'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.prod')
+        ).href
+      },
+      extTestEnvironment: {
+        label: environmentLabels['ext-test'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.extTest')
+        ).href
+      },
+      perfTestEnvironment: {
+        label: environmentLabels['perf-test'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.perfTest')
+        ).href
+      },
+      testEnvironment: {
+        label: environmentLabels['test'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.test')
+        ).href
+      },
+      devEnvironment: {
+        label: environmentLabels['dev'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.dev')
+        ).href
+      }
     })
   }
 }

@@ -1,10 +1,11 @@
 @use 'sass:meta';
 @use 'variables/colours' as *;
+@use 'govuk-frontend' as govuk;
 
 @layer default, overrides;
 
 @layer default {
-  @include meta.load-css('govuk-frontend');
+  @include meta.load-css('pkg:govuk-frontend');
   @include meta.load-css('helpers');
   @include meta.load-css('core');
   @include meta.load-css('components');
@@ -28,6 +29,11 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 12px 15px;
+  @include govuk.govuk-media-query($until: tablet) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .defra-header__brand-group {
@@ -80,4 +86,14 @@ body {
 
 .app-copy-button {
   min-width: 11em;
+}
+
+.defra-header__environment {
+  display: flex;
+  align-items: center;
+
+  .govuk-tag {
+    padding: 2px 6px;
+    font-size: 1rem;
+  }
 }

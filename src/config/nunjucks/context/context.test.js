@@ -2,6 +2,7 @@ import { vi } from 'vitest'
 
 const mockReadFileSync = vi.fn()
 const mockLoggerError = vi.fn()
+const mockEnvironmentName = vi.fn()
 
 vi.mock('node:fs', async () => {
   const nodeFs = await import('node:fs')
@@ -25,12 +26,17 @@ vi.mock(import('#/config/config.js'), async (importOriginal) => {
     }
   }
 })
+vi.mock('../../../server/common/helpers/environment.js', () => ({
+  environmentName: mockEnvironmentName
+}))
 
 describe('context and cache', () => {
   beforeEach(() => {
     mockReadFileSync.mockReset()
     mockLoggerError.mockReset()
+    mockEnvironmentName.mockReset()
     vi.resetModules()
+    mockEnvironmentName.mockReturnValue('ENVIRONMENT_NAME')
   })
 
   describe('#context', () => {
@@ -62,6 +68,7 @@ describe('context and cache', () => {
           assetPath: '/public/assets',
           breadcrumbs: [],
           getAssetPath: expect.any(Function),
+          environment: 'ENVIRONMENT_NAME',
           navigation: [
             {
               current: true,
@@ -170,6 +177,7 @@ describe('context and cache', () => {
           assetPath: '/public/assets',
           breadcrumbs: [],
           getAssetPath: expect.any(Function),
+          environment: 'ENVIRONMENT_NAME',
           navigation: [
             {
               current: true,

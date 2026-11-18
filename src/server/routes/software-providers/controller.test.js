@@ -204,23 +204,57 @@ describe('#softwareProvidersController', () => {
   })
 
   test.each([
-    ['dev', 'Dev'],
-    ['test', 'Test'],
-    ['perf-test', 'Performance test'],
-    ['ext-test', 'External test'],
-    ['prod', 'Production'],
-    ['local', 'Local'],
-    ['an-unlabelled-one', 'an-unlabelled-one']
-  ])('Should show the %s environment as %s', async (cdpEnvironment, label) => {
+    ['dev', 'Dev', 'test', 'Test'],
+    ['test', 'Test', 'perf-test', 'Performance test'],
+    ['perf-test', 'Performance test', 'ext-test', 'External test'],
+    ['ext-test', 'External test', 'prod', 'Production'],
+    ['prod', 'Production', 'ext-test', 'External test'],
+    ['local', 'Local', 'dev', 'Dev']
+  ])(
+    'Should show the %s environment as %s, linking to %s as %s',
+    async (cdpEnvironment, label, destination, destinationLabel) => {
+      const originalEnvironment = config.get('cdpEnvironment')
+      config.set('cdpEnvironment', cdpEnvironment)
+
+      try {
+        const { document } = await getPage(server)
+
+        expect(
+          tableRows(document).map(([_name, _id, environment]) => environment)
+        ).toEqual([label, label, label])
+
+        const environmentLink = [...document.querySelectorAll('a')].find(
+          (link) => link.textContent.trim().startsWith('Go to ')
+        )
+
+        expect(environmentLink.textContent.trim()).toEqual(
+          `Go to ${destinationLabel}`
+        )
+        expect(environmentLink.getAttribute('href')).toEqual(
+          `https://digital-waste-tracking-admin-ui.${destination}.cdp-int.defra.cloud/software-providers`
+        )
+      } finally {
+        config.set('cdpEnvironment', originalEnvironment)
+      }
+    }
+  )
+
+  test('Should show an unlabelled environment as its name with no environment link', async () => {
     const originalEnvironment = config.get('cdpEnvironment')
-    config.set('cdpEnvironment', cdpEnvironment)
+    config.set('cdpEnvironment', 'an-unlabelled-one')
 
     try {
       const { document } = await getPage(server)
 
       expect(
         tableRows(document).map(([_name, _id, environment]) => environment)
-      ).toEqual([label, label, label])
+      ).toEqual(['an-unlabelled-one', 'an-unlabelled-one', 'an-unlabelled-one'])
+
+      const environmentLink = [...document.querySelectorAll('a')].find((link) =>
+        link.textContent.trim().startsWith('Go to ')
+      )
+
+      expect(environmentLink).toBeUndefined()
     } finally {
       config.set('cdpEnvironment', originalEnvironment)
     }

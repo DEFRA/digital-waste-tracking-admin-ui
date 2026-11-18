@@ -32,6 +32,18 @@
         </span>
         <span>DWT admin portal</span>
       </a>
+      <div class="defra-header__environment">
+        {% set environmentTagClass = 'govuk-tag--teal'
+          if environment == 'External test'
+          else ('govuk-tag--purple'
+          if environment == 'Production'
+          else ('govuk-tag--red'
+          if environment == 'Local'
+          else '')) %}
+        <strong class="govuk-tag {{ environmentTagClass }}">
+          {{ environment }}
+        </strong>
+      </div>
     </div>
   </header>
 
