@@ -65,6 +65,27 @@ export const softwareProvidersController = {
           paths.softwareProviders,
           config.get('environmentLinks.extTest')
         ).href
+      },
+      perfTestEnvironment: {
+        label: environmentLabels['perf-test'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.perfTest')
+        ).href
+      },
+      testEnvironment: {
+        label: environmentLabels['test'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.test')
+        ).href
+      },
+      devEnvironment: {
+        label: environmentLabels['dev'],
+        url: new URL(
+          paths.softwareProviders,
+          config.get('environmentLinks.dev')
+        ).href
       }
     })
   }

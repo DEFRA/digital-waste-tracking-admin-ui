@@ -271,6 +271,27 @@ export const config = convict({
       default:
         'https://digital-waste-tracking-admin-ui.ext-test.cdp-int.defra.cloud',
       env: 'ADMIN_UI_EXT_TEST_URL'
+    },
+    perfTest: {
+      doc: 'The performance test admin portal base URL',
+      format: 'url',
+      default:
+        'https://digital-waste-tracking-admin-ui.perf-test.cdp-int.defra.cloud',
+      env: 'ADMIN_UI_PERF_TEST_URL'
+    },
+    test: {
+      doc: 'The test admin portal base URL',
+      format: 'url',
+      default:
+        'https://digital-waste-tracking-admin-ui.test.cdp-int.defra.cloud',
+      env: 'ADMIN_UI_TEST_URL'
+    },
+    dev: {
+      doc: 'The dev admin portal base URL',
+      format: 'url',
+      default:
+        'https://digital-waste-tracking-admin-ui.dev.cdp-int.defra.cloud',
+      env: 'ADMIN_UI_DEV_URL'
     }
   },
   clientCredentials: {

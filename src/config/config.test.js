@@ -87,7 +87,10 @@ describe('#config', () => {
   describe('environmentLinks', () => {
     test.each([
       ['prod', 'ADMIN_UI_PROD_URL', 'prod'],
-      ['extTest', 'ADMIN_UI_EXT_TEST_URL', 'ext-test']
+      ['extTest', 'ADMIN_UI_EXT_TEST_URL', 'ext-test'],
+      ['perfTest', 'ADMIN_UI_PERF_TEST_URL', 'perf-test'],
+      ['test', 'ADMIN_UI_TEST_URL', 'test'],
+      ['dev', 'ADMIN_UI_DEV_URL', 'dev']
     ])('Should configure the %s portal URL', async (key, env, environment) => {
       const config = await loadConfig({ [env]: undefined })
 
@@ -98,7 +101,10 @@ describe('#config', () => {
 
     test.each([
       ['prod', 'ADMIN_UI_PROD_URL'],
-      ['extTest', 'ADMIN_UI_EXT_TEST_URL']
+      ['extTest', 'ADMIN_UI_EXT_TEST_URL'],
+      ['perfTest', 'ADMIN_UI_PERF_TEST_URL', 'perf-test'],
+      ['test', 'ADMIN_UI_TEST_URL', 'test'],
+      ['dev', 'ADMIN_UI_DEV_URL', 'dev']
     ])('Should allow overriding the %s portal URL', async (key, env) => {
       const config = await loadConfig({ [env]: 'https://example.com' })
 
