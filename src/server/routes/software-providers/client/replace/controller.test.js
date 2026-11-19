@@ -3,6 +3,7 @@ import { paths } from '#/server/common/constants/paths.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
+import { expectServiceErrorAlert } from '#/test-helpers/service-error-alert.js'
 import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
@@ -387,21 +388,67 @@ describe('#replaceClientCredentialsController', () => {
       })
     })
 
-    test('Should show the error page when Client Sync refuses', async () => {
-      clientSyncRespondsWith({
-        rotate: { ok: false, status: 400, statusText: 'Bad Request' }
-      })
+    test.each([
+      [
+        'refuses the request',
+        { ok: false, status: 400, statusText: 'Bad Request' }
+      ],
+      [
+        'says CDP refused',
+        {
+          ok: false,
+          status: 502,
+          statusText: 'Bad Gateway',
+          json: () => Promise.resolve({ outcome: 'failure' }),
+          clone() {
+            return this
+          }
+        }
+      ]
+    ])(
+      'Should show the software provider page with an alert when Client Sync %s',
+      async (_, refusal) => {
+        clientSyncRespondsWith({ rotate: refusal })
 
-      const { statusCode } = await replaceSecret()
+        const { statusCode, headers } = await replaceSecret()
 
-      expect(statusCode).toEqual(statusCodes.internalServerError)
-      // The refusal is known, so it's recorded as a failure, not unknown
-      expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
-        action: 'replaced software provider',
-        outcome: 'failure',
-        client: { clientId, clientName: 'Skipflow_Test' }
-      })
-    })
+        expect(statusCode).toEqual(statusCodes.found)
+        expect(headers.location).toEqual(`/software-providers/${clientId}`)
+        // The refusal is known, so it's recorded as a failure, not unknown
+        expect(mockAuditWriteAction).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({ outcome: 'failure' })
+        )
+
+        const shown = await server.inject({
+          method: 'GET',
+          url: headers.location,
+          auth: signedInAs(),
+          headers: { cookie: headers['set-cookie'].join('; ') }
+        })
+        expectServiceErrorAlert(
+          new JSDOM(shown.result).window.document,
+          'Try again. We have not replaced the secret.'
+        )
+
+        // Shown once, so not when the page is next opened
+        const next = await server.inject({
+          method: 'GET',
+          url: headers.location,
+          auth: signedInAs(),
+          headers: {
+            cookie:
+              shown.headers['set-cookie']?.join('; ') ??
+              headers['set-cookie'].join('; ')
+          }
+        })
+        expect(
+          new JSDOM(next.result).window.document.querySelector(
+            '[data-testid="service-error-alert"]'
+          )
+        ).toBeNull()
+      }
+    )
 
     test('Should send the user back to check, when the outcome is unknown', async () => {
       clientSyncRespondsWith({

@@ -1,4 +1,9 @@
 import { paths } from '#/server/common/constants/paths.js'
+import {
+  serviceErrorText,
+  serviceErrorTitle
+} from '#/server/common/constants/service-error.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { createClientCredentials } from '#/server/common/helpers/create-client-credentials.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
@@ -14,16 +19,19 @@ const duplicateNameError =
  * @param {Object} [options]
  * @param {String} [options.clientName] - What the user typed
  * @param {Object} [options.errors] - The errors, by field
+ * @param {{ title: String, text: String }} [options.serviceError] - Why nothing
+ * was created, when it wasn't the name
  *
  * @returns {Object} The name page's view context
  */
-function nameViewContext({ clientName, errors } = {}) {
+function nameViewContext({ clientName, errors, serviceError } = {}) {
   return {
     pageTitle: 'What is the name of the software provider and package?',
     caption: `Create ${environmentName().toLowerCase()} environment credentials`,
     softwareProvidersPath: paths.softwareProviders,
     clientName,
-    errors
+    errors,
+    serviceError
   }
 }
 
@@ -59,11 +67,30 @@ export function createClientCredentialsSubmitController(store) {
         result = await createClientCredentials(clientName)
       } catch (err) {
         // Any other error is recorded as unknown, to be safe
+        const outcome = err.outcome ?? 'unknown'
         auditWriteAction(request, {
           action: createAction,
-          outcome: err.outcome ?? 'unknown',
+          outcome,
           client: { clientId: err.clientId, clientName }
         })
+
+        // Nothing was created, so they can just try again. When it may have
+        // been, saying so could be wrong
+        if (outcome === 'failure') {
+          return h
+            .view(
+              'software-providers/create/index',
+              nameViewContext({
+                clientName,
+                serviceError: {
+                  title: serviceErrorTitle,
+                  text: serviceErrorText.create
+                }
+              })
+            )
+            .code(statusCodes.badGateway)
+        }
+
         throw err
       }
 

@@ -5,6 +5,7 @@ import { getClientCredentialsById } from '#/server/common/helpers/get-client-cre
 import { environmentName } from '#/server/common/helpers/environment.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
+import { serviceErrorTitle } from '#/server/common/constants/service-error.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 export const softwareProviderController = {
@@ -42,6 +43,7 @@ export const softwareProviderController = {
     const [conflictedChange] = request.yar.flash(
       flashKeys.conflictedClientChange
     )
+    const [failedChange] = request.yar.flash(flashKeys.failedClientChange)
 
     const { secrets = [] } = credentials
     const { clientId, clientName } = credentials
@@ -65,6 +67,10 @@ export const softwareProviderController = {
       removedSecret,
       uncertainChange,
       conflictedChange,
+      serviceError: failedChange && {
+        title: serviceErrorTitle,
+        text: failedChange
+      },
       replaceSecretPath:
         secretsEnabled && secretCount === 1
           ? clientPath(paths.replaceClientCredentials, clientId)

@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom'
 import { createServer } from '#/server/server.js'
 import { config } from '#/config/config.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
+import { expectServiceErrorAlert } from '#/test-helpers/service-error-alert.js'
 import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
@@ -238,16 +239,74 @@ describe('Create new credentials', () => {
     })
 
     test.each([
-      ['refuses the request', () => clientSyncRespondsWith(400, {}), 'failure'],
+      ['refuses the request', () => clientSyncRespondsWith(400, {})],
+      [
+        'says CDP refused',
+        () => clientSyncRespondsWith(502, { outcome: 'failure' })
+      ]
+    ])(
+      'Should show the page again with an alert, keeping the name, when Client Sync %s',
+      async (_, clientSyncFails) => {
+        clientSyncFails()
+
+        const { statusCode, result } = await submitName(
+          'Waste_Technologies_Software'
+        )
+        const document = documentOf(result)
+
+        expect(statusCode).toEqual(502)
+        expectServiceErrorAlert(
+          document,
+          'Try again. We have not created client credentials.'
+        )
+        expect(document.querySelector('#clientName').value).toEqual(
+          'Waste_Technologies_Software'
+        )
+        // Not about what they entered, so no error summary or "Error:" title
+        expect(document.title).toEqual(
+          'What is the name of the software provider and package? - DWT admin portal'
+        )
+        expect(
+          document.querySelector('[data-testid="error-summary"]')
+        ).toBeNull()
+        expect(mockAuditWriteAction).toHaveBeenCalledWith(expect.anything(), {
+          action: 'created new credentials',
+          outcome: 'failure',
+          client: { clientName: 'Waste_Technologies_Software' }
+        })
+      }
+    )
+
+    test('Should create the client when it is tried again after a refusal', async () => {
+      clientSyncRespondsWith(502, { outcome: 'failure' })
+      await submitName('Waste_Technologies_Software')
+
+      clientSyncRespondsWith(200, created)
+      const { statusCode, headers } = await submitName(
+        'Waste_Technologies_Software'
+      )
+
+      expect(statusCode).toEqual(302)
+      expect(headers.location).toMatch(/^\/software-providers\/credentials\//)
+    })
+
+    test('Should not show the alert for a name that is not valid', async () => {
+      const { result } = await submitName('')
+      const document = documentOf(result)
+
+      expect(
+        document.querySelector('[data-testid="service-error-alert"]')
+      ).toBeNull()
+      expect(
+        document.querySelector('[data-testid="error-summary"]')
+      ).not.toBeNull()
+    })
+
+    test.each([
       [
         'fails, so the client may exist',
         () => clientSyncRespondsWith(502, {}),
         'unknown'
-      ],
-      [
-        'says CDP refused',
-        () => clientSyncRespondsWith(502, { outcome: 'failure' }),
-        'failure'
       ],
       [
         'does not reply in time',

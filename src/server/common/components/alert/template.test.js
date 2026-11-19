@@ -39,6 +39,36 @@ describe('Alert Component', () => {
     expect($alert('button')).toHaveLength(0)
   })
 
+  describe('With focus, for a problem the user needs to know about at once', () => {
+    let $focused
+
+    beforeEach(() => {
+      $focused = renderComponent('alert', {
+        variant: 'error',
+        title: 'Sorry, there is a problem with the service',
+        text: 'Try again. We have not added a secret.',
+        focus: true
+      })
+    })
+
+    test('Should be an alert, so a screen reader reads it when the page loads', () => {
+      const $root = $focused('[data-testid="alert"]')
+
+      expect($root.attr('role')).toBe('alert')
+      expect($root.attr('aria-label')).toBe(
+        'error: Sorry, there is a problem with the service'
+      )
+    })
+
+    test("Should use MoJ Frontend's script, which focuses it, and not be dismissed", () => {
+      const $root = $focused('[data-testid="alert"]')
+
+      expect($root.attr('data-module')).toBe('moj-alert')
+      expect($root.attr('data-disable-auto-focus')).toBeUndefined()
+      expect($focused('button')).toHaveLength(0)
+    })
+  })
+
   test('Should only use the variants it has styles for', () => {
     const $unknown = renderComponent('alert', {
       variant: 'information',

@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import { clientPath, paths } from '#/server/common/constants/paths.js'
+import { serviceErrorText } from '#/server/common/constants/service-error.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
@@ -113,6 +114,12 @@ export const removeClientCredentialsSubmitController = {
           flashKeys.uncertainClientChange,
           `Removing the oldest secret for ${client.clientName} may have worked. Check the client secrets below before trying again.`
         )
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
+      }
+
+      // Nothing changed, so they can just try again
+      if (outcome === 'failure') {
+        request.yar.flash(flashKeys.failedClientChange, serviceErrorText.remove)
         return h.redirect(clientPath(paths.softwareProvider, clientId))
       }
 
