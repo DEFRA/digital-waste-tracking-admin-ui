@@ -102,7 +102,7 @@ describe('Delete a software provider', () => {
 
         expect(statusCode).toEqual(200)
         expect(document.title.trim()).toEqual(
-          'Are you sure you want to delete the software provider? - DWT admin portal'
+          'Are you sure you want to delete the software provider? - External test - DWT admin portal'
         )
         expect(document.querySelectorAll('h1')).toHaveLength(1)
         expect(getElementText(document, 'app-heading-title')).toEqual(

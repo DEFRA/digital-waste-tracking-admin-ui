@@ -34,14 +34,14 @@
       </a>
       <div class="defra-header__environment">
         {% set environmentTagClass = 'govuk-tag--teal'
-          if environment == 'External test'
+          if environmentName == 'External test'
           else ('govuk-tag--purple'
-          if environment == 'Production'
+          if environmentName == 'Production'
           else ('govuk-tag--red'
-          if environment == 'Local'
+          if environmentName == 'Local'
           else '')) %}
         <strong class="govuk-tag {{ environmentTagClass }}">
-          {{ environment }}
+          {{ environmentName }}
         </strong>
       </div>
     </div>
@@ -53,7 +53,7 @@
 {% endblock %}
 
 {% block pageTitle %}
-  {{ pageTitle }} - {{ serviceName }}
+  {{ pageTitle }} - {{ environmentName }} - {{ serviceName }}
 {% endblock %}
 
 {% block content %}

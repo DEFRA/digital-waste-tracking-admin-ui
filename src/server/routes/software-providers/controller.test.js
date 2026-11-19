@@ -75,7 +75,7 @@ describe('#softwareProvidersController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect(document.title.trim()).toEqual(
-      'Software providers - DWT admin portal'
+      'Software providers - Local - DWT admin portal'
     )
     expect(getElementText(document, 'app-heading-title')).toEqual(
       'Software providers'

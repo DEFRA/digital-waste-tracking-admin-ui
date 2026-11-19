@@ -63,7 +63,9 @@ describe('#softwareProviderController', () => {
     const { statusCode, document } = await getPage(server)
 
     expect(statusCode).toBe(statusCodes.ok)
-    expect(document.title.trim()).toEqual('Skipflow_Test - DWT admin portal')
+    expect(document.title.trim()).toEqual(
+      'Skipflow_Test - Local - DWT admin portal'
+    )
     expect(getElementText(document, 'app-heading-title')).toContain(
       'Skipflow_Test'
     )
@@ -266,6 +268,22 @@ describe('#softwareProviderController', () => {
       expect(
         document.querySelector('.govuk-heading-m').textContent.trim()
       ).toEqual('Client secrets for external test environment')
+    } finally {
+      config.set('cdpEnvironment', originalEnvironment)
+    }
+  })
+
+  test('Should keep its environment tag colour when it names the environment itself', async () => {
+    const originalEnvironment = config.get('cdpEnvironment')
+    config.set('cdpEnvironment', 'local')
+
+    try {
+      const { document } = await getPage(server)
+      const tag = document.querySelector('.defra-header__environment strong')
+
+      // The page names the environment in lower case, for its own headings
+      expect(tag.textContent.trim()).toEqual('Local')
+      expect(tag.classList).toContain('govuk-tag--red')
     } finally {
       config.set('cdpEnvironment', originalEnvironment)
     }

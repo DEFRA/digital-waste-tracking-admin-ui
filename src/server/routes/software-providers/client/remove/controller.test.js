@@ -89,7 +89,7 @@ describe('#removeClientCredentialsController', () => {
 
     expect(statusCode).toEqual(statusCodes.ok)
     expect(document.title.trim()).toEqual(
-      'Remove the client secret - DWT admin portal'
+      'Remove the client secret - Local - DWT admin portal'
     )
     expect(getElementText(document, 'app-heading-title')).toEqual(
       'Are you sure you want to remove this secret?'
