@@ -1,7 +1,7 @@
 import Joi from 'joi'
 
 import { clientPath, paths } from '#/server/common/constants/paths.js'
-import { serviceError } from '#/server/common/constants/service-error.js'
+import { serviceErrorAlert } from '#/server/common/constants/service-error.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
@@ -98,7 +98,7 @@ export function replaceClientCredentialsSubmitController(store) {
         if (errorOutcome === 'failure') {
           request.yar.flash(
             flashKeys.failedClientChange,
-            serviceError('replace')
+            serviceErrorAlert('replace')
           )
           return h.redirect(clientPath(paths.softwareProvider, clientId))
         }

@@ -15,6 +15,6 @@ export const serviceErrorText = {
  *
  * @returns {{ title: String, text: String }} The alert's title and text
  */
-export function serviceError(action) {
+export function serviceErrorAlert(action) {
   return { title: serviceErrorTitle, text: serviceErrorText[action] }
 }

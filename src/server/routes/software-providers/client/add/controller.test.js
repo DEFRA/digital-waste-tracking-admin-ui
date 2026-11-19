@@ -264,6 +264,25 @@ describe('Add another secret', () => {
     expect(alert).toContain('another client has its name')
   })
 
+  test('Should show the error page, not the alert, when Client Sync says it happened', async () => {
+    clientSyncRespondsWith({
+      rotate: {
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        json: () => Promise.resolve({ outcome: 'success' }),
+        clone() {
+          return this
+        }
+      }
+    })
+
+    const { statusCode } = await addAnotherSecret()
+
+    // It happened, so saying "We have not" would be wrong
+    expect(statusCode).toEqual(statusCodes.internalServerError)
+  })
+
   test.each([
     [
       'refuses the request',

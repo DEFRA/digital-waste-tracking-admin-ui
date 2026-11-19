@@ -1,5 +1,5 @@
 import { paths } from '#/server/common/constants/paths.js'
-import { serviceError } from '#/server/common/constants/service-error.js'
+import { serviceErrorAlert } from '#/server/common/constants/service-error.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { createClientCredentials } from '#/server/common/helpers/create-client-credentials.js'
@@ -79,7 +79,7 @@ export function createClientCredentialsSubmitController(store) {
               'software-providers/create/index',
               nameViewContext({
                 clientName,
-                serviceError: serviceError('create')
+                serviceError: serviceErrorAlert('create')
               })
             )
             .code(statusCodes.badGateway)

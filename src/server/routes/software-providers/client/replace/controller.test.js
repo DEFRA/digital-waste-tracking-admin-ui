@@ -388,6 +388,25 @@ describe('#replaceClientCredentialsController', () => {
       })
     })
 
+    test('Should show the error page, not the alert, when Client Sync says it happened', async () => {
+      clientSyncRespondsWith({
+        rotate: {
+          ok: false,
+          status: 502,
+          statusText: 'Bad Gateway',
+          json: () => Promise.resolve({ outcome: 'success' }),
+          clone() {
+            return this
+          }
+        }
+      })
+
+      const { statusCode } = await replaceSecret()
+
+      // It happened, so saying "We have not" would be wrong
+      expect(statusCode).toEqual(statusCodes.internalServerError)
+    })
+
     test.each([
       [
         'refuses the request',

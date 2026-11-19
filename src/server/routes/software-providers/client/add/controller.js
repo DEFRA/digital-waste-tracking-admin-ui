@@ -2,7 +2,7 @@ import Joi from 'joi'
 
 import { clientPath, paths } from '#/server/common/constants/paths.js'
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
-import { serviceError } from '#/server/common/constants/service-error.js'
+import { serviceErrorAlert } from '#/server/common/constants/service-error.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { getClient } from '#/server/common/helpers/get-client.js'
 import { rotateClientCredential } from '#/server/common/helpers/rotate-client-credential.js'
@@ -67,7 +67,10 @@ export function addClientCredentialsSubmitController(store) {
 
         // Nothing changed, so they can just try again
         if (outcome === 'failure') {
-          request.yar.flash(flashKeys.failedClientChange, serviceError('add'))
+          request.yar.flash(
+            flashKeys.failedClientChange,
+            serviceErrorAlert('add')
+          )
           return h.redirect(clientPath(paths.softwareProvider, clientId))
         }
 
