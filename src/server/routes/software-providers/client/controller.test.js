@@ -273,6 +273,22 @@ describe('#softwareProviderController', () => {
     }
   })
 
+  test('Should keep its environment tag colour when it names the environment itself', async () => {
+    const originalEnvironment = config.get('cdpEnvironment')
+    config.set('cdpEnvironment', 'local')
+
+    try {
+      const { document } = await getPage(server)
+      const tag = document.querySelector('.defra-header__environment strong')
+
+      // The page names the environment in lower case, for its own headings
+      expect(tag.textContent.trim()).toEqual('Local')
+      expect(tag.classList).toContain('govuk-tag--red')
+    } finally {
+      config.set('cdpEnvironment', originalEnvironment)
+    }
+  })
+
   describe('When changing secrets is switched off, as in production', () => {
     let offServer
 
