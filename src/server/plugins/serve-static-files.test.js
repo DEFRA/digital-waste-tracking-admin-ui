@@ -1,12 +1,15 @@
-import { startServer } from '#/server/common/helpers/start-server.js'
+import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 describe('#serveStaticFiles', () => {
   let server
 
   describe('When secure context is disabled', () => {
+    // Initialised, not started, so it doesn't need port 3000, which a local
+    // admin UI may be using
     beforeEach(async () => {
-      server = await startServer()
+      server = await createServer()
+      await server.initialize()
     })
 
     afterEach(async () => {
