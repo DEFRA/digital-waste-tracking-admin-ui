@@ -3,6 +3,7 @@ import { paths } from '#/server/common/constants/paths.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
 import { JSDOM } from 'jsdom'
+import { expectServiceErrorAlert } from '#/test-helpers/service-error-alert.js'
 import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
@@ -254,15 +255,86 @@ describe('#removeClientCredentialsController', () => {
     expect(alert).toContain('another client has its name')
   })
 
-  test('Should show the error page when Client Sync refuses', async () => {
+  test('Should show the error page, not the alert, when Client Sync says it happened', async () => {
     clientSyncRespondsWith({
-      purge: { ok: false, status: 400, statusText: 'Bad Request' }
+      purge: {
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        json: () => Promise.resolve({ outcome: 'success' }),
+        clone() {
+          return this
+        }
+      }
     })
 
     const { statusCode } = await removeSecret()
 
+    // It happened, so saying "We have not" would be wrong
     expect(statusCode).toEqual(statusCodes.internalServerError)
   })
+
+  test.each([
+    [
+      'refuses the request',
+      { ok: false, status: 400, statusText: 'Bad Request' }
+    ],
+    [
+      'says CDP refused',
+      {
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        json: () => Promise.resolve({ outcome: 'failure' }),
+        clone() {
+          return this
+        }
+      }
+    ]
+  ])(
+    'Should show the software provider page with an alert when Client Sync %s',
+    async (_, refusal) => {
+      clientSyncRespondsWith({ purge: refusal })
+
+      const { statusCode, headers } = await removeSecret()
+
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toEqual(`/software-providers/${clientId}`)
+      // The refusal is known, so it's recorded as a failure, not unknown
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ outcome: 'failure' })
+      )
+
+      const shown = await server.inject({
+        method: 'GET',
+        url: headers.location,
+        auth: signedInAs(),
+        headers: { cookie: headers['set-cookie'].join('; ') }
+      })
+      expectServiceErrorAlert(
+        new JSDOM(shown.result).window.document,
+        'Try again. We have not removed the secret.'
+      )
+
+      // Shown once, so not when the page is next opened
+      const next = await server.inject({
+        method: 'GET',
+        url: headers.location,
+        auth: signedInAs(),
+        headers: {
+          cookie:
+            shown.headers['set-cookie']?.join('; ') ??
+            headers['set-cookie'].join('; ')
+        }
+      })
+      expect(
+        new JSDOM(next.result).window.document.querySelector(
+          '[data-testid="service-error-alert"]'
+        )
+      ).toBeNull()
+    }
+  )
 
   test('Should send the user back to check, when the outcome is unknown', async () => {
     clientSyncRespondsWith({

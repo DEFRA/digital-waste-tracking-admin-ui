@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 import { flashKeys } from '#/server/common/constants/flash-keys.js'
 import { clientPath, paths } from '#/server/common/constants/paths.js'
+import { serviceErrorAlert } from '#/server/common/constants/service-error.js'
 import { auditWriteAction } from '#/server/common/helpers/audit-write-action.js'
 import { deleteClient } from '#/server/common/helpers/delete-client.js'
 import { environmentName } from '#/server/common/helpers/environment.js'
@@ -57,11 +58,23 @@ export const deleteSoftwareProviderSubmitController = {
       result = await deleteClient(clientId)
     } catch (err) {
       // Any other error is recorded as unknown, to be safe
+      const outcome = err.outcome ?? 'unknown'
       auditWriteAction(request, {
         action: deleteAction,
-        outcome: err.outcome ?? 'unknown',
+        outcome,
         client: target
       })
+
+      // Not deleted, so they're back on its page to try again. When it may
+      // have been, saying so could be wrong
+      if (outcome === 'failure') {
+        request.yar.flash(
+          flashKeys.failedClientChange,
+          serviceErrorAlert('delete')
+        )
+        return h.redirect(clientPath(paths.softwareProvider, clientId))
+      }
+
       throw err
     }
 

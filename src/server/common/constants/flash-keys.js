@@ -7,5 +7,7 @@ export const flashKeys = {
   // The backend didn't report whether the change occured
   uncertainClientChange: 'uncertainClientChange',
   // The change was refused because the client is out of date or shares a name
-  conflictedClientChange: 'conflictedClientChange'
+  conflictedClientChange: 'conflictedClientChange',
+  // The change didn't happen, as when CDP refused it, so it can be tried again
+  failedClientChange: 'failedClientChange'
 }

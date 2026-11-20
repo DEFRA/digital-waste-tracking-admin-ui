@@ -13,6 +13,11 @@
   grid-template-columns: min-content fit-content(960px);
   gap: govuk-spacing(2);
   @include govuk-font($size: false);
+
+  // Focused by MoJ Frontend's script when it's an alert
+  &:focus {
+    outline: $govuk-focus-width solid $govuk-focus-colour;
+  }
 }
 
 .moj-alert__icon {

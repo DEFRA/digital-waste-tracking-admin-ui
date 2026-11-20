@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom'
 import { createServer } from '#/server/server.js'
 import { config } from '#/config/config.js'
 import { getElementText } from '#/test-helpers/get-element-text.js'
+import { expectServiceErrorAlert } from '#/test-helpers/service-error-alert.js'
 import { signedInAs } from '#/test-helpers/signed-in.js'
 
 const { mockAuditWriteAction } = vi.hoisted(() => ({
@@ -251,35 +252,49 @@ describe('Delete a software provider', () => {
     })
 
     test.each([
-      [
-        'refuses the request',
-        () => response(502, { outcome: 'failure' }),
-        'failure'
-      ],
-      [
-        'refuses as another client shares the name',
-        () => response(409),
-        'failure'
-      ],
-      [
-        'may have deleted it',
-        () => response(502, { outcome: 'unknown' }),
-        'unknown'
-      ]
+      ['refuses the request', () => response(502, { outcome: 'failure' })],
+      ['refuses as another client shares the name', () => response(409)]
     ])(
-      'Should show an error, recording the outcome, when Client Sync %s',
-      async (_, deleteResponse, outcome) => {
+      'Should show the software provider page with an alert when Client Sync %s',
+      async (_, deleteResponse) => {
         clientSync.DELETE = deleteResponse
 
-        const { statusCode } = await confirm()
+        const { statusCode, headers } = await confirm()
 
-        expect(statusCode).toEqual(500)
+        expect(statusCode).toEqual(302)
+        expect(headers.location).toEqual(
+          `/software-providers/${client.clientId}`
+        )
         expect(mockAuditWriteAction).toHaveBeenCalledWith(
           expect.anything(),
-          expect.objectContaining({ outcome })
+          expect.objectContaining({ outcome: 'failure' })
+        )
+
+        // Not deleted, so its page is still there to try again from
+        const { result } = await server.inject({
+          method: 'GET',
+          url: headers.location,
+          auth,
+          headers: { cookie: cookiesFrom(headers) }
+        })
+        expectServiceErrorAlert(
+          new JSDOM(result).window.document,
+          'Try again. We have not deleted the software provider.'
         )
       }
     )
+
+    test('Should show the error page when Client Sync may have deleted it', async () => {
+      clientSync.DELETE = () => response(502, { outcome: 'unknown' })
+
+      const { statusCode } = await confirm()
+
+      expect(statusCode).toEqual(500)
+      expect(mockAuditWriteAction).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ outcome: 'unknown' })
+      )
+    })
   })
 
   describe('When deleting is switched off, as in production', () => {

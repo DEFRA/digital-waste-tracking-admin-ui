@@ -16,6 +16,20 @@
 {% endblock %}
 
 {% block pageContent %}
+  {% if serviceError %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ appAlert({
+          variant: "error",
+          title: serviceError.title,
+          text: serviceError.text,
+          classes: "govuk-!-margin-bottom-7",
+          testId: "service-error-alert",
+          focus: true
+        }) }}
+      </div>
+    </div>
+  {% endif %}
   {% if removedSecret %}
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">

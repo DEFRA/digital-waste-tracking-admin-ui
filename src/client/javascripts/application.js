@@ -8,7 +8,7 @@ import {
   SkipLink,
   PasswordInput
 } from 'govuk-frontend'
-import { SortableTable } from '@ministryofjustice/frontend'
+import { Alert, SortableTable } from '@ministryofjustice/frontend'
 
 import { initCopy } from './components/copy.js'
 import { initShowOnce } from './components/show-once.js'
@@ -21,6 +21,7 @@ createAll(Radios)
 createAll(ServiceNavigation)
 createAll(SkipLink)
 createAll(PasswordInput)
+createAll(Alert)
 createAll(SortableTable)
 initCopy()
 initSingleSubmit()
