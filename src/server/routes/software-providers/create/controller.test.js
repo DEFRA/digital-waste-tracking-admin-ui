@@ -264,7 +264,7 @@ describe('Create new credentials', () => {
         )
         // Not about what they entered, so no error summary or "Error:" title
         expect(document.title).toEqual(
-          'What is the name of the software provider and package? - DWT admin portal'
+          'What is the name of the software provider and package? - Local - DWT admin portal'
         )
         expect(
           document.querySelector('[data-testid="error-summary"]')
