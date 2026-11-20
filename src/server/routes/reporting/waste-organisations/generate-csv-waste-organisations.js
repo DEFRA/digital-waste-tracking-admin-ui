@@ -6,10 +6,8 @@ import { localAuthorityText } from './local-authority.js'
 
 /**
  * Generates CSV data for the given Waste Organisations.
- *
- * @param {Object} wasteOrganisations - The Waste Organisations
- *
- * @returns {String} The CSV data
+ * @param {object} wasteOrganisations - The Waste Organisations
+ * @returns {string} The CSV data
  */
 export function generateCsvWasteOrganisations(wasteOrganisations) {
   const formattedWasteOrganisations = wasteOrganisations.map(

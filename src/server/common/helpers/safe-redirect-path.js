@@ -6,10 +6,9 @@ const thisSite = 'https://this-site.invalid'
  * site. Browsers ignore tabs and newlines in an address, and read "//" and "/\"
  * as another site, so the path is read the way a browser would read it,
  * rather than checked as text.
- *
  * @param {unknown} path - Where they were going, e.g. from ?redirectTo=
- * @param {String} [fallback='/']
- * @returns {String}
+ * @param {string} [fallback] - Where to go when the path isn't on this site
+ * @returns {string} The path to go to, on this site
  */
 export function safeRedirectPath(path, fallback = '/') {
   if (typeof path !== 'string' || !path.startsWith('/')) {

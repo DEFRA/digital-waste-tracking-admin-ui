@@ -31,10 +31,8 @@ export class CreateClientCredentialsError extends Error {
  *
  * The response holds the client secret, which is only available now, so it's
  * never logged, including when the request fails.
- *
- * @param {String} clientName - The new client's name
- *
- * @returns {Promise<{ isDuplicate: true } | { isDuplicate: false, credentials: { clientId: String, clientName: String, clientSecret: String } }>}
+ * @param {string} clientName - The new client's name
+ * @returns {Promise<{isDuplicate: true} | {isDuplicate: false, credentials: {clientId: string, clientName: string, clientSecret: string}}>}
  * The new credentials, or isDuplicate when a client with the name already exists
  */
 export async function createClientCredentials(clientName) {

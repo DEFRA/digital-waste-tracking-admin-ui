@@ -12,8 +12,7 @@ export const serviceErrorText = {
 
 /**
  * @param {keyof typeof serviceErrorText} action - What didn't happen
- *
- * @returns {{ title: String, text: String }} The alert's title and text
+ * @returns {{title: string, text: string}} The alert's title and text
  */
 export function serviceErrorAlert(action) {
   return { title: serviceErrorTitle, text: serviceErrorText[action] }

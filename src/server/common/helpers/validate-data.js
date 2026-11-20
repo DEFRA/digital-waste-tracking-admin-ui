@@ -5,11 +5,9 @@ const joiConfig = {
 /**
  * Validates data using a JOi schema and returns errors in a format compatible with
  * the govukErrorSummary component.
- *
- * @param {Object} data - The request data
- * @param {Joi.schema} schema - The Joi schema
- *
- * @returns {[{ message: String, fieldId: String }]} The error messages
+ * @param {object} data - The request data
+ * @param {import('joi').Schema} schema - The Joi schema
+ * @returns {[{message: string, fieldId: string}]} The error messages
  */
 export function validateData(data, schema) {
   const errors = schema.validate(data, joiConfig)

@@ -1,6 +1,10 @@
 import { createServer } from '../../server.js'
 import { config } from '#/config/config.js'
 
+/**
+ * Creates the server and starts it listening.
+ * @returns {Promise<import('@hapi/hapi').Server>} The started server
+ */
 async function startServer() {
   const server = await createServer()
   await server.start()

@@ -1,5 +1,10 @@
 import { statusCodes } from '../constants/status-codes.js'
 
+/**
+ * The message for a status code, as the page says it.
+ * @param {number} statusCode - The HTTP status code
+ * @returns {string} The message
+ */
 function statusCodeMessage(statusCode) {
   switch (statusCode) {
     case statusCodes.notFound:
@@ -15,6 +20,13 @@ function statusCodeMessage(statusCode) {
   }
 }
 
+/**
+ * Shows an error page for a Boom response, such as one hapi makes, and carries
+ * on for any other response.
+ * @param {import('@hapi/hapi').Request} request - The request
+ * @param {import('@hapi/hapi').ResponseToolkit} h - The response toolkit
+ * @returns {import('@hapi/hapi').ResponseObject} The error page, or h.continue
+ */
 export function catchAll(request, h) {
   const { response } = request
 

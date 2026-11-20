@@ -13,13 +13,12 @@ const duplicateNameError =
   'A client with this name already exists. Enter a different client name'
 
 /**
- * @param {Object} [options]
- * @param {String} [options.clientName] - What the user typed
- * @param {Object} [options.errors] - The errors, by field
- * @param {{ title: String, text: String }} [options.serviceError] - Why nothing
+ * @param {object} [options]
+ * @param {string} [options.clientName] - What the user typed
+ * @param {object} [options.errors] - The errors, by field
+ * @param {{title: string, text: string}} [options.serviceError] - Why nothing
  * was created, when it wasn't the name
- *
- * @returns {Object} The name page's view context
+ * @returns {object} The name page's view context
  */
 function nameViewContext({ clientName, errors, serviceError } = {}) {
   return {
@@ -39,7 +38,9 @@ export const createClientCredentialsViewController = {
 }
 
 /**
- * @param {ReturnType<import('#/server/common/helpers/new-client-credentials-store.js').createNewClientCredentialsStore>} store
+ * Creates the client, then shows its secret once, from the store.
+ * @param {import('#/server/common/helpers/new-client-credentials-store.js').NewClientCredentialsStore} store - The store the new secret is kept in until it's shown
+ * @returns {{ handler: (request: import('@hapi/hapi').Request, h: import('@hapi/hapi').ResponseToolkit) => Promise<import('@hapi/hapi').ResponseObject> }} The route's handler
  */
 export function createClientCredentialsSubmitController(store) {
   return {

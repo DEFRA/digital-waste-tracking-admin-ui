@@ -13,20 +13,19 @@ const formats = {
 
 /**
  * @typedef {object} DateError
- * @property {String} text - The message
+ * @property {string} text - The message
  * @property {('Day' | 'Month' | 'Year')[]} parts - The inputs to show as wrong
  */
 
 /**
  * Reads one date from its Day, Month and Year inputs, following the GOV.UK
  * dates pattern: the first error in this order applies.
- *
- * @param {Object} query - The search's query parameters
- * @param {String} id - The date's id, such as "date-from"
- * @param {String} name - The date's name in messages, such as "From"
+ * @param {object} query - The search's query parameters
+ * @param {string} id - The date's id, such as "date-from"
+ * @param {string} name - The date's name in messages, such as "From"
  * @param {Date} today - Today's date in the UK, as the start of that day (UTC)
- *
- * @returns {{ date: Date } | { error: DateError }}
+ * @returns {{ date: Date } | { error: DateError }} The date it reads, or the
+ * first error it finds
  */
 function readDate(query, id, name, today) {
   // A repeated parameter arrives as an array, which is in the wrong format
@@ -98,11 +97,9 @@ function readDate(query, id, name, today) {
 
 /**
  * Reads the registration date range a search asks for.
- *
- * @param {Object} query - The search's query parameters
+ * @param {object} query - The search's query parameters
  * @param {Date} [now] - The current time
- *
- * @returns {{ dateFrom?: Date, dateTo?: Date, errors?: Object<String, DateError> }}
+ * @returns {{dateFrom?: Date, dateTo?: Date, errors?: Record<string, DateError>}}
  * The dates, or the errors by date id ("date-from" and "date-to"), From first
  */
 export function readRegistrationDates(query, now = new Date()) {

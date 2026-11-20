@@ -6,8 +6,7 @@ const ukDateFormat = new Intl.DateTimeFormat('en-GB', {
 })
 
 /**
- * @param {Date | String} date - A moment in time
- *
+ * @param {Date | string} date - A moment in time
  * @returns {Date} The date it falls on in the UK, as midnight UTC of that date,
  * so it can be compared with a date entered on the page and formatted in UTC
  */

@@ -5,13 +5,13 @@
  * The user (user.id and user.name) comes from the request logger, which the
  * request-context plugin binds it to. CDP's log schema has no tenant.name, so
  * the client's name goes in tenant.message, as the external API logs it.
- *
- * @param {import('@hapi/hapi').Request} request
- * @param {Object} options
- * @param {String} options.action - What was attempted, such as "created new credentials"
+ * @param {import('@hapi/hapi').Request} request - The request, whose logger
+ * and signed-in user the log line is written with
+ * @param {object} options
+ * @param {string} options.action - What was attempted, such as "created new credentials"
  * @param {'success' | 'failure' | 'unknown'} options.outcome - As ECS's
  * event.outcome. Unknown when the action may have happened
- * @param {{ clientName: String, clientId?: String }} options.client - The
+ * @param {{clientName: string, clientId?: string}} options.client - The
  * software provider acted on. A failed create has no client id
  */
 export function auditWriteAction(request, { action, outcome, client }) {

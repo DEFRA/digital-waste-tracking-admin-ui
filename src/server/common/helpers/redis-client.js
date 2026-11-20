@@ -3,10 +3,17 @@ import { Cluster, Redis } from 'ioredis'
 import { createLogger } from './logging/logger.js'
 
 /**
- * Setup Redis and provide a redis client
- *
+ * Sets up Redis and provides a redis client
  * Local development - 1 Redis instance
  * Environments - Elasticache / Redis Cluster with username and password
+ * @param {object} redisConfig - The `redis` config
+ * @param {string} redisConfig.host - The host to connect to
+ * @param {string} redisConfig.username - The username, or empty for none
+ * @param {string} redisConfig.password - The password, with the username
+ * @param {string} redisConfig.keyPrefix - The prefix for the keys it holds
+ * @param {boolean} redisConfig.useSingleInstanceCache - Connect to one instance rather than a cluster
+ * @param {boolean} redisConfig.useTLS - Connect using TLS
+ * @returns {import('ioredis').Redis | import('ioredis').Cluster} The client
  */
 export function buildRedisClient(redisConfig) {
   const logger = createLogger()

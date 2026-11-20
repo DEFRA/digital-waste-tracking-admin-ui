@@ -1,9 +1,8 @@
 /**
  * Checks the page shows the "problem with the service" alert, first in the
  * main content, announced and focused when the page loads (DWTSPI-493)
- *
  * @param {Document} document - The page
- * @param {String} text - What it says wasn't done
+ * @param {string} text - What it says wasn't done
  */
 export function expectServiceErrorAlert(document, text) {
   const alert = document.querySelector('[data-testid="service-error-alert"]')

@@ -30,11 +30,24 @@ Object.entries(filters).forEach(([name, filter]) => {
   nunjucksTestEnv.addFilter(name, filter)
 })
 
+/**
+ * Renders a template that isn't a component, for its HTML to be checked.
+ * @param {string} templateName - The template, as Nunjucks names it
+ * @param {object} context - The variables the template renders with
+ * @returns {import('cheerio').CheerioAPI} The page, to query
+ */
 export function renderTemplate(templateName, context) {
   const html = nunjucksTestEnv.render(templateName, context)
   return load(html)
 }
 
+/**
+ * Renders a component's macro, for its HTML to be checked.
+ * @param {string} componentName - The component, such as "heading"
+ * @param {object} params - The macro's params
+ * @param {string} [callBlock] - The block to call the macro with, if it takes one
+ * @returns {import('cheerio').CheerioAPI} The component, to query
+ */
 export function renderComponent(componentName, params, callBlock) {
   const macroPath = `${componentName}/macro.njk`
   const macroName = `app${
