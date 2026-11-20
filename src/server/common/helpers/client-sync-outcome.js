@@ -3,10 +3,9 @@ const outcomes = new Set(['success', 'failure', 'unknown'])
 /**
  * Client Sync says in a 502 whether a change happened, and to which client
  * when it's known. Without that, only a refusal (4xx) means it didn't
- *
  * @param {Response} response - An error response, which never holds a secret
- *
- * @returns {Promise<{ outcome: 'success' | 'failure' | 'unknown', clientId?: String }>}
+ * @returns {Promise<{outcome: 'success' | 'failure' | 'unknown', clientId?: string}>}
+ * The outcome, and the client it's known to be for
  */
 export async function outcomeOf(response) {
   let body

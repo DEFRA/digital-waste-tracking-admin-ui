@@ -55,7 +55,10 @@ export const replaceClientCredentialsController = {
 }
 
 /**
- * @param {ReturnType<import('#/server/common/helpers/new-client-credentials-store.js').createNewClientCredentialsStore>} store
+ * Replaces a client's secret when it has only one, as the old one stops
+ * working: the new secret is shown straight away, for the provider to move to.
+ * @param {import('#/server/common/helpers/new-client-credentials-store.js').NewClientCredentialsStore} store - The store the new secret is kept in until it's shown
+ * @returns {{ handler: (request: import('@hapi/hapi').Request, h: import('@hapi/hapi').ResponseToolkit) => Promise<import('@hapi/hapi').ResponseObject> }} The route's handler
  */
 export function replaceClientCredentialsSubmitController(store) {
   return {

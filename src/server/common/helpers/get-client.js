@@ -10,10 +10,8 @@ const requestTimeoutMs = 10_000
 /**
  * Gets one client of the configured service from the DWT Client Sync backend,
  * for the environment the portal is running in.
- *
- * @param {String} clientId
- *
- * @returns {Promise<{ clientId: String, clientName: String, secrets?: Object[] } | undefined>}
+ * @param {string} clientId - The client to get
+ * @returns {Promise<{clientId: string, clientName: string, secrets?: object[]} | undefined>}
  * The client and its secrets, or undefined if that client doesn't exist
  */
 export async function getClient(clientId) {

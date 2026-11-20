@@ -13,10 +13,9 @@ const lineBreak = '%0D%0A'
  * How to report a client's credentials that may have been exposed: the
  * security team's address, and a link that opens an email to them with what
  * they need to know filled in. It never holds a secret.
- *
- * @param {{ clientId: String, clientName: String }} client
- *
- * @returns {{ address: String, href: String }} The address, and the mailto: link
+ * @param {{clientId: string, clientName: string}} client - The client whose
+ * credentials may have been exposed
+ * @returns {{address: string, href: string}} The address, and the mailto: link
  */
 export function securityTeamEmail({ clientId, clientName }) {
   const { email, cc } = config.get('securityTeam')

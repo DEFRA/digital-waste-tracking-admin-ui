@@ -13,8 +13,7 @@ export const environmentLabels = {
 /**
  * Names the environment the portal is running in, such as "External test".
  * An environment without a label shows its own name.
- *
- * @returns {String} The environment name
+ * @returns {string} The environment name
  */
 export function environmentName() {
   const environment = config.get('cdpEnvironment')

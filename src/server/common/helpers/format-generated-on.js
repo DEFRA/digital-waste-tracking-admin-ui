@@ -12,10 +12,8 @@ const dateTimeFormat = new Intl.DateTimeFormat('en-GB', {
 /**
  * Formats when credentials were generated, for example "15 October 2026 at
  * 4:49pm".
- *
  * @param {Date} date - The date and time
- *
- * @returns {String} The formatted date and time
+ * @returns {string} The formatted date and time
  */
 export function formatGeneratedOn(date) {
   const parts = Object.fromEntries(
