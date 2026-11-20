@@ -13,6 +13,18 @@ describe('#config', () => {
     vi.resetModules()
   })
 
+  describe('session', () => {
+    test('Should end a session after an hour', async () => {
+      const config = await loadConfig({
+        SESSION_CACHE_TTL: undefined,
+        SESSION_COOKIE_TTL: undefined
+      })
+
+      expect(config.get('session.cache.ttl')).toEqual(60 * 60 * 1000)
+      expect(config.get('session.cookie.ttl')).toEqual(60 * 60 * 1000)
+    })
+  })
+
   describe('clientCredentials.createEnabled', () => {
     test.each([
       ['local', true],
