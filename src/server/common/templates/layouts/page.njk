@@ -23,7 +23,8 @@
 {% endblock %}
 
 {% block header %}
-  <header class="defra-header">
+  {# Signed out, there is no navigation, so a green line ends the header #}
+  <header class="defra-header{{ ' app-defra-header--green-line' if signedOut }}">
     <div class="defra-header__inner">
       <a href="/" class="defra-header__service-name defra-header__brand-group">
         <img src="{{ getAssetPath('src/client/images/defra-logo.svg') }}" alt="" role="presentation" class="defra-header__logo">
@@ -47,9 +48,11 @@
     </div>
   </header>
 
-  {{ govukServiceNavigation({
-    navigation: navigation
-  }) }}
+  {% if not signedOut %}
+    {{ govukServiceNavigation({
+      navigation: navigation
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block pageTitle %}
@@ -74,7 +77,7 @@
 {% endblock %}
 
 {% block footer %}
-<div class="govuk-footer">
+<footer class="govuk-footer">
   <div class="govuk-width-container">
     <div class="govuk-footer__meta">
       <div class="govuk-footer__meta-item">
@@ -93,7 +96,7 @@
       </div>
     </div>
   </div>
-</div>
+</footer>
 {% endblock %}
 
 {% block bodyEnd %}

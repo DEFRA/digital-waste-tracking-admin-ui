@@ -1,5 +1,8 @@
 export const paths = {
-  signIn: '/login',
+  // The page anyone not signed in is sent to
+  signIn: '/sign-in',
+  // Starts signing in with Entra ID
+  startSignIn: '/login',
   // Where Entra ID sends the user back to after they sign in. It must match a
   // redirect URI on the app registration exactly
   signInCallback: '/auth',

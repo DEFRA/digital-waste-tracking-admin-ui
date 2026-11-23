@@ -333,6 +333,6 @@ describe('Delete a software provider', () => {
     })
 
     expect(statusCode).toEqual(302)
-    expect(headers.location).toMatch(/^\/login/)
+    expect(headers.location).toMatch(/^\/sign-in/)
   })
 })
