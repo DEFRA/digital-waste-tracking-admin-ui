@@ -1,4 +1,5 @@
 import { paths } from '#/server/common/constants/paths.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { signedInUserKey } from '#/server/plugins/entra-id.js'
 import { safeRedirectPath } from '#/server/common/helpers/safe-redirect-path.js'
 
@@ -73,7 +74,7 @@ export const signInController = {
       // Such as Entra ID being unreachable. Not a 401, which would send them
       // back to sign in, and round again
       request.logger.error({ err }, 'Could not start signing in with Entra ID')
-      return signInFailed(request, h, 502)
+      return signInFailed(request, h, statusCodes.badGateway)
     }
   }
 }
@@ -93,7 +94,7 @@ export const signInCallbackController = {
       // Such as cancelling at Entra ID. Not a 401, which would send them back
       // to sign in, and round again
       request.logger.warn({ err }, 'Signing in with Entra ID failed')
-      return signInFailed(request, h, 403)
+      return signInFailed(request, h, statusCodes.forbidden)
     }
 
     const redirectTo = safeRedirectPath(request.yar.get(redirectToKey))
