@@ -28,7 +28,7 @@ export default [
     }
   },
   jsdoc({
-    config: 'flat/recommended',
+    config: 'flat/recommended-error',
     files: ['**/*.js'],
     ignores: testFiles,
     rules: {
