@@ -18,6 +18,11 @@ import { metrics } from '@defra/cdp-metrics'
 import { entraId, entraStrategy } from './plugins/entra-id.js'
 import { paths } from '#/server/common/constants/paths.js'
 
+/**
+ * Creates the hapi server, with its plugins, cache and routes set up, ready to
+ * start.
+ * @returns {Promise<import('@hapi/hapi').Server>} The server
+ */
 export async function createServer() {
   const server = hapi.server({
     host: config.get('host'),

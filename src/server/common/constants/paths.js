@@ -17,10 +17,9 @@ export const paths = {
 }
 
 /**
- * @param {String} path - A path with a {clientId} parameter
- * @param {String} clientId
- *
- * @returns {String} The path for the client
+ * @param {string} path - A path with a {clientId} parameter
+ * @param {string} clientId - The client whose path to get
+ * @returns {string} The path for the client
  */
 export function clientPath(path, clientId) {
   return path.replace('{clientId}', encodeURIComponent(clientId))

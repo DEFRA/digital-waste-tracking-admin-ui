@@ -15,6 +15,12 @@ const manifestPath = path.join(
 
 let viteManifest
 
+/**
+ * The variables every template can use, along with the asset path, which
+ * points at the built files in production.
+ * @param {import('@hapi/hapi').Request} [request] - The request, if there is one
+ * @returns {object} The template context
+ */
 export function context(request) {
   if (config.get('isProduction') && !viteManifest) {
     try {

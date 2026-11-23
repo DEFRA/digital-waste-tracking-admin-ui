@@ -29,10 +29,8 @@ export class RotateClientCredentialError extends Error {
  *
  * The response holds the new client secret, which is only available now, so it's
  * never logged, including when the request fails.
- *
- * @param {String} clientId - The client whose secret to rotate
- *
- * @returns {Promise<{ isNotFound: Boolean, credentials?: { clientId: String, clientName: String, clientSecret: String } }>}
+ * @param {string} clientId - The client whose secret to rotate
+ * @returns {Promise<{isNotFound: boolean, credentials?: {clientId: string, clientName: string, clientSecret: string}}>}
  * isNotFound when Client Sync doesn't have the client, as when it's since been deleted
  */
 export async function rotateClientCredential(clientId) {

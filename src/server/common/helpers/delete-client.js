@@ -24,10 +24,8 @@ export class DeleteClientError extends Error {
 /**
  * Deletes a client of the configured service, and all its secrets, with the
  * DWT Client Sync backend, for the environment the portal is running in.
- *
- * @param {String} clientId
- *
- * @returns {Promise<{ isNotFound: Boolean }>} isNotFound when Client Sync
+ * @param {string} clientId - The client to delete
+ * @returns {Promise<{isNotFound: boolean}>} isNotFound when Client Sync
  * doesn't have the client, as when it has already been deleted
  */
 export async function deleteClient(clientId) {

@@ -7,10 +7,8 @@ const wasteOrganisationsPath = '/reporting/waste-organisations'
 
 /**
  * Maps a request to the page name reported in the metrics dashboard.
- *
  * @param {import('@hapi/hapi').Request} request - The request
- *
- * @returns {String|undefined} The page name, or undefined for untracked paths
+ * @returns {string | undefined} The page name, or undefined for untracked paths
  */
 export function getPageName(request) {
   if (request.path === '/') {

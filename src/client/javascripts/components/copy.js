@@ -40,7 +40,7 @@ export class Copy {
   }
 
   /**
-   * @returns {String} The credentials as plain text
+   * @returns {string} The credentials as plain text
    */
   text() {
     const labels = [...this.$source.querySelectorAll('dt')]

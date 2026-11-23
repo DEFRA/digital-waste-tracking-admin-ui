@@ -8,11 +8,9 @@ const getOrganisationsPath = '/organisations'
 /**
  * Gets Waste Organisations where the DefraID registration date is between a
  * from and to date, from the Waste Organisation backend.
- *
  * @param {Date} dateFrom - The date from
  * @param {Date} dateTo - The date to
- *
- * @returns {Promise<[{ organisationId: String, dateRegistered: String, activeApiCodeCount: Number }]>} The Waste Organisations
+ * @returns {Promise<[{organisationId: string, dateRegistered: string, activeApiCodeCount: number}]>} The Waste Organisations
  */
 export async function getWasteOrganisationsByDate(dateFrom, dateTo) {
   const url = new URL(

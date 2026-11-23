@@ -13,8 +13,7 @@ const requestTimeoutMs = 10_000
 /**
  * Gets the client credentials for the configured service from the DWT Client
  * Sync backend, for the environment the portal is running in.
- *
- * @returns {Promise<[{ clientId: String, clientName: String, tenantServiceName: String }]>} The client credentials
+ * @returns {Promise<[{clientId: string, clientName: string, tenantServiceName: string}]>} The client credentials
  */
 export async function getClientCredentials() {
   const tenantServiceName = config.get('clientCredentials.tenantServiceName')
@@ -53,10 +52,8 @@ export async function getClientCredentials() {
 /**
  * Gets the client credentials for a client of the configured service from the
  * DWT Client Sync backend, for the environment the portal is running in.
- *
- * @param {String} clientId - The client's ID
- *
- * @returns {Promise<[{ clientId: String, clientName: String, tenantServiceName: String }]> | undefined} The client credentials, or undefined when the client has none
+ * @param {string} clientId - The client's ID
+ * @returns {Promise<[{clientId: string, clientName: string, tenantServiceName: string}]> | undefined} The client credentials, or undefined when the client has none
  */
 export async function getClientCredentialsById(clientId) {
   const tenantServiceName = config.get('clientCredentials.tenantServiceName')

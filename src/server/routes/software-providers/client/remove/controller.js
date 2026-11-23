@@ -26,11 +26,9 @@ const options = {
 /**
  * Only a client with two secrets has an older one to remove, so both the page
  * and its submission check it still does.
- *
- * @param {import('@hapi/hapi').Request} request
- * @param {import('@hapi/hapi').ResponseToolkit} h
- *
- * @returns {Promise<{ redirect: Object } | { client: Object }>}
+ * @param {import('@hapi/hapi').Request} request - The request
+ * @param {import('@hapi/hapi').ResponseToolkit} h - The response toolkit, for the redirect
+ * @returns {Promise<{redirect: object} | {client: object}>}
  * A redirect when there's nothing to remove, otherwise the client and its secrets
  */
 async function clientToRemove(request, h) {

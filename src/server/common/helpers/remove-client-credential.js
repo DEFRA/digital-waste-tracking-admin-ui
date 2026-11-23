@@ -27,10 +27,8 @@ export class RemoveClientCredentialError extends Error {
  * Removes a client's oldest secret with the DWT Client Sync backend, for the
  * environment the portal is running in. The client's newest secret is always
  * kept, so a client with one secret is left with it.
- *
- * @param {String} clientId - The client whose oldest secret to remove
- *
- * @returns {Promise<{ isNotFound: Boolean }>} isNotFound when Client Sync
+ * @param {string} clientId - The client whose oldest secret to remove
+ * @returns {Promise<{isNotFound: boolean}>} isNotFound when Client Sync
  * doesn't have the client, as when it's since been deleted
  */
 export async function removeClientCredential(clientId) {

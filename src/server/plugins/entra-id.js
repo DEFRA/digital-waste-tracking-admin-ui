@@ -13,7 +13,7 @@ export const entraStrategy = 'entra'
 export const signedInUserKey = 'signedInUser'
 
 /**
- * Signs users in with Microsoft Entra ID, using CDP's @defra/hapi-auth-oidc.
+ * Signs users in with Microsoft Entra ID, using CDP's `@defra/hapi-auth-oidc`.
  *
  * The admin UI proves who it is to Entra ID with a federated credential: a
  * short-lived token from AWS STS for its role, which Entra ID trusts, rather
@@ -23,7 +23,6 @@ export const signedInUserKey = 'signedInUser'
  * Once signed in, the user is kept in the session (server-side, see
  * session-cache.js), so Entra ID's tokens aren't kept or refreshed: the
  * sign-in lasts as long as the session does.
- *
  * @satisfies {import('@hapi/hapi').Plugin}
  */
 export const entraId = {

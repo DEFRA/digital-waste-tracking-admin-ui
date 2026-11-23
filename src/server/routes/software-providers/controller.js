@@ -11,11 +11,9 @@ import { flashKeys } from '#/server/common/constants/flash-keys.js'
  * Orders client credentials by client name, then by client ID so that clients
  * with the same name stay in the same order. A fixed locale keeps the order the
  * same wherever the portal runs.
- *
- * @param {{ clientName: String, clientId: String }} a
- * @param {{ clientName: String, clientId: String }} b
- *
- * @returns {Number} The sort order
+ * @param {{clientName: string, clientId: string}} a - A client to order
+ * @param {{clientName: string, clientId: string}} b - Another client to order
+ * @returns {number} The sort order
  */
 function byClientName(a, b) {
   return (

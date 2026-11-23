@@ -18,9 +18,8 @@ const dateFields = [
 ]
 
 /**
- * @param {Object} [dateErrors] - The errors by date id, From first
- *
- * @returns {Object<String, String>} The messages for the error summary, each
+ * @param {object} [dateErrors] - The errors by date id, From first
+ * @returns {Record<string, string>} The messages for the error summary, each
  * linking to the date's first wrong input
  */
 function errorSummaryOf(dateErrors = {}) {

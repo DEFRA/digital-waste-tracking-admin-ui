@@ -7,8 +7,30 @@ import { config } from '#/config/config.js'
 const expiresInMs = 5 * 60 * 1000
 
 /**
+ * @typedef {object} NewClientCredentials
+ * What's stored for the credentials page to show once. It holds the client
+ * secret, which is only available when the credentials are created, so it's
+ * kept no longer than it takes to show it.
+ * @property {string} clientId - The client's ID
+ * @property {string} clientName - The client's name
+ * @property {string} clientSecret - The new secret, which isn't kept here after it's shown
+ * @property {string} generatedOn - When they were generated, as an ISO 8601 string
+ * @property {boolean} [isPartialReplace] - Set when replacing a secret whose old one may still work
+ */
+
+/**
+ * @typedef {object} NewClientCredentialsStore
+ * @property {(request: import('@hapi/hapi').Request, credentials: NewClientCredentials) => Promise<string>} save
+ * Stores them, and returns the id to show them by
+ * @property {(request: import('@hapi/hapi').Request, id: string) => Promise<NewClientCredentials | null>} take
+ * Gets and removes them, or null when this user has none with that id
+ * @property {(request: import('@hapi/hapi').Request, id: string) => Promise<string | null>} shownClientId
+ * The client whose credentials this user has been shown, or null
+ */
+
+/**
  * @param {import('@hapi/hapi').Request} request - The request
- * @returns {String|undefined} The signed-in user, who owns what they create
+ * @returns {string | undefined} The signed-in user, who owns what they create
  */
 const ownerOf = (request) => request.auth.credentials?.username
 
@@ -17,6 +39,11 @@ const ownerOf = (request) => request.auth.credentials?.username
 // segment belongs to hapi's core, which every server of that core shares
 const segments = new WeakMap()
 
+/**
+ * @param {import('@hapi/hapi').Server} server - The server, whose cache the
+ * credentials are kept in
+ * @returns {import('@hapi/catbox').ClientApi} The cache's segment
+ */
 function cacheFor(server) {
   const key = server._core ?? server
 
@@ -43,8 +70,8 @@ function cacheFor(server) {
  * id for the redirect and records the user who created it, so only they can
  * read it. Nothing is written to the session, so two tabs creating at once
  * can't overwrite each other.
- *
  * @param {import('@hapi/hapi').Server} server - The server
+ * @returns {NewClientCredentialsStore} The store
  */
 export function createNewClientCredentialsStore(server) {
   const cache = cacheFor(server)
@@ -52,9 +79,8 @@ export function createNewClientCredentialsStore(server) {
   return {
     /**
      * @param {import('@hapi/hapi').Request} request - The request
-     * @param {Object} credentials - The new credentials
-     *
-     * @returns {Promise<String>} The id to show them by
+     * @param {NewClientCredentials} credentials - The new credentials
+     * @returns {Promise<string>} The id to show them by
      */
     async save(request, credentials) {
       const id = randomUUID()
@@ -67,11 +93,9 @@ export function createNewClientCredentialsStore(server) {
     /**
      * Gets the new credentials and removes them, so they can only be shown once.
      * Only the client ID is kept, so coming back can go to that client.
-     *
      * @param {import('@hapi/hapi').Request} request - The request
-     * @param {String} id - The id they were saved with
-     *
-     * @returns {Promise<Object|null>} The new credentials, or null if there are
+     * @param {string} id - The id they were saved with
+     * @returns {Promise<NewClientCredentials | null>} The new credentials, or null if there are
      * none with that id that this user created
      */
     async take(request, id) {
@@ -94,9 +118,8 @@ export function createNewClientCredentialsStore(server) {
 
     /**
      * @param {import('@hapi/hapi').Request} request - The request
-     * @param {String} id - The id they were saved with
-     *
-     * @returns {Promise<String|null>} The client whose credentials this user
+     * @param {string} id - The id they were saved with
+     * @returns {Promise<string | null>} The client whose credentials this user
      * has already been shown, or null if there's none
      */
     async shownClientId(request, id) {

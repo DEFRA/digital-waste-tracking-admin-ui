@@ -26,8 +26,8 @@ const options = {
  * Adds a second secret, so the client has two. The existing secret keeps
  * working, so there's nothing to confirm first: the new secret is shown
  * straight away, for the software provider to move to.
- *
- * @param {ReturnType<import('#/server/common/helpers/new-client-credentials-store.js').createNewClientCredentialsStore>} store
+ * @param {import('#/server/common/helpers/new-client-credentials-store.js').NewClientCredentialsStore} store - The store the new secret is kept in until it's shown
+ * @returns {{ handler: (request: import('@hapi/hapi').Request, h: import('@hapi/hapi').ResponseToolkit) => Promise<import('@hapi/hapi').ResponseObject> }} The route's handler
  */
 export function addClientCredentialsSubmitController(store) {
   return {

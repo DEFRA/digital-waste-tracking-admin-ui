@@ -8,7 +8,9 @@ import { formatGeneratedOn } from '#/server/common/helpers/format-generated-on.j
 const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 
 /**
- * @param {ReturnType<import('#/server/common/helpers/new-client-credentials-store.js').createNewClientCredentialsStore>} store
+ * Shows new credentials once, then sends anyone who comes back to the client.
+ * @param {import('#/server/common/helpers/new-client-credentials-store.js').NewClientCredentialsStore} store - The store the new credentials are taken from
+ * @returns {{ handler: (request: import('@hapi/hapi').Request, h: import('@hapi/hapi').ResponseToolkit) => Promise<import('@hapi/hapi').ResponseObject> }} The page's handler
  */
 export function newClientCredentialsController(store) {
   return {

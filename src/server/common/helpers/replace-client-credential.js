@@ -33,10 +33,8 @@ export class ReplaceClientCredentialError extends Error {
  * dwt-client-sync returns the secret value in the body of the 502 error
  *
  * This response is never logged, as it contains the secret value.
- *
- * @param {String} clientId - The client whose secret to replace
- *
- * @returns {Promise<{ isNotFound: Boolean, isConflict?: Boolean, credentials?: { clientId: String, clientSecret: String } }>}
+ * @param {string} clientId - The client whose secret to replace
+ * @returns {Promise<{isNotFound: boolean, isConflict?: boolean, credentials?: {clientId: string, clientSecret: string}}>}
  * isNotFound when Client Sync doesn't have the client, as when it's since been
  * deleted, and isConflict when it can't replace this client's secret
  */
@@ -113,9 +111,8 @@ export async function replaceClientCredential(clientId) {
 }
 
 /**
- * @param {Response} response
- *
- * @returns {Promise<Object|undefined>} The body, or undefined when it isn't JSON
+ * @param {Response} response - The response whose body to read
+ * @returns {Promise<object | undefined>} The body, or undefined when it isn't JSON
  */
 async function bodyOf(response) {
   try {
@@ -126,10 +123,9 @@ async function bodyOf(response) {
 }
 
 /**
- * @param {Object} [body]
- * @param {String} clientId
- *
- * @returns {{ clientId: String, clientSecret: String }|undefined} The new
+ * @param {object} [body] - The body of a failed replace
+ * @param {string} clientId - The client the secret should be for
+ * @returns {{clientId: string, clientSecret: string} | undefined} The new
  * secret, or undefined when the body doesn't have one for this client
  */
 function credentialsOf(body, clientId) {

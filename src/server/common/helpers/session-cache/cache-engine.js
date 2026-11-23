@@ -5,6 +5,12 @@ import { createLogger } from '../logging/logger.js'
 import { buildRedisClient } from '../redis-client.js'
 import { config } from '#/config/config.js'
 
+/**
+ * The session cache engine to use: Redis away from local development, and
+ * in-memory otherwise, as that's for local development only.
+ * @param {'redis' | 'memory'} engine - The engine to use
+ * @returns {import('@hapi/catbox').Engine} The cache engine
+ */
 export function getCacheEngine(engine) {
   const logger = createLogger()
 

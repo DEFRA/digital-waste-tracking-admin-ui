@@ -9,7 +9,6 @@ import { metricNames } from '#/server/common/constants/metric-names.js'
  * This runs on `onPostAuth` because `request.auth.credentials` is not populated
  * until authentication has run, which is after hapi-pino builds the request
  * logger on `onRequest`.
- *
  * @satisfies {import('@hapi/hapi').Plugin}
  */
 export const requestContext = {
