@@ -697,7 +697,7 @@ describe('Create new credentials', () => {
 
     expect(statusCode).toEqual(302)
     expect(headers.location).toEqual(
-      '/login?redirectTo=%2Fsoftware-providers%2Fcreate'
+      '/sign-in?redirectTo=%2Fsoftware-providers%2Fcreate'
     )
   })
 })

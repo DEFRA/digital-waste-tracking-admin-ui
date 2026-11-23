@@ -21,6 +21,10 @@
   unicode-bidi: isolate;
 }
 
+.app-defra-header--green-line {
+  border-bottom: 10px solid $defra-green-dark;
+}
+
 .defra-header__inner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

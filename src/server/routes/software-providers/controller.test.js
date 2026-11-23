@@ -301,6 +301,8 @@ describe('#softwareProvidersController', () => {
     })
 
     expect(statusCode).toBe(statusCodes.found)
-    expect(headers.location).toEqual('/login?redirectTo=%2Fsoftware-providers')
+    expect(headers.location).toEqual(
+      '/sign-in?redirectTo=%2Fsoftware-providers'
+    )
   })
 })

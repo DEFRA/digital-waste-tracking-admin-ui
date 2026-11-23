@@ -71,7 +71,7 @@ export async function createServer() {
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
-  // Not signed in: sign in with Entra ID, then come back to the page
+  // Not signed in: the sign in page, then back to the page once signed in
   server.ext('onPreResponse', (request, h) => {
     const response = request.response
 

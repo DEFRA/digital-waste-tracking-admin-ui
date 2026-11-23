@@ -1,5 +1,53 @@
+import { JSDOM } from 'jsdom'
+
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+
+const documentOf = (html) => new JSDOM(html).window.document
+const textOf = (element) => element.textContent.replace(/\s+/g, ' ').trim()
+const headingsOf = (document) =>
+  [...document.querySelectorAll('main h1')].map(textOf)
+const listItemsOf = (document) =>
+  [...document.querySelectorAll('main ul.govuk-list--bullet li')].map(textOf)
+
+/**
+ * Signed out, the header has the green line, and there's no navigation
+ *
+ * @param {Document} document
+ */
+function expectSignedOutHeader(document) {
+  expect(
+    document
+      .querySelector('header.defra-header')
+      .classList.contains('app-defra-header--green-line')
+  ).toBe(true)
+  expect(document.querySelector('nav')).toBeNull()
+  // One header, main and footer landmark each
+  expect(document.querySelectorAll('header')).toHaveLength(1)
+  expect(document.querySelectorAll('main')).toHaveLength(1)
+  expect(document.querySelectorAll('footer')).toHaveLength(1)
+}
+
+/**
+ * @param {Document} document
+ * @param {String} tryAgainHref - Where "Try signing in again" goes
+ */
+function expectErrorPage(document, tryAgainHref) {
+  expect(document.title.trim()).toEqual(
+    'Error: There was a problem signing you in - Local - DWT admin portal'
+  )
+  expect(headingsOf(document)).toEqual(['There was a problem signing you in'])
+  expect(textOf(document.querySelector('main p'))).toEqual(
+    'You have not been signed in. You will need to try again.'
+  )
+  expectSignedOutHeader(document)
+
+  const button = document.querySelector(
+    '[data-testid="try-signing-in-again-button"]'
+  )
+  expect(textOf(button)).toEqual('Try signing in again')
+  expect(button.getAttribute('href')).toEqual(tryAgainHref)
+}
 
 describe('Signing in with Entra ID', () => {
   let server
@@ -57,14 +105,16 @@ describe('Signing in with Entra ID', () => {
     const { statusCode, headers } = await get('/software-providers')
 
     expect(statusCode).toEqual(statusCodes.found)
-    expect(headers.location).toEqual('/login?redirectTo=%2Fsoftware-providers')
+    expect(headers.location).toEqual(
+      '/sign-in?redirectTo=%2Fsoftware-providers'
+    )
   })
 
   test("Should keep the page's query, so it comes back to the same page", async () => {
     const { headers } = await get('/software-providers?sort=name')
 
     expect(headers.location).toEqual(
-      '/login?redirectTo=%2Fsoftware-providers%3Fsort%3Dname'
+      '/sign-in?redirectTo=%2Fsoftware-providers%3Fsort%3Dname'
     )
   })
 
@@ -117,7 +167,7 @@ describe('Signing in with Entra ID', () => {
     // As someone holding the cookie from before signing in would
     jar = { session: before }
     const { headers } = await get('/')
-    expect(headers.location).toMatch(/^\/login/)
+    expect(headers.location).toMatch(/^\/sign-in/)
   })
 
   test.each([
@@ -134,25 +184,104 @@ describe('Signing in with Entra ID', () => {
     }
   )
 
-  test('Should show an error, not start signing in again, when signing in fails', async () => {
+  test('Should show the error page, not start signing in again, when signing in fails', async () => {
     oidc.callback.mockRejectedValue(new Error('state mismatch'))
 
-    await get('/login')
-    const { statusCode, headers } = await get('/auth?code=a-code&state=wrong')
+    await get('/login?redirectTo=%2Fsoftware-providers')
+    const { statusCode, headers, result } = await get(
+      '/auth?code=a-code&state=wrong'
+    )
 
     expect(statusCode).toEqual(statusCodes.forbidden)
     expect(headers.location).toBeUndefined()
+    expectErrorPage(
+      documentOf(result),
+      '/login?redirectTo=%2Fsoftware-providers'
+    )
 
     const home = await get('/')
-    expect(home.headers.location).toMatch(/^\/login/)
+    expect(home.headers.location).toMatch(/^\/sign-in/)
   })
 
-  test('Should show an error, not try to sign in again, when Entra ID cannot be reached', async () => {
+  test('Should show the error page, not try to sign in again, when Entra ID cannot be reached', async () => {
     oidc.login.mockRejectedValue(new Error('fetch failed'))
 
-    const { statusCode, headers } = await get('/login')
+    const { statusCode, headers, result } = await get('/login')
 
     expect(statusCode).toEqual(statusCodes.badGateway)
     expect(headers.location).toBeUndefined()
+    expectErrorPage(documentOf(result), '/login')
+  })
+
+  test('Should sign them out when signing in again fails', async () => {
+    await get('/login')
+    await get('/auth?code=a-code&state=a-state')
+    expect((await get('/')).statusCode).toEqual(statusCodes.ok)
+
+    oidc.callback.mockRejectedValue(new Error('cancelled'))
+    await get('/login')
+    await get('/auth?error=access_denied&state=a-state')
+
+    expect((await get('/')).headers.location).toMatch(/^\/sign-in/)
+  })
+
+  describe('Sign in page', () => {
+    test('Should send someone already signed in straight on to where they were going', async () => {
+      await get('/login')
+      await get('/auth?code=a-code&state=a-state')
+
+      const { statusCode, headers } = await get(
+        '/sign-in?redirectTo=%2Fsoftware-providers'
+      )
+
+      expect(statusCode).toEqual(statusCodes.found)
+      expect(headers.location).toEqual('/software-providers')
+    })
+
+    test('Should say what the portal is for, with a button to sign in', async () => {
+      const { statusCode, result } = await get(
+        '/sign-in?redirectTo=%2Fsoftware-providers'
+      )
+      const document = documentOf(result)
+
+      expect(statusCode).toEqual(statusCodes.ok)
+      expect(document.title.trim()).toEqual(
+        'Sign in - Local - DWT admin portal'
+      )
+      expect(headingsOf(document)).toEqual(['Sign in to DWT admin portal'])
+      expect(textOf(document.querySelector('main p'))).toEqual(
+        'DWT admin portal allows you to:'
+      )
+      expect(listItemsOf(document)).toEqual([
+        'manage software provider credentials',
+        'search waste organisations'
+      ])
+      expectSignedOutHeader(document)
+
+      // Then on to where they were going, once signed in
+      const button = document.querySelector(
+        '[data-testid="continue-to-sign-in-button"]'
+      )
+      expect(textOf(button)).toEqual('Continue to sign in')
+      expect(button.getAttribute('href')).toEqual(
+        '/login?redirectTo=%2Fsoftware-providers'
+      )
+    })
+
+    test.each([
+      ['nowhere in particular', '/sign-in', '/login'],
+      ['another site', '/sign-in?redirectTo=%2F%2Fexample.com', '/login']
+    ])(
+      'Should start signing in for the home page when going %s',
+      async (_, url, href) => {
+        const document = documentOf((await get(url)).result)
+
+        expect(
+          document
+            .querySelector('[data-testid="continue-to-sign-in-button"]')
+            .getAttribute('href')
+        ).toEqual(href)
+      }
+    )
   })
 })

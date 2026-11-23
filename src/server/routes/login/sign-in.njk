@@ -1,0 +1,21 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l" data-testid="app-heading-title">Sign in to DWT admin portal</h1>
+      <p class="govuk-body">DWT admin portal allows you to:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>manage software provider credentials</li>
+        <li>search waste organisations</li>
+      </ul>
+      {{ govukButton({
+        text: "Continue to sign in",
+        href: startSignInPath,
+        attributes: { "data-testid": "continue-to-sign-in-button" }
+      }) }}
+    </div>
+  </div>
+{% endblock %}

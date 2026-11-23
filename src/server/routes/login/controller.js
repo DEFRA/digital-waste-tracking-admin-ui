@@ -1,10 +1,65 @@
-import Boom from '@hapi/boom'
-
+import { paths } from '#/server/common/constants/paths.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { signedInUserKey } from '#/server/plugins/entra-id.js'
 import { safeRedirectPath } from '#/server/common/helpers/safe-redirect-path.js'
 
 // Where the user was going, kept in the session while they sign in
 const redirectToKey = 'signInRedirectTo'
+
+/**
+ * @param {String} redirectTo - Where the user was going
+ *
+ * @returns {String} The path that starts signing in, then goes there
+ */
+function startSignInPath(redirectTo) {
+  return redirectTo === '/'
+    ? paths.startSignIn
+    : `${paths.startSignIn}?redirectTo=${encodeURIComponent(redirectTo)}`
+}
+
+/**
+ * What the portal is for, with a button to sign in. Where anyone who isn't
+ * signed in is sent.
+ */
+export const signInPageController = {
+  handler(request, h) {
+    // Already signed in, so straight on to where they were going
+    if (request.auth.isAuthenticated) {
+      return h.redirect(safeRedirectPath(request.query.redirectTo))
+    }
+
+    return h.view('login/sign-in', {
+      pageTitle: 'Sign in',
+      signedOut: true,
+      startSignInPath: startSignInPath(
+        safeRedirectPath(request.query.redirectTo)
+      )
+    })
+  }
+}
+
+/**
+ * The error page, for when signing in fails. Trying again goes straight to
+ * Entra ID, and still on to where they were going.
+ *
+ * @param {import('@hapi/hapi').Request} request
+ * @param {import('@hapi/hapi').ResponseToolkit} h
+ * @param {Number} statusCode
+ */
+function signInFailed(request, h, statusCode) {
+  // Not signed in, even if they were before trying again
+  request.yar.clear(signedInUserKey)
+
+  return h
+    .view('login/error', {
+      pageTitle: 'There was a problem signing you in',
+      signedOut: true,
+      startSignInPath: startSignInPath(
+        safeRedirectPath(request.yar.get(redirectToKey))
+      )
+    })
+    .code(statusCode)
+}
 
 /**
  * Sends the user to Entra ID to sign in, remembering where they were going.
@@ -17,9 +72,9 @@ export const signInController = {
       return await request.login(h)
     } catch (err) {
       // Such as Entra ID being unreachable. Not a 401, which would send them
-      // back here to sign in, and round again
+      // back to sign in, and round again
       request.logger.error({ err }, 'Could not start signing in with Entra ID')
-      throw Boom.badGateway()
+      return signInFailed(request, h, statusCodes.badGateway)
     }
   }
 }
@@ -36,9 +91,10 @@ export const signInCallbackController = {
     try {
       ;({ claims } = await request.callback(h))
     } catch (err) {
-      // Not a 401, which would send them back to sign in, and round again
+      // Such as cancelling at Entra ID. Not a 401, which would send them back
+      // to sign in, and round again
       request.logger.warn({ err }, 'Signing in with Entra ID failed')
-      throw Boom.forbidden()
+      return signInFailed(request, h, statusCodes.forbidden)
     }
 
     const redirectTo = safeRedirectPath(request.yar.get(redirectToKey))
