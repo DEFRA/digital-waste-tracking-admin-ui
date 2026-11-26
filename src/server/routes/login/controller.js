@@ -7,9 +7,9 @@ import { safeRedirectPath } from '#/server/common/helpers/safe-redirect-path.js'
 const redirectToKey = 'signInRedirectTo'
 
 /**
- * @param {String} redirectTo - Where the user was going
- *
- * @returns {String} The path that starts signing in, then goes there
+ * The path that starts signing in, then goes on to where the user was going.
+ * @param {string} redirectTo - Where the user was going
+ * @returns {string} The path that starts signing in, then goes there
  */
 function startSignInPath(redirectTo) {
   return redirectTo === '/'
@@ -41,10 +41,10 @@ export const signInPageController = {
 /**
  * The error page, for when signing in fails. Trying again goes straight to
  * Entra ID, and still on to where they were going.
- *
- * @param {import('@hapi/hapi').Request} request
- * @param {import('@hapi/hapi').ResponseToolkit} h
- * @param {Number} statusCode
+ * @param {import('@hapi/hapi').Request} request - The request
+ * @param {import('@hapi/hapi').ResponseToolkit} h - The response toolkit
+ * @param {number} statusCode - The status to answer with
+ * @returns {import('@hapi/hapi').ResponseObject} The error page
  */
 function signInFailed(request, h, statusCode) {
   // Not signed in, even if they were before trying again
