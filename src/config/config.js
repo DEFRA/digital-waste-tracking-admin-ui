@@ -388,6 +388,15 @@ export const config = convict({
       default: '',
       env: 'SERVICE_AUTH_PASSWORD'
     }
+  },
+  clientSyncAuth: {
+    stsAudience: {
+      doc: "Call DWT Client Sync with an AWS STS token for this audience, rather than basic auth (CDP's service-to-service auth). Client Sync must accept STS tokens for this audience, as its STS_AUDIENCE. Unset uses basic auth",
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'DWT_CLIENT_SYNC_STS_AUDIENCE'
+    }
   }
 })
 

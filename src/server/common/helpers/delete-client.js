@@ -2,7 +2,7 @@ import { withTraceId } from '@defra/hapi-tracing'
 
 import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-import { generateServiceAuthHeader } from '#/server/common/helpers/generate-service-auth-header.js'
+import { clientSyncAuthHeader } from '#/server/common/helpers/client-sync-auth-header.js'
 import { outcomeOf } from '#/server/common/helpers/client-sync-outcome.js'
 
 // Client Sync allows CDP up to 120 seconds, as CDP's docs advise. Giving up
@@ -35,8 +35,19 @@ export async function deleteClient(clientId) {
     config.get('services.clientSync')
   )
 
+  // Nothing has been sent if this fails, so the change certainly didn't happen
+  let authorization
+  try {
+    authorization = await clientSyncAuthHeader()
+  } catch (err) {
+    throw new DeleteClientError(`Failed to delete client: ${err.message}`, {
+      outcome: 'failure',
+      cause: err
+    })
+  }
+
   const headers = withTraceId(config.get('tracing.header'), {
-    Authorization: generateServiceAuthHeader()
+    Authorization: authorization
   })
 
   // Built first, so only fetch's errors are caught: once it's called, the
