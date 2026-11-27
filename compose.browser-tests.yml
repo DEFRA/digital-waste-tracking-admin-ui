@@ -1,8 +1,7 @@
 # Adds a Chrome browser to the stack for the admin tool's browser tests, which
-# live in digital-waste-tracking-fe-uat (npm run test:grid:admin-ui there, or
-# test:admin-ui before its refactor, with ENVIRONMENT=local). The tests drive
-# Chrome through ChromeDriver on port 4444, and Chrome reaches the admin UI by
-# its service name on the stack's network.
+# live in digital-waste-tracking-fe-uat (npm run test:grid:admin-ui there, with
+# ENVIRONMENT=local). The tests drive Chrome through ChromeDriver on port 4444,
+# and Chrome reaches the admin UI by its service name on the stack's network.
 #
 #   docker compose -f compose.yml -f compose.browser-tests.yml up --build -d digital-waste-tracking-admin-ui selenium-chrome
 
