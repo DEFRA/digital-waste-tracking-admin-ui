@@ -2,7 +2,7 @@ import { withTraceId } from '@defra/hapi-tracing'
 
 import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-import { generateServiceAuthHeader } from '#/server/common/helpers/generate-service-auth-header.js'
+import { clientSyncAuthHeader } from '#/server/common/helpers/client-sync-auth-header.js'
 
 // Long enough for a slow response, short enough not to leave the page hanging
 const requestTimeoutMs = 10_000
@@ -25,7 +25,7 @@ export async function getClient(clientId) {
     method: 'GET',
     headers: withTraceId(config.get('tracing.header'), {
       'Content-Type': 'application/json',
-      Authorization: generateServiceAuthHeader()
+      Authorization: await clientSyncAuthHeader()
     }),
     signal: AbortSignal.timeout(requestTimeoutMs)
   })

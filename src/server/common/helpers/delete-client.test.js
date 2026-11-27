@@ -1,6 +1,14 @@
 import { deleteClient, DeleteClientError } from './delete-client.js'
 import { config } from '#/config/config.js'
 
+const mockGetCredentials = vi.hoisted(() => vi.fn())
+
+vi.mock('@defra/hapi-auth-oidc', () => ({
+  WebIdentityTokenProvider: vi.fn(function () {
+    this.getCredentials = mockGetCredentials
+  })
+}))
+
 describe('#deleteClient', () => {
   const clientId = '1234567890abcdef1234567890'
 
@@ -74,5 +82,35 @@ describe('#deleteClient', () => {
     expect(error).toBeInstanceOf(DeleteClientError)
     expect(error.outcome).toEqual('unknown')
     expect(error.message).toEqual('Failed to delete client: fetch failed')
+  })
+
+  describe('With STS tokens switched on', () => {
+    beforeEach(() => {
+      config.set('clientSyncAuth.stsAudience', 'dwt-client-sync')
+    })
+
+    afterEach(() => {
+      config.set('clientSyncAuth.stsAudience', null)
+    })
+
+    test('Should send an STS token', async () => {
+      mockGetCredentials.mockResolvedValue('a-token')
+
+      await deleteClient(clientId)
+
+      const [, options] = fetchMock.mock.calls[0]
+      expect(options.headers.Authorization).toBe('Bearer a-token')
+    })
+
+    test("Should fail without sending, when there's no token", async () => {
+      mockGetCredentials.mockResolvedValue(null)
+
+      const error = await deleteClient(clientId).catch((err) => err)
+
+      expect(error).toBeInstanceOf(DeleteClientError)
+      // Nothing was sent, so the client certainly wasn't deleted
+      expect(error.outcome).toBe('failure')
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
   })
 })

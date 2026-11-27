@@ -4,6 +4,14 @@ import {
 } from './rotate-client-credential.js'
 import { config } from '#/config/config.js'
 
+const mockGetCredentials = vi.hoisted(() => vi.fn())
+
+vi.mock('@defra/hapi-auth-oidc', () => ({
+  WebIdentityTokenProvider: vi.fn(function () {
+    this.getCredentials = mockGetCredentials
+  })
+}))
+
 describe('#rotateClientCredential', () => {
   const clientId = '1234567890abcdef1234567890'
   const rotated = { clientId, clientSecret: 'new-client-secret' }
@@ -108,5 +116,18 @@ describe('#rotateClientCredential', () => {
 
     expect(error).toBeInstanceOf(RotateClientCredentialError)
     expect(error.outcome).toEqual('success')
+  })
+
+  test("Should fail without sending, when there's no STS token", async () => {
+    config.set('clientSyncAuth.stsAudience', 'dwt-client-sync')
+    mockGetCredentials.mockResolvedValue(null)
+
+    const error = await rotateClientCredential(clientId).catch((err) => err)
+    config.set('clientSyncAuth.stsAudience', null)
+
+    expect(error).toBeInstanceOf(RotateClientCredentialError)
+    // Nothing was sent, so it certainly wasn't rotated
+    expect(error.outcome).toBe('failure')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
