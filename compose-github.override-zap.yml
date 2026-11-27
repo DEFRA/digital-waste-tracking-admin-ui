@@ -1,0 +1,41 @@
+# ZAP overlay — merge after compose.yml and compose.browser-tests.yml:
+#   docker compose -f compose.yml -f compose.browser-tests.yml -f compose-github.override-zap.yml up -d --wait digital-waste-tracking-admin-ui selenium-chrome zap
+services:
+  # OWASP ZAP daemon — HTTP proxy and REST API on port 8080.
+  # digital-waste-tracking-fe-uat (PROXY_MODE=zap):
+  # - HTTP_PROXY=http://127.0.0.1:8080 — Node on the runner / laptop
+  # - zapBaseUrl=http://zap:8080 — Chrome in selenium-chrome and ZapApi target
+  # - GRID_HOST=selenium-chrome — WDIO hubs through HTTP_PROXY; ZAP must resolve the grid
+  # Trust ZAP MITM TLS in Node when needed:
+  #   curl -f http://127.0.0.1:8080/OTHER/core/other/rootcert/ -o /tmp/zap-root-ca.pem
+  #   export NODE_EXTRA_CA_CERTS=/tmp/zap-root-ca.pem
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    user: zap
+    environment:
+      ZAP_REPORTS_DIR: /home/zap/reports
+    volumes:
+      - ./zap-reports:/home/zap/reports:z
+    command:
+      - zap.sh
+      - -daemon
+      - -host
+      - 0.0.0.0
+      - -port
+      - '8080'
+      - -config
+      - api.addrs.addr.name=.*
+      - -config
+      - api.addrs.addr.regex=true
+      - -config
+      - api.disablekey=true
+    ports:
+      - '8080:8080'
+    networks:
+      - cdp-tenant
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://127.0.0.1:8080/JSON/core/view/version/ || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 40s

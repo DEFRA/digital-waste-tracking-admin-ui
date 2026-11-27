@@ -273,11 +273,30 @@ Then, in your fe-uat checkout:
 ENVIRONMENT=local ADMIN_UI_BASE_URL=http://digital-waste-tracking-admin-ui:3000 SERVICE_AUTH_PASSWORD=local-external-api DWT_CLIENT_SYNC_SERVICE_URL=http://localhost:3005 npm run test:grid:admin-ui
 ```
 
-Until DEFRA/digital-waste-tracking-fe-uat#134 merges, the script is `test:admin-ui`.
-
 The browser reaches the admin UI by its service name, `digital-waste-tracking-admin-ui`, so `vite.config.js`
 allows that host, and the session cookie isn't `Secure` outside production. floci-az signs the tests
 in, as it does you.
+
+The pull request workflow also starts ZAP (`compose-github.override-zap.yml`) and sends that browser
+through it. After the scenarios it runs fe-uat's `npm run test:zap`, which fails the job when the
+saved report has a high-risk alert, and uploads `zap-report/` next to the Allure report. The test
+runner calls dwt-client-sync at `http://dwt-client-sync:3001`, which ZAP can open. fe-uat leaves
+that host out of the report. Client-sync is scanned in digital-waste-tracking-uat. floci is
+excluded from the report.
+
+To run the same scan locally, add the overlay:
+
+```bash
+docker compose -f compose.yml -f compose.browser-tests.yml -f compose-github.override-zap.yml up --build -d digital-waste-tracking-admin-ui selenium-chrome zap
+docker compose exec -T mongodb mongosh waste-organisation-backend --quiet < ../digital-waste-tracking-fe-uat/test/utils/test-data-organisations.js
+```
+
+Then, in your fe-uat checkout:
+
+```bash
+ENVIRONMENT=local ADMIN_UI_BASE_URL=http://digital-waste-tracking-admin-ui:3000 SERVICE_AUTH_PASSWORD=local-external-api DWT_CLIENT_SYNC_SERVICE_URL=http://dwt-client-sync:3001 HTTP_PROXY=http://127.0.0.1:8080 PROXY_MODE=zap GRID_HOST=selenium-chrome npm run test:grid:admin-ui
+PROXY_MODE=off npm run test:zap
+```
 
 ### Dependabot
 

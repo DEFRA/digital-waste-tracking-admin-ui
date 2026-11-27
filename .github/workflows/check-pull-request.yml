@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: pr-validator
     env:
-      COMPOSE_FILE: compose.yml:compose.browser-tests.yml
+      COMPOSE_FILE: compose.yml:compose.browser-tests.yml:compose-github.override-zap.yml
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -66,11 +66,16 @@ jobs:
       - name: Start Docker Compose Services
         id: start-docker-compose-services
         run: |
-          docker compose up -d --build --wait digital-waste-tracking-admin-ui selenium-chrome
+          docker compose up -d --build --wait digital-waste-tracking-admin-ui selenium-chrome zap
           docker compose ps
 
       - name: Wait for the admin UI to start
         run: timeout 120 sh -c 'until curl -sf http://localhost:3000/health; do sleep 2; done'
+
+      - name: Prepare ZAP for integration tests
+        run: |
+          curl -f http://127.0.0.1:8080/OTHER/core/other/rootcert/ -o "$RUNNER_TEMP/zap-root-ca.pem"
+          echo "NODE_EXTRA_CA_CERTS=$RUNNER_TEMP/zap-root-ca.pem" >> "$GITHUB_ENV"
 
       - name: Checkout fe-uat as Integration Test Suite
         uses: actions/checkout@v6
@@ -102,18 +107,21 @@ jobs:
           ADMIN_UI_BASE_URL: http://digital-waste-tracking-admin-ui:3000
           # Made-up credential for calling dwt-client-sync directly
           SERVICE_AUTH_PASSWORD: local-external-api
-          # Reach dwt-client-sync through the port the stack publishes, as the tests run on the runner
-          DWT_CLIENT_SYNC_SERVICE_URL: http://localhost:3005
-        # DEFRA/digital-waste-tracking-fe-uat#134 replaces test:admin-ui with
-        # test:grid:admin-ui (Chrome in a Selenium container, as here). Runs
-        # whichever exists, so this works before and after it merges. Once it
-        # has merged, this can just run test:grid:admin-ui.
+          # Compose hostname, so the proxied call is one ZAP can open. The host is
+          # excluded from the report in fe-uat. 
+          DWT_CLIENT_SYNC_SERVICE_URL: http://dwt-client-sync:3001
+          # Node reaches published ZAP on the runner; Chrome/ZapApi use zapBaseUrl
+          # (http://zap:8080) from local.zap.config.json. WDIO hubs through HTTP_PROXY,
+          # so GRID_HOST must be a compose name ZAP can resolve.
+          HTTP_PROXY: http://127.0.0.1:8080
+          PROXY_MODE: zap
+          GRID_HOST: selenium-chrome
+          GRID_PORT: 4444
         run: |
-          if node -e "process.exit(require('./package.json').scripts['test:grid:admin-ui'] ? 0 : 1)"; then
-            npm run test:grid:admin-ui
-          else
-            npm run test:admin-ui
-          fi
+          npm run test:grid:admin-ui
+          # PROXY_MODE must be off so ZAP does not start a new session. The grid run already
+          # downloaded a local JSON report; this step checks that file.
+          PROXY_MODE=off npm run test:zap
 
       - name: Generate Test Report
         if: always()
@@ -132,17 +140,29 @@ jobs:
             integration-tests/reports/
           retention-days: 30
 
+      - name: Upload Zap Report
+        if: always() && steps.integration-tests.outcome == 'success'
+        id: upload-zap-report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-test-report
+          path: integration-tests/zap-report/
+          retention-days: 30
+
       - name: Comment Test Report Link on PR
         if: always() && steps.upload-report.outcome == 'success' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const statusEmoji = '${{ steps.integration-tests.outcome }}' === 'success' ? '✅' : '❌';
+            const zapLine = '${{ steps.upload-zap-report.outcome }}' === 'success'
+              ? `\n\n🔒 [Download ZAP Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-zap-report.outputs.artifact-id }})`
+              : '';
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 📊 Integration Test Report ${statusEmoji}\n\nThe test report has been generated and is available as an artifact.\n\n📥 [Download Test Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-report.outputs.artifact-id }})`
+              body: `## 📊 Integration Test Report ${statusEmoji}\n\nThe test report has been generated and is available as an artifact.\n\n📥 [Download Test Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-report.outputs.artifact-id }})${zapLine}`
             })
 
       - name: Stop Docker Compose Services
